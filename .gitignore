@@ -1,0 +1,57 @@
+# ───────────────────────────────────────────────────────────
+#  SmartHireAI — root .gitignore
+#  Keeps secrets, dependencies, and build artifacts out of git.
+# ───────────────────────────────────────────────────────────
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# Secrets / environment — NEVER commit real keys
+.env
+.env.*
+!.env.example          # keep the placeholder template
+
+# Next.js build output & generated files
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# Tooling caches
+.cache/
+.turbo/
+coverage/
+
+# Vercel / v0 sandbox leftovers
+.vercel/
+.snowflake/
+.v0-trash/
+__v0_runtime_loader.js
+__v0_devtools.tsx
+__v0_jsx-dev-runtime.ts
+next.user-config.*
+
+# npm lockfile (this project uses pnpm — keep pnpm-lock.yaml only)
+package-lock.json
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
