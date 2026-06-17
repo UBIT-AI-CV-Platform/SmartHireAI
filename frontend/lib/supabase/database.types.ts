@@ -346,30 +346,39 @@ export type Database = {
           feedback: Json | null
           id: string
           job_id: string | null
+          messages: Json
           profile_id: string
           questions: Json | null
           role: string | null
           score: number | null
+          title: string | null
+          updated_at: string
         }
         Insert: {
           created_at?: string
           feedback?: Json | null
           id?: string
           job_id?: string | null
+          messages?: Json
           profile_id: string
           questions?: Json | null
           role?: string | null
           score?: number | null
+          title?: string | null
+          updated_at?: string
         }
         Update: {
           created_at?: string
           feedback?: Json | null
           id?: string
           job_id?: string | null
+          messages?: Json
           profile_id?: string
           questions?: Json | null
           role?: string | null
           score?: number | null
+          title?: string | null
+          updated_at?: string
         }
         Relationships: [
           {

@@ -500,8 +500,8 @@ export default function CVGeneratorPage() {
 
       {/* Customize (layout / photo / colour / font / sections) */}
       <section className="mb-8 bg-white p-4 md:p-5 rounded-3xl cv-preview-shadow border border-surface-container flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <span className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-3 sm:gap-x-6">
+          <span className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest flex items-center gap-2 w-full sm:w-auto">
             <span className="material-symbols-outlined text-primary text-base">tune</span>Customize
           </span>
           {/* Template */}
@@ -554,7 +554,7 @@ export default function CVGeneratorPage() {
             </div>
           </div>
           {/* Cover letter + History */}
-          <div className="ml-auto flex items-center gap-2">
+          <div className="w-full sm:w-auto sm:ml-auto flex items-center gap-2">
             <button onClick={() => { setShowCover(true); setCoverError(null) }} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-container-low text-on-surface font-bold text-xs hover:bg-surface-container transition-colors">
               <span className="material-symbols-outlined text-base">mail</span>
               Cover Letter
@@ -595,7 +595,7 @@ export default function CVGeneratorPage() {
       {/* Content grid */}
       <div className="grid grid-cols-12 gap-4 md:gap-8 items-start">
         {/* CV preview */}
-        <div className="col-span-12 lg:col-span-8 order-2 lg:order-1">
+        <div className="col-span-12 lg:col-span-8 order-1">
           <div ref={previewRef} style={{ fontFamily: FONTS[font] }} className="bg-white rounded-[2rem] cv-preview-shadow overflow-hidden lg:min-h-[800px] flex flex-col border border-surface-container">
             {loading || restoring ? (
               <div className="flex-1 flex flex-col items-center justify-center gap-4 p-16 min-h-[600px]">
@@ -616,7 +616,7 @@ export default function CVGeneratorPage() {
                 <Link href="/candidate/build-profile" className="mt-2 text-sm font-bold text-primary hover:underline">Go to Build Profile →</Link>
               </div>
             ) : (
-              <div className="p-6 sm:p-10 lg:p-12">
+              <div className="p-5 sm:p-8 lg:p-12">
                 {/* Header */}
                 <div className={`flex gap-5 pb-5 ${template === 'Classic' ? 'flex-col items-center text-center' : 'items-start'}`}>
                   {includePhoto && cv.photo_url && (
@@ -657,7 +657,7 @@ export default function CVGeneratorPage() {
         </div>
 
         {/* Sidebar */}
-        <div className="col-span-12 lg:col-span-4 order-1 lg:order-2 lg:sticky lg:top-24 space-y-6">
+        <div className="col-span-12 lg:col-span-4 order-2 lg:sticky lg:top-24 space-y-6">
           {/* ATS strength */}
           <div className="p-6 rounded-3xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white relative overflow-hidden shadow-2xl">
             <div className="relative z-10">

@@ -5,6 +5,20 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Sidebar from '@/components/candidate/Sidebar'
 import SignOutModal from '@/components/candidate/SignOutModal'
+import NotificationsBell from '@/components/candidate/NotificationsBell'
+
+const DAILY_TIPS = [
+  'Use active verbs on your resume.',
+  'Quantify achievements with numbers and metrics.',
+  'Tailor your CV to each job description.',
+  'Research the company before every interview.',
+  'Practice the STAR method for behavioral questions.',
+  'Keep your resume to one page when possible.',
+  'Follow up within 24 hours after an interview.',
+  'Match your skills to the job’s keywords for ATS.',
+  'Prepare 2–3 questions to ask the interviewer.',
+  'Lead with impact, not just responsibilities.',
+]
 
 export default function CandidateLayout({
   children,
@@ -17,6 +31,21 @@ export default function CandidateLayout({
   const [signOutOpen, setSignOutOpen] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
   const [user, setUser] = useState({ name: 'Account', email: '', photo: '' })
+  const [tipIdx, setTipIdx] = useState(0)
+  const [collapsed, setCollapsed] = useState(false)
+
+  useEffect(() => {
+    setTipIdx(new Date().getDate() % DAILY_TIPS.length)
+    const t = setInterval(() => setTipIdx((i) => (i + 1) % DAILY_TIPS.length), 9000)
+    setCollapsed(localStorage.getItem('shai_nav_collapsed') === '1')
+    return () => clearInterval(t)
+  }, [])
+
+  const toggleCollapse = () => setCollapsed((c) => {
+    const next = !c
+    localStorage.setItem('shai_nav_collapsed', next ? '1' : '0')
+    return next
+  })
 
   useEffect(() => {
     const supabase = createClient()
@@ -64,13 +93,15 @@ export default function CandidateLayout({
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:fixed md:left-0 md:top-0 md:h-screen md:w-64 bg-white border-r border-slate-200/70 flex-col p-5 z-[60]">
+      <aside className={`hidden md:flex md:fixed md:left-0 md:top-0 md:h-screen bg-white border-r border-slate-200/70 flex-col z-[60] transition-all duration-300 ${collapsed ? 'md:w-20 p-3' : 'md:w-64 p-5'}`}>
         <Sidebar
           pathname={pathname}
           userName={user.name}
           userEmail={user.email}
           userPhoto={user.photo}
           onSignOutClick={() => setSignOutOpen(true)}
+          collapsed={collapsed}
+          onToggleCollapse={toggleCollapse}
         />
       </aside>
 
@@ -94,7 +125,7 @@ export default function CandidateLayout({
       </aside>
 
       {/* Top bar */}
-      <header className="fixed top-0 right-0 left-0 md:left-64 flex items-center justify-between px-4 md:px-8 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/70 z-50">
+      <header className={`fixed top-0 right-0 left-0 flex items-center justify-between px-4 md:px-8 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/70 z-50 transition-all duration-300 ${collapsed ? 'md:left-20' : 'md:left-64'}`}>
         <div className="flex items-center gap-3">
           {/* Mobile hamburger + logo */}
           <div className="flex md:hidden items-center gap-2">
@@ -113,12 +144,13 @@ export default function CandidateLayout({
           {/* Daily tip */}
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-indigo-50 rounded-full border border-indigo-100">
             <span className="material-symbols-outlined text-indigo-500 text-base">lightbulb</span>
-            <span className="text-xs font-medium text-slate-600">Daily Tip: Use active verbs on your resume.</span>
+            <span key={tipIdx} className="text-xs font-medium text-slate-600 form-slide">Daily Tip: {DAILY_TIPS[tipIdx]}</span>
           </div>
         </div>
 
         {/* Profile */}
         <div className="flex items-center gap-2.5">
+          <NotificationsBell />
           <div className="text-right hidden sm:block">
             <p className="text-xs font-bold text-slate-900 leading-tight">{user.name}</p>
             <p className="text-[10px] text-slate-400 leading-tight">Candidate</p>
@@ -134,7 +166,7 @@ export default function CandidateLayout({
       </header>
 
       {/* Main content */}
-      <main className="md:ml-64 pt-16 min-h-screen">{children}</main>
+      <main className={`pt-16 min-h-screen transition-all duration-300 ${collapsed ? 'md:ml-20' : 'md:ml-64'}`}>{children}</main>
 
       {/* Sign-out confirmation */}
       <SignOutModal

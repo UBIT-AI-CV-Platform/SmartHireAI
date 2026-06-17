@@ -382,16 +382,25 @@ create policy "owner can insert saved_jobs" on public.saved_jobs for insert with
 drop policy if exists "owner can delete saved_jobs" on public.saved_jobs;
 create policy "owner can delete saved_jobs" on public.saved_jobs for delete using (auth.uid() = profile_id);
 
+-- AI Interview Coach chat sessions. messages = [{role:'user'|'assistant', content}]
 create table if not exists public.interview_sessions (
   id         uuid primary key default gen_random_uuid(),
   profile_id uuid not null references public.profiles(id) on delete cascade,
   job_id     uuid references public.jobs(id) on delete set null,
   role       text,
+  title      text,
+  messages   jsonb not null default '[]',
   questions  jsonb,
   feedback   jsonb,
   score      int,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
+
+-- Safe to re-run: add chat columns if the table predates them
+alter table public.interview_sessions add column if not exists title text;
+alter table public.interview_sessions add column if not exists messages jsonb not null default '[]';
+alter table public.interview_sessions add column if not exists updated_at timestamptz not null default now();
 
 create index if not exists interview_sessions_profile_id_idx on public.interview_sessions (profile_id);
 alter table public.interview_sessions enable row level security;
@@ -404,6 +413,11 @@ drop policy if exists "owner can update interviews" on public.interview_sessions
 create policy "owner can update interviews" on public.interview_sessions for update using (auth.uid() = profile_id);
 drop policy if exists "owner can delete interviews" on public.interview_sessions;
 create policy "owner can delete interviews" on public.interview_sessions for delete using (auth.uid() = profile_id);
+
+drop trigger if exists interview_sessions_set_updated_at on public.interview_sessions;
+create trigger interview_sessions_set_updated_at
+  before update on public.interview_sessions
+  for each row execute function public.set_updated_at();
 
 -- ────────────────────────────────────────────────────────────────────────────
 -- 5) STORAGE — avatars bucket (profile photos). Public read, owner-only write.
