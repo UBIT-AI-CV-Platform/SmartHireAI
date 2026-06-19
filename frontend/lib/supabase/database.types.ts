@@ -26,6 +26,8 @@ export type Database = {
           id: string
           job_id: string
           match_score: number | null
+          recruiter_notes: string | null
+          recruiter_rating: number | null
           status: Database["public"]["Enums"]["application_status"]
           updated_at: string
         }
@@ -40,6 +42,8 @@ export type Database = {
           id?: string
           job_id: string
           match_score?: number | null
+          recruiter_notes?: string | null
+          recruiter_rating?: number | null
           status?: Database["public"]["Enums"]["application_status"]
           updated_at?: string
         }
@@ -54,6 +58,8 @@ export type Database = {
           id?: string
           job_id?: string
           match_score?: number | null
+          recruiter_notes?: string | null
+          recruiter_rating?: number | null
           status?: Database["public"]["Enums"]["application_status"]
           updated_at?: string
         }
@@ -175,6 +181,107 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          candidate_email: string | null
+          candidate_id: string
+          candidate_name: string | null
+          candidate_unread: number
+          company: string | null
+          created_at: string
+          id: string
+          job_id: string | null
+          job_title: string | null
+          last_message: string | null
+          last_message_at: string | null
+          last_sender_id: string | null
+          recruiter_email: string | null
+          recruiter_id: string
+          recruiter_name: string | null
+          recruiter_unread: number
+          updated_at: string
+        }
+        Insert: {
+          candidate_email?: string | null
+          candidate_id: string
+          candidate_name?: string | null
+          candidate_unread?: number
+          company?: string | null
+          created_at?: string
+          id?: string
+          job_id?: string | null
+          job_title?: string | null
+          last_message?: string | null
+          last_message_at?: string | null
+          last_sender_id?: string | null
+          recruiter_email?: string | null
+          recruiter_id: string
+          recruiter_name?: string | null
+          recruiter_unread?: number
+          updated_at?: string
+        }
+        Update: {
+          candidate_email?: string | null
+          candidate_id?: string
+          candidate_name?: string | null
+          candidate_unread?: number
+          company?: string | null
+          created_at?: string
+          id?: string
+          job_id?: string | null
+          job_title?: string | null
+          last_message?: string | null
+          last_message_at?: string | null
+          last_sender_id?: string | null
+          recruiter_email?: string | null
+          recruiter_id?: string
+          recruiter_name?: string | null
+          recruiter_unread?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          body: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          is_read: boolean
+          kind: string
+          meta: Json | null
+          sender_id: string
+        }
+        Insert: {
+          body?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          kind?: string
+          meta?: Json | null
+          sender_id: string
+        }
+        Update: {
+          body?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          kind?: string
+          meta?: Json | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
         ]
@@ -397,11 +504,69 @@ export type Database = {
           },
         ]
       }
+      interviews: {
+        Row: {
+          application_id: string | null
+          candidate_id: string
+          candidate_name: string | null
+          created_at: string
+          duration_min: number
+          id: string
+          job_id: string | null
+          job_title: string | null
+          location: string | null
+          meeting_link: string | null
+          notes: string | null
+          recruiter_id: string
+          reminded_at: string | null
+          scheduled_at: string | null
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          application_id?: string | null
+          candidate_id: string
+          candidate_name?: string | null
+          created_at?: string
+          duration_min?: number
+          id?: string
+          job_id?: string | null
+          job_title?: string | null
+          location?: string | null
+          meeting_link?: string | null
+          notes?: string | null
+          recruiter_id: string
+          reminded_at?: string | null
+          scheduled_at?: string | null
+          stage?: string
+          updated_at?: string
+        }
+        Update: {
+          application_id?: string | null
+          candidate_id?: string
+          candidate_name?: string | null
+          created_at?: string
+          duration_min?: number
+          id?: string
+          job_id?: string | null
+          job_title?: string | null
+          location?: string | null
+          meeting_link?: string | null
+          notes?: string | null
+          recruiter_id?: string
+          reminded_at?: string | null
+          scheduled_at?: string | null
+          stage?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           company: string
           created_at: string
           description: string | null
+          expires_at: string | null
           id: string
           is_open: boolean
           location: string | null
@@ -415,6 +580,7 @@ export type Database = {
           company: string
           created_at?: string
           description?: string | null
+          expires_at?: string | null
           id?: string
           is_open?: boolean
           location?: string | null
@@ -428,6 +594,7 @@ export type Database = {
           company?: string
           created_at?: string
           description?: string | null
+          expires_at?: string | null
           id?: string
           is_open?: boolean
           location?: string | null
@@ -479,8 +646,54 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          profile_id: string
+          title: string
+          type: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          profile_id: string
+          title: string
+          type?: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          profile_id?: string
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          company_about: string | null
+          company_industry: string | null
+          company_name: string | null
+          company_size: string | null
+          company_website: string | null
           created_at: string
           date_of_birth: string | null
           desired_role: string | null
@@ -502,6 +715,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          company_about?: string | null
+          company_industry?: string | null
+          company_name?: string | null
+          company_size?: string | null
+          company_website?: string | null
           created_at?: string
           date_of_birth?: string | null
           desired_role?: string | null
@@ -523,6 +741,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          company_about?: string | null
+          company_industry?: string | null
+          company_name?: string | null
+          company_size?: string | null
+          company_website?: string | null
           created_at?: string
           date_of_birth?: string | null
           desired_role?: string | null
@@ -647,7 +870,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_interview_reminders: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      ensure_conversation: {
+        Args: { p_recruiter: string; p_candidate: string; p_job?: string }
+        Returns: string
+      }
+      is_conversation_member: {
+        Args: { p_conversation_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       application_status:

@@ -38,7 +38,7 @@ export async function updateSession(request: NextRequest) {
   // ── Route protection ──────────────────────────────────────────────
   // Signed-out users cannot access the candidate or recruiter portals.
   const path = request.nextUrl.pathname
-  const isProtected = path.startsWith('/candidate') || path.startsWith('/recruiter')
+  const isProtected = path.startsWith('/candidate') || path.startsWith('/recruiter') || path.startsWith('/interview')
   if (!user && isProtected) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth'

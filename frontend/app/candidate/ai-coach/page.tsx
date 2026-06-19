@@ -49,6 +49,7 @@ export default function AICoachPage() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [booting, setBooting] = useState(true)
+  const [bootError, setBootError] = useState(false)
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null)
   const [showScrollDown, setShowScrollDown] = useState(false)
 
@@ -68,9 +69,15 @@ export default function AICoachPage() {
     const w = window as unknown as { SpeechRecognition?: new () => SpeechRecognitionLike; webkitSpeechRecognition?: new () => SpeechRecognitionLike }
     setMicSupported(!!(w.SpeechRecognition || w.webkitSpeechRecognition))
 
-    const supabase = createClient()
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) { setBooting(false); return }
+    loadInit()
+  }, [])
+
+  const loadInit = async () => {
+    setBooting(true); setBootError(false)
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { setBootError(true); setBooting(false); return }
       setUid(user.id)
       const [sesRes, appsRes, profRes] = await Promise.all([
         supabase.from('interview_sessions').select('id, title, role, job_id, messages, updated_at').eq('profile_id', user.id).order('updated_at', { ascending: false }),
@@ -85,9 +92,11 @@ export default function AICoachPage() {
       }
       setAppliedJobs(jobs)
       if (profRes.data?.desired_role) setCustomRole(profRes.data.desired_role)
-      setBooting(false)
-    })
-  }, [])
+    } catch {
+      setBootError(true)
+    }
+    setBooting(false)
+  }
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
@@ -301,7 +310,23 @@ export default function AICoachPage() {
         {/* Messages */}
         <div ref={scrollRef} onScroll={onScroll} className="relative flex-1 overflow-y-auto px-3 md:px-0 py-6">
           <div className="max-w-3xl mx-auto space-y-5">
-            {booting ? null : messages.length === 0 ? (
+            {booting ? (
+              <div className="flex flex-col items-center justify-center gap-3 pt-20">
+                <div className="flex gap-1.5">
+                  <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce"></div>
+                  <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></div>
+                  <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></div>
+                </div>
+                <p className="text-xs font-black text-primary tracking-widest uppercase">Loading coach...</p>
+              </div>
+            ) : bootError ? (
+              <div className="flex flex-col items-center text-center pt-16">
+                <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-4"><span className="material-symbols-outlined text-2xl">cloud_off</span></div>
+                <h3 className="text-lg font-bold text-on-surface mb-1">Couldn’t load the coach</h3>
+                <p className="text-sm text-on-surface-variant max-w-sm mb-4">Something went wrong. Please check your connection and try again.</p>
+                <button onClick={loadInit} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>
+              </div>
+            ) : messages.length === 0 ? (
               <div className="flex flex-col items-center text-center pt-8 md:pt-16">
                 <div className="w-16 h-16 rounded-3xl premium-gradient flex items-center justify-center text-white shadow-xl shadow-primary/20 mb-5">
                   <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>

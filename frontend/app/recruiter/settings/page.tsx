@@ -5,16 +5,15 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
-export default function SettingsPage() {
+export default function RecruiterSettingsPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [email, setEmail] = useState('')
-  const [role, setRole] = useState<string>('candidate')
   const [fullName, setFullName] = useState('')
   const [savingName, setSavingName] = useState(false)
   const [nameMsg, setNameMsg] = useState<string | null>(null)
 
-  // password
   const [pw, setPw] = useState('')
   const [pw2, setPw2] = useState('')
   const [showPw, setShowPw] = useState(false)
@@ -22,7 +21,6 @@ export default function SettingsPage() {
   const [pwMsg, setPwMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
 
   const [signingOut, setSigningOut] = useState(false)
-  const [loadError, setLoadError] = useState(false)
 
   const load = async () => {
     setLoading(true); setLoadError(false)
@@ -31,10 +29,9 @@ export default function SettingsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoadError(true); setLoading(false); return }
       setEmail(user.email || '')
-      const { data, error } = await supabase.from('profiles').select('full_name, role').eq('id', user.id).single()
+      const { data, error } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
       if (error) { setLoadError(true); setLoading(false); return }
       setFullName(data?.full_name || '')
-      setRole(data?.role || 'candidate')
     } catch {
       setLoadError(true)
     }
@@ -108,31 +105,23 @@ export default function SettingsPage() {
       </header>
 
       <div className="space-y-5">
-        {/* Account info */}
         <section className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-5 md:p-6">
           <h2 className="text-base font-bold text-on-surface mb-4 flex items-center gap-2"><span className="material-symbols-outlined text-primary">account_circle</span>Account</h2>
-
           <div className="space-y-4">
             <div>
               <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2 ml-1">Email</label>
               <div className="flex items-center gap-2 px-4 py-3 bg-surface-container-low rounded-2xl text-on-surface-variant font-medium">
-                <span className="material-symbols-outlined text-outline text-lg">mail</span>
-                <span className="truncate">{email}</span>
-                <span className="ml-auto text-[10px] font-bold text-outline uppercase">Locked</span>
+                <span className="material-symbols-outlined text-outline text-lg">mail</span><span className="truncate">{email}</span><span className="ml-auto text-[10px] font-bold text-outline uppercase">Locked</span>
               </div>
             </div>
-
             <div>
               <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2 ml-1">Account type</label>
-              <div className="flex items-center gap-2 px-4 py-3 bg-surface-container-low rounded-2xl text-on-surface font-medium capitalize">
-                <span className="material-symbols-outlined text-primary text-lg">{role === 'recruiter' ? 'work' : 'person'}</span>
-                {role}
-                <span className="ml-auto text-[10px] font-medium text-outline normal-case">One email = one role</span>
+              <div className="flex items-center gap-2 px-4 py-3 bg-surface-container-low rounded-2xl text-on-surface font-medium">
+                <span className="material-symbols-outlined text-primary text-lg">work</span>Recruiter<span className="ml-auto text-[10px] font-medium text-outline normal-case">One email = one role</span>
               </div>
             </div>
-
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2 ml-1">Full name</label>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2 ml-1">Your name</label>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="flex-1 px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface font-medium outline-none" placeholder="Your name" />
                 <button onClick={saveName} disabled={savingName} className="px-5 py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 hover:scale-[1.02] transition-all disabled:opacity-60">
@@ -140,12 +129,11 @@ export default function SettingsPage() {
                 </button>
               </div>
               {nameMsg && <p className={`text-xs font-semibold mt-2 ml-1 ${nameMsg === 'Saved!' ? 'text-green-600' : 'text-red-600'}`}>{nameMsg}</p>}
-              <p className="text-xs text-on-surface-variant mt-2 ml-1">Want to edit your skills, photo, and more? <Link href="/candidate/build-profile" className="text-primary font-semibold hover:underline">Go to Build Profile →</Link></p>
+              <p className="text-xs text-on-surface-variant mt-2 ml-1">Edit your company details and logo? <Link href="/recruiter/company-profile" className="text-primary font-semibold hover:underline">Go to Company Profile →</Link></p>
             </div>
           </div>
         </section>
 
-        {/* Change password */}
         <section className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-5 md:p-6">
           <h2 className="text-base font-bold text-on-surface mb-4 flex items-center gap-2"><span className="material-symbols-outlined text-primary">lock</span>Change Password</h2>
           <div className="space-y-3">
@@ -166,7 +154,6 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Session */}
         <section className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-5 md:p-6">
           <h2 className="text-base font-bold text-on-surface mb-1 flex items-center gap-2"><span className="material-symbols-outlined text-primary">logout</span>Session</h2>
           <p className="text-sm text-on-surface-variant mb-4">Sign out of your account on this device.</p>

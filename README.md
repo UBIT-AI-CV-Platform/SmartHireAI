@@ -59,7 +59,7 @@ SmartHireAI/
 │   └── package.json
 └── backend/                  # Supabase database
     ├── schema.sql            # Full schema: tables + RLS + triggers + storage
-    ├── seed-jobs.sql         # 15 sample jobs for testing the candidate side
+    ├── seed-demo.sql         # optional: demo accounts + profiles + jobs (gitignored)
     └── email-templates/      # Branded OTP + password-reset emails
 ```
 
@@ -93,7 +93,7 @@ GEMINI_API_KEY=your-gemini-api-key
 ### 3. Set up the database
 In the Supabase dashboard → **SQL Editor**, run these in order:
 1. **`backend/schema.sql`** — creates all tables, RLS policies, the signup trigger, and the avatars storage bucket. (Safe to re-run.)
-2. **`backend/seed-jobs.sql`** *(optional)* — inserts 15 sample jobs so the candidate jobs board has content to browse and apply to.
+2. **`backend/seed-demo.sql`** *(optional)* — creates demo recruiter & candidate accounts with full profiles and sample jobs, so you can explore the whole flow immediately.
 
 Then configure Supabase Auth:
 - **URL Configuration** → Site URL `http://localhost:3000`, Redirect URLs `http://localhost:3000/**`
@@ -110,7 +110,7 @@ Open **http://localhost:3000**.
 ---
 
 ## 🧪 Quick Test Flow
-1. Sign up as a **recruiter** → post a job (or run `seed-jobs.sql`).
+1. Sign up as a **recruiter** → post a job.
 2. Sign up as a **candidate** → Build Profile → generate a CV.
 3. Candidate → **Jobs & Applications** → Browse Jobs → **Apply**.
 4. Recruiter → open the job → **Applicants** → view the candidate's CV and update their status.

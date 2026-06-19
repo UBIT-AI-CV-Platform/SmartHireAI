@@ -2,15 +2,16 @@
 
 import Link from 'next/link'
 
-export const candidateNavLinks = [
-  { href: '/candidate', label: 'Overview', icon: 'dashboard' },
-  { href: '/candidate/build-profile', label: 'Build Profile', icon: 'person_edit' },
-  { href: '/candidate/cv-generator', label: 'CV Generator', icon: 'auto_awesome' },
-  { href: '/candidate/my-applications', label: 'Applications', icon: 'work_history' },
-  { href: '/candidate/interviews', label: 'Interviews', icon: 'videocam' },
-  { href: '/candidate/inbox', label: 'Inbox', icon: 'inbox' },
-  { href: '/candidate/ai-coach', label: 'AI Coach', icon: 'psychology' },
-  { href: '/candidate/settings', label: 'Settings', icon: 'settings' },
+export const recruiterNavLinks = [
+  { href: '/recruiter', label: 'Dashboard', icon: 'dashboard' },
+  { href: '/recruiter/jobs', label: 'Jobs', icon: 'work' },
+  { href: '/recruiter/applicants', label: 'Applicants', icon: 'group' },
+  { href: '/recruiter/interviews', label: 'Interviews', icon: 'videocam' },
+  { href: '/recruiter/inbox', label: 'Inbox', icon: 'inbox' },
+  { href: '/recruiter/ai-screening', label: 'AI Tools', icon: 'auto_awesome' },
+  { href: '/recruiter/analytics', label: 'Analytics', icon: 'monitoring' },
+  { href: '/recruiter/company-profile', label: 'Company', icon: 'apartment' },
+  { href: '/recruiter/settings', label: 'Settings', icon: 'settings' },
 ]
 
 interface SidebarProps {
@@ -30,22 +31,24 @@ export default function Sidebar({ pathname, userName, userEmail, userPhoto, onSi
       {userPhoto ? (
         <img src={userPhoto} alt={userName} className="h-full w-full object-cover" />
       ) : (
-        <span className="material-symbols-outlined text-indigo-700 text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
+        <span className="material-symbols-outlined text-indigo-700 text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>work</span>
       )}
     </div>
   )
+
+  const isActive = (href: string) => (href === '/recruiter' ? pathname === href : pathname === href || pathname.startsWith(href + '/'))
 
   return (
     <div className="flex flex-col h-full">
       {/* Brand */}
       <div className={`flex items-center mb-6 px-1 ${collapsed ? 'flex-col gap-2' : 'gap-3'}`}>
         <div className="w-10 h-10 premium-gradient rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/25 flex-shrink-0">
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>work</span>
         </div>
         {!collapsed && (
           <div className="flex-1 min-w-0">
             <h1 className="text-base font-black text-slate-900 leading-tight tracking-tight truncate">SmartHire AI</h1>
-            <p className="text-[11px] font-medium text-slate-400">Candidate Portal</p>
+            <p className="text-[11px] font-medium text-slate-400">Recruiter Portal</p>
           </div>
         )}
         {onToggleCollapse && (
@@ -57,8 +60,8 @@ export default function Sidebar({ pathname, userName, userEmail, userPhoto, onSi
 
       {/* Navigation */}
       <nav className="flex-1 space-y-0.5 overflow-y-auto -mr-2 pr-2">
-        {candidateNavLinks.map((link) => {
-          const isActive = pathname === link.href
+        {recruiterNavLinks.map((link) => {
+          const active = isActive(link.href)
           return (
             <Link
               key={link.href}
@@ -66,10 +69,10 @@ export default function Sidebar({ pathname, userName, userEmail, userPhoto, onSi
               onClick={onLinkClick}
               title={collapsed ? link.label : undefined}
               className={`group flex items-center rounded-xl text-[13px] font-semibold transition-all duration-200 ${collapsed ? 'justify-center px-2.5 py-2.5' : 'gap-3 px-3 py-2'} ${
-                isActive ? 'bg-gradient-to-r from-[#3525cd] to-[#712ae2] text-white shadow-lg shadow-primary/25' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                active ? 'bg-gradient-to-r from-[#3525cd] to-[#712ae2] text-white shadow-lg shadow-primary/25' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <span className="material-symbols-outlined text-[19px]" style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}>{link.icon}</span>
+              <span className="material-symbols-outlined text-[19px]" style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}>{link.icon}</span>
               {!collapsed && <span className="truncate">{link.label}</span>}
             </Link>
           )
