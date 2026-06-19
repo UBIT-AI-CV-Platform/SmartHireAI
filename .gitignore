@@ -38,6 +38,9 @@ next.user-config.*
 # npm lockfile (this project uses pnpm — keep pnpm-lock.yaml only)
 package-lock.json
 
+# Demo seed contains a plaintext demo password — keep it local
+backend/seed-demo.sql
+
 # Logs
 *.log
 npm-debug.log*

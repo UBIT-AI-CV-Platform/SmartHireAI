@@ -70,6 +70,8 @@ export default function CandidateLayout({
         email: user.email || '',
         photo: profile?.photo_url || '',
       })
+      // send any due "upcoming interview" reminders (one-time per interview)
+      supabase.rpc('generate_interview_reminders')
     })
     // re-fetch when navigating between candidate pages (e.g. after updating photo)
   }, [pathname])
