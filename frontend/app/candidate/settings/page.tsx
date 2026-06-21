@@ -22,18 +22,26 @@ export default function SettingsPage() {
   const [pwMsg, setPwMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
 
   const [signingOut, setSigningOut] = useState(false)
+  const [loadError, setLoadError] = useState(false)
 
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) { setLoading(false); return }
+  const load = async () => {
+    setLoading(true); setLoadError(false)
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { setLoadError(true); setLoading(false); return }
       setEmail(user.email || '')
-      const { data } = await supabase.from('profiles').select('full_name, role').eq('id', user.id).single()
+      const { data, error } = await supabase.from('profiles').select('full_name, role').eq('id', user.id).single()
+      if (error) { setLoadError(true); setLoading(false); return }
       setFullName(data?.full_name || '')
       setRole(data?.role || 'candidate')
-      setLoading(false)
-    })
-  }, [])
+    } catch {
+      setLoadError(true)
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => { load() }, [])
 
   const saveName = async () => {
     if (!fullName.trim()) { setNameMsg('Name cannot be empty.'); return }
@@ -75,6 +83,19 @@ export default function SettingsPage() {
           <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></div>
         </div>
         <p className="text-xs font-black text-primary tracking-widest uppercase">Loading settings...</p>
+      </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <div className="p-4 md:p-8 lg:p-10 max-w-3xl mx-auto">
+        <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
+          <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn’t load settings</h2>
+          <p className="text-sm text-on-surface-variant max-w-md mb-4">Something went wrong reaching the server. Please try again.</p>
+          <button onClick={load} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>
+        </div>
       </div>
     )
   }

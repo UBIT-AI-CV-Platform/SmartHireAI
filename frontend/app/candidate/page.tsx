@@ -46,6 +46,7 @@ const timeAgo = (iso: string) => {
 
 export default function OverviewPage() {
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [prof, setProf] = useState<{ fullName: string; first: string; photo: string | null; summary: boolean; desiredRole: string | null; location: string | null }>({ fullName: '', first: '', photo: null, summary: false, desiredRole: null, location: null })
   const [skills, setSkills] = useState<string[]>([])
   const [eduCount, setEduCount] = useState(0)
@@ -57,10 +58,12 @@ export default function OverviewPage() {
   const [sessionCount, setSessionCount] = useState(0)
   const [jobs, setJobs] = useState<Job[]>([])
 
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) { setLoading(false); return }
+  const load = async () => {
+    setLoading(true); setLoadError(false)
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { setLoadError(true); setLoading(false); return }
       const [p, sk, edu, appsRes, cvs, saved, covers, sess, jobsRes] = await Promise.all([
         supabase.from('profiles').select('full_name, photo_url, summary, desired_role, location').eq('id', user.id).single(),
         supabase.from('skills').select('name').eq('profile_id', user.id),
@@ -84,9 +87,13 @@ export default function OverviewPage() {
       setCoverCount(covers.count ?? 0)
       setSessionCount(sess.count ?? 0)
       setJobs((jobsRes.data as Job[]) ?? [])
-      setLoading(false)
-    })
-  }, [])
+    } catch {
+      setLoadError(true)
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => { load() }, [])
 
   const activeApps = useMemo(() => apps.filter((a) => a.status !== 'withdrawn'), [apps])
   const statusCounts = useMemo(() => {
@@ -129,6 +136,19 @@ export default function OverviewPage() {
           <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></div>
         </div>
         <p className="text-xs font-black text-primary tracking-widest uppercase">Loading your dashboard...</p>
+      </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <div className="p-4 md:p-8 max-w-7xl mx-auto">
+        <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
+          <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn’t load your dashboard</h2>
+          <p className="text-sm text-on-surface-variant max-w-md mb-4">Something went wrong reaching the server. Check your connection and try again.</p>
+          <button onClick={load} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>
+        </div>
       </div>
     )
   }

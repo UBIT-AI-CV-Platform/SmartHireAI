@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { pickGeminiKey } from '@/lib/gemini'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -26,8 +27,8 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'You must be signed in.' }, { status: 401 })
 
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return NextResponse.json({ error: 'AI is not configured. Add GEMINI_API_KEY to .env.local.' }, { status: 500 })
+  const apiKey = pickGeminiKey()
+  if (!apiKey) return NextResponse.json({ error: 'AI is not configured. Add GEMINI_API_KEY or GEMINI_API_KEYS to .env.local.' }, { status: 500 })
 
   const [p, sk, ed, pr, ce] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
