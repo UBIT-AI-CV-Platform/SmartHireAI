@@ -76,9 +76,6 @@ export async function POST(request: Request) {
   }
 
   // ── DRAFT with AI ──────────────────────────────────────────────────────────
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return NextResponse.json({ error: 'AI is not configured. Add GEMINI_API_KEY to .env.local.' }, { status: 500 })
-
   const userPrompt = `Email type: ${KIND_PROMPT[kind]}
 Candidate name: ${app.candidate_name || 'the candidate'}
 Role: ${job.title}
@@ -86,7 +83,7 @@ Company: ${job.company}
 Sign off as: ${fromName}`
 
   try {
-    const text = await geminiGenerate(apiKey, {
+    const text = await geminiGenerate({
       system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
       generationConfig: { temperature: 0.8 },

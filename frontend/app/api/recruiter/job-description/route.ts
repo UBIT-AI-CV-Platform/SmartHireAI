@@ -25,16 +25,13 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'You must be signed in.' }, { status: 401 })
 
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return NextResponse.json({ error: 'AI is not configured. Add GEMINI_API_KEY to .env.local.' }, { status: 500 })
-
   const userPrompt = `Job title: ${title}
 ${company ? `Company: ${company}` : ''}
 ${skills ? `Required skills: ${skills}` : ''}
 ${notes ? `Extra notes: ${notes}` : ''}`
 
   try {
-    const text = await geminiGenerate(apiKey, {
+    const text = await geminiGenerate({
       system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
       generationConfig: { temperature: 0.8 },

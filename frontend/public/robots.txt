@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Allow: /auth/login
+Allow: /auth/signup
+
+# Auth-protected areas — nothing to index here
+Disallow: /candidate/
+Disallow: /recruiter/
+Disallow: /interview/
+Disallow: /api/
+
+Sitemap: /sitemap.xml

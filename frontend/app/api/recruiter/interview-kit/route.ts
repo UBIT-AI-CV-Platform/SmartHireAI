@@ -55,9 +55,6 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'You must be signed in.' }, { status: 401 })
 
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return NextResponse.json({ error: 'AI is not configured. Add GEMINI_API_KEY to .env.local.' }, { status: 500 })
-
   const { data: job } = await supabase.from('jobs').select('title, company, location, skills, description, recruiter_id').eq('id', jobId).single()
   if (!job) return NextResponse.json({ error: 'Job not found.' }, { status: 404 })
   if (job.recruiter_id !== user.id) return NextResponse.json({ error: 'Not your job.' }, { status: 403 })
@@ -68,7 +65,7 @@ Required skills: ${(job.skills ?? []).join(', ') || '—'}
 Description: ${job.description || '—'}`
 
   try {
-    const text = await geminiGenerate(apiKey, {
+    const text = await geminiGenerate({
       system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
       generationConfig: { temperature: 0.7, responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA },
