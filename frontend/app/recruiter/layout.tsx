@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import Sidebar from '@/components/recruiter/Sidebar'
 import SignOutModal from '@/components/candidate/SignOutModal'
@@ -95,7 +96,7 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
           </div>
           <div className="h-9 w-9 rounded-full bg-indigo-100 flex items-center justify-center border-2 border-white shadow-sm overflow-hidden">
             {user.photo ? (
-              <img src={user.photo} alt={user.name} className="h-full w-full object-cover" />
+              <Image src={user.photo} alt={user.name} width={36} height={36} className="h-full w-full object-cover" />
             ) : (
               <span className="material-symbols-outlined text-indigo-700 text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>work</span>
             )}

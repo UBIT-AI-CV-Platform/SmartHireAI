@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const candidateNavLinks = [
   { href: '/candidate', label: 'Overview', icon: 'dashboard' },
@@ -28,7 +29,7 @@ export default function Sidebar({ pathname, userName, userEmail, userPhoto, onSi
   const avatar = (
     <div className="h-9 w-9 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
       {userPhoto ? (
-        <img src={userPhoto} alt={userName} className="h-full w-full object-cover" />
+        <Image src={userPhoto} alt={userName} width={36} height={36} className="h-full w-full object-cover" />
       ) : (
         <span className="material-symbols-outlined text-indigo-700 text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
       )}
