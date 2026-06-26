@@ -88,7 +88,8 @@ export default function NotificationsBell({ basePath = '/candidate' }: { basePat
     if (!uid || unread === 0) return
     setNotifs((ns) => ns.map((n) => ({ ...n, is_read: true })))
     const supabase = createClient()
-    await supabase.from('notifications').update({ is_read: true }).eq('profile_id', uid).eq('is_read', false)
+    const { error } = await supabase.from('notifications').update({ is_read: true }).eq('profile_id', uid).eq('is_read', false)
+    if (error) console.error('markAllRead failed:', error.message)
   }
 
   const openNotif = async (n: Notif) => {
@@ -96,7 +97,8 @@ export default function NotificationsBell({ basePath = '/candidate' }: { basePat
     if (!n.is_read) {
       setNotifs((ns) => ns.map((x) => (x.id === n.id ? { ...x, is_read: true } : x)))
       const supabase = createClient()
-      await supabase.from('notifications').update({ is_read: true }).eq('id', n.id)
+      const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', n.id)
+      if (error) console.error('markRead failed:', error.message)
     }
     if (n.link) router.push(n.link)
   }

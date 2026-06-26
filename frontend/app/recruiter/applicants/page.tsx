@@ -69,10 +69,15 @@ export default function ApplicantsPage() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoadError(true); setLoading(false); return }
-      const { data, error } = await supabase
-        .from('applications')
-        .select('id, status, match_score, applied_at, candidate_name, candidate_email, cv_snapshot, recruiter_rating, recruiter_notes, job:jobs(id, title, company)')
-        .order('applied_at', { ascending: false })
+      const { data: jobsData } = await supabase.from('jobs').select('id').eq('recruiter_id', user.id)
+      const jobIds = (jobsData ?? []).map((j) => j.id)
+      const { data, error } = jobIds.length
+        ? await supabase
+            .from('applications')
+            .select('id, status, match_score, applied_at, candidate_name, candidate_email, cv_snapshot, recruiter_rating, recruiter_notes, job:jobs(id, title, company)')
+            .in('job_id', jobIds)
+            .order('applied_at', { ascending: false })
+        : { data: [], error: null }
       if (error) { setLoadError(true); setLoading(false); return }
       setApps((data as unknown as Applicant[]) ?? [])
     } catch { setLoadError(true) }

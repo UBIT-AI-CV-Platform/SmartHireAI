@@ -120,7 +120,7 @@ export default function BuildProfilePage() {
       linkedin: form.linkedin || null, linkedin_url: form.linkedin_url || null,
       github: form.github || null, github_url: form.github_url || null,
       discord: form.discord || null, discord_url: form.discord_url || null,
-      summary: form.summary || null, photo_url: profilePhoto || null,
+      summary: form.summary || null, photo_url: profilePhoto ? profilePhoto.split('?')[0] : null,
     }).eq('id', userId)
     setSaving(false)
     if (error) { alert(error.message); return }
@@ -157,16 +157,19 @@ export default function BuildProfilePage() {
     const { error } = await supabase.storage.from('avatars').upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
     if (error) { alert(error.message); setCropSrc(null); return }
     const { data } = supabase.storage.from('avatars').getPublicUrl(path)
-    const url = `${data.publicUrl}?t=${new Date().getTime()}`
-    setProfilePhoto(url)
-    await supabase.from('profiles').update({ photo_url: url }).eq('id', userId)
+    const url = data.publicUrl
+    // Cache-buster only for immediate on-screen refresh; the DB keeps the clean URL.
+    setProfilePhoto(`${url}?t=${new Date().getTime()}`)
+    const { error: urlErr } = await supabase.from('profiles').update({ photo_url: url }).eq('id', userId)
+    if (urlErr) console.error('photo_url update failed:', urlErr.message)
     setCropSrc(null)
   }
 
   const handleRemovePhoto = async () => {
     if (!userId) return
     setProfilePhoto(null)
-    await supabase.from('profiles').update({ photo_url: null }).eq('id', userId)
+    const { error: urlErr } = await supabase.from('profiles').update({ photo_url: null }).eq('id', userId)
+    if (urlErr) console.error('photo_url remove failed:', urlErr.message)
     await supabase.storage.from('avatars').remove([`${userId}/avatar.jpg`])
   }
 
@@ -189,7 +192,8 @@ export default function BuildProfilePage() {
   }
   const editSkill = (s: Skill) => { setSkillInput(s.name); setEditingSkillId(s.id); setShowSkillInput(true) }
   const removeSkill = async (id: number) => {
-    await supabase.from('skills').delete().eq('id', id)
+    const { error } = await supabase.from('skills').delete().eq('id', id)
+    if (error) { console.error('removeSkill failed:', error.message); return }
     setSkills(skills.filter((s) => s.id !== id))
   }
   const cancelSkill = () => { setShowSkillInput(false); setEditingSkillId(null); setSkillInput('') }
@@ -213,7 +217,8 @@ export default function BuildProfilePage() {
   }
   const editLanguage = (l: Language) => { setLanguageInput(l.name); setLanguageLevelInput(l.level); setEditingLanguageId(l.id); setShowLanguageInput(true) }
   const removeLanguage = async (id: number) => {
-    await supabase.from('languages').delete().eq('id', id)
+    const { error } = await supabase.from('languages').delete().eq('id', id)
+    if (error) { console.error('removeLanguage failed:', error.message); return }
     setLanguages(languages.filter((l) => l.id !== id))
   }
   const cancelLanguage = () => { setShowLanguageInput(false); setEditingLanguageId(null); setLanguageInput(''); setLanguageLevelInput('Fluent') }

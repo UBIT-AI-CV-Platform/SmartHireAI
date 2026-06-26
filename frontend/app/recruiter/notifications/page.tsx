@@ -60,20 +60,23 @@ export default function RecruiterNotificationsPage() {
     if (!uid || unreadCount === 0) return
     setNotifs((ns) => ns.map((n) => ({ ...n, is_read: true })))
     const supabase = createClient()
-    await supabase.from('notifications').update({ is_read: true }).eq('profile_id', uid).eq('is_read', false)
+    const { error } = await supabase.from('notifications').update({ is_read: true }).eq('profile_id', uid).eq('is_read', false)
+    if (error) console.error('markAllRead failed:', error.message)
   }
 
   const toggleRead = async (n: Notif) => {
     const next = !n.is_read
     setNotifs((ns) => ns.map((x) => (x.id === n.id ? { ...x, is_read: next } : x)))
     const supabase = createClient()
-    await supabase.from('notifications').update({ is_read: next }).eq('id', n.id)
+    const { error } = await supabase.from('notifications').update({ is_read: next }).eq('id', n.id)
+    if (error) console.error('toggleRead failed:', error.message)
   }
 
   const remove = async (n: Notif) => {
     setNotifs((ns) => ns.filter((x) => x.id !== n.id))
     const supabase = createClient()
-    await supabase.from('notifications').delete().eq('id', n.id)
+    const { error } = await supabase.from('notifications').delete().eq('id', n.id)
+    if (error) console.error('deleteNotif failed:', error.message)
   }
 
   const openNotif = async (n: Notif) => {

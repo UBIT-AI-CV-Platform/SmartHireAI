@@ -5,7 +5,7 @@ import { pickGeminiKey } from '@/lib/gemini'
 export const runtime = 'nodejs'
 export const maxDuration = 60
 
-const GEMINI_MODEL = 'gemini-2.5-flash'
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 
 const SYSTEM_PROMPT = `You are an expert career writer. Write a professional, compelling cover letter for the candidate.
 
@@ -72,7 +72,8 @@ ${profileText}`
     )
     if (!res.ok) {
       const errText = await res.text()
-      return NextResponse.json({ error: `AI request failed: ${errText.slice(0, 300)}` }, { status: 502 })
+      console.error('Gemini API error (generate-cover-letter):', errText.slice(0, 500))
+      return NextResponse.json({ error: 'Something went wrong generating your cover letter. Please try again.' }, { status: 502 })
     }
     const data = await res.json()
     const letter = data?.candidates?.[0]?.content?.parts?.[0]?.text

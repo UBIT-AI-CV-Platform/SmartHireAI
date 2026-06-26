@@ -2,7 +2,6 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import Sidebar from '@/components/candidate/Sidebar'
 import SignOutModal from '@/components/candidate/SignOutModal'
@@ -34,6 +33,7 @@ export default function CandidateLayout({
   const [user, setUser] = useState({ name: 'Account', email: '', photo: '' })
   const [tipIdx, setTipIdx] = useState(0)
   const [collapsed, setCollapsed] = useState(false)
+  const [ready, setReady] = useState(false)
 
   useEffect(() => {
     setTipIdx(new Date().getDate() % DAILY_TIPS.length)
@@ -71,6 +71,7 @@ export default function CandidateLayout({
         email: user.email || '',
         photo: profile?.photo_url || '',
       })
+      setReady(true)
       // send any due "upcoming interview" reminders (one-time per interview)
       supabase.rpc('generate_interview_reminders')
     })
@@ -160,7 +161,7 @@ export default function CandidateLayout({
           </div>
           <div className="h-9 w-9 rounded-full bg-indigo-100 flex items-center justify-center border-2 border-white shadow-sm overflow-hidden">
             {user.photo ? (
-              <Image src={user.photo} alt={user.name} width={36} height={36} className="h-full w-full object-cover" />
+              <img src={user.photo} alt={user.name} className="h-full w-full object-cover" />
             ) : (
               <span className="material-symbols-outlined text-indigo-700 text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
             )}
@@ -169,7 +170,15 @@ export default function CandidateLayout({
       </header>
 
       {/* Main content */}
-      <main className={`pt-16 min-h-screen transition-all duration-300 ${collapsed ? 'md:ml-20' : 'md:ml-64'}`}>{children}</main>
+      <main className={`pt-16 min-h-screen transition-all duration-300 ${collapsed ? 'md:ml-20' : 'md:ml-64'}`}>
+        {ready ? children : (
+          <div className="flex items-center justify-center py-32 gap-1.5">
+            <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce" />
+            <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
+            <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
+          </div>
+        )}
+      </main>
 
       {/* Sign-out confirmation */}
       <SignOutModal
