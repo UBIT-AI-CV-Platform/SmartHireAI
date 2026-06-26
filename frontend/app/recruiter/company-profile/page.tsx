@@ -77,9 +77,11 @@ export default function CompanyProfilePage() {
     const { error } = await supabase.storage.from('avatars').upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
     if (!error) {
       const { data } = supabase.storage.from('avatars').getPublicUrl(path)
-      const url = `${data.publicUrl}?t=${Date.now()}`
-      await supabase.from('profiles').update({ photo_url: url }).eq('id', uid)
-      setPhoto(url)
+      const url = data.publicUrl
+      const { error: urlErr } = await supabase.from('profiles').update({ photo_url: url }).eq('id', uid)
+      if (urlErr) { console.error('photo_url update failed:', urlErr.message) }
+      // Cache-buster only for immediate on-screen refresh; the DB keeps the clean URL.
+      setPhoto(`${url}?t=${Date.now()}`)
     } else {
       setMsg({ type: 'err', text: 'Could not upload the logo. Please try again.' })
     }

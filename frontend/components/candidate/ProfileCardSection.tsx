@@ -6,11 +6,13 @@ import { createClient } from '@/lib/supabase/client'
 type Field = { key: string; label: string; placeholder?: string; type?: 'text' | 'textarea'; full?: boolean }
 export type CardRow = { id: number; [key: string]: unknown }
 
+type ProfileTable = 'skills' | 'languages' | 'education' | 'certifications' | 'courses' | 'awards' | 'projects' | 'custom_sections'
+
 interface ProfileCardSectionProps {
   title: string
   icon: string
   addLabel: string
-  table: string
+  table: ProfileTable
   profileId: string | null
   fields: Field[]
   requiredKeys: string[]
@@ -31,6 +33,7 @@ export default function ProfileCardSection({
   const [editingId, setEditingId] = useState<number | null>(null)
   const [data, setData] = useState<Record<string, string>>(blank())
   const [busy, setBusy] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const openAdd = () => { setEditingId(null); setData(blank()); setShowForm(true) }
   const openEdit = (item: CardRow) => {
@@ -44,15 +47,17 @@ export default function ProfileCardSection({
 
   const save = async () => {
     if (!canSave || !profileId) return
-    setBusy(true)
+    setBusy(true); setSaveError(null)
     const payload: Record<string, unknown> = {}
     fields.forEach((f) => { payload[f.key] = (data[f.key] || '').trim() || null })
 
     if (editingId) {
-      const { data: updated } = await supabase.from(table).update(payload).eq('id', editingId).select().single()
+      const { data: updated, error } = await supabase.from(table).update(payload as never).eq('id', editingId).select().single()
+      if (error) { setBusy(false); setSaveError('Could not save. Please try again.'); return }
       if (updated) setItems(items.map((it) => (it.id === editingId ? (updated as CardRow) : it)))
     } else {
-      const { data: inserted } = await supabase.from(table).insert({ profile_id: profileId, ...payload }).select().single()
+      const { data: inserted, error } = await supabase.from(table).insert({ profile_id: profileId, ...payload } as never).select().single()
+      if (error) { setBusy(false); setSaveError('Could not save. Please try again.'); return }
       if (inserted) setItems([...items, inserted as CardRow])
     }
     setBusy(false)
@@ -60,7 +65,8 @@ export default function ProfileCardSection({
   }
 
   const remove = async (id: number) => {
-    await supabase.from(table).delete().eq('id', id)
+    const { error } = await supabase.from(table).delete().eq('id', id)
+    if (error) { console.error('Delete failed:', error.message); return }
     setItems(items.filter((it) => it.id !== id))
   }
 
@@ -107,6 +113,7 @@ export default function ProfileCardSection({
               </div>
             ))}
           </div>
+          {saveError && <p className="text-xs font-semibold text-red-600">{saveError}</p>}
           <div className="flex justify-end gap-3">
             <button onClick={close} className="px-4 md:px-6 py-2 border border-outline-variant/30 bg-surface-container-low text-on-surface-variant text-xs md:text-sm font-bold rounded-xl hover:bg-surface-variant transition-colors">Cancel</button>
             <button onClick={save} disabled={!canSave || busy} className="px-4 md:px-6 py-2 bg-primary text-white text-xs md:text-sm font-bold rounded-xl shadow-md hover:opacity-90 transition-opacity disabled:opacity-50">

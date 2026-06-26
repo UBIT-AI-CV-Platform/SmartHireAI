@@ -46,12 +46,15 @@ export default function RecruiterDashboard() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoadError(true); setLoading(false); return }
-      const [prof, jobsRes, appsRes] = await Promise.all([
+      const [prof, jobsRes] = await Promise.all([
         supabase.from('profiles').select('full_name, company_name').eq('id', user.id).single(),
         supabase.from('jobs').select('id, title, company, is_open, created_at, expires_at').eq('recruiter_id', user.id).order('created_at', { ascending: false }),
-        supabase.from('applications').select('id, status, match_score, applied_at, candidate_name, job:jobs(id, title)').order('applied_at', { ascending: false }),
       ])
       if (jobsRes.error) { setLoadError(true); setLoading(false); return }
+      const jobIds = (jobsRes.data ?? []).map((j) => j.id)
+      const appsRes = jobIds.length
+        ? await supabase.from('applications').select('id, status, match_score, applied_at, candidate_name, job:jobs(id, title)').in('job_id', jobIds).order('applied_at', { ascending: false })
+        : { data: [] }
       setName(prof.data?.full_name || user.email?.split('@')[0] || 'Recruiter')
       setCompany(prof.data?.company_name || '')
       setJobs((jobsRes.data as Job[]) ?? [])

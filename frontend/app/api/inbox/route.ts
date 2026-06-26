@@ -16,10 +16,10 @@ async function sendMail(to: string, subject: string, html: string, fromName: str
   if (!user || !pass || !to) return false
   const transporter = nodemailer.createTransport({
     host, port, secure: port === 465, auth: { user, pass },
-    tls: { rejectUnauthorized: false },
+    tls: { rejectUnauthorized: process.env.NODE_ENV === 'production' },
   })
   const info = await transporter.sendMail({ from: `"${fromName}" <${user}>`, to, subject, html })
-  console.log('[inbox] email sent:', info.messageId, '→', to)
+  console.log('[inbox] email sent:', info.messageId)
   return true
 }
 

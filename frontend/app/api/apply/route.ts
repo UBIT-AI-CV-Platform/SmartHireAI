@@ -24,13 +24,11 @@ async function sendConfirmation(to: string, opts: { name: string; jobTitle: stri
     port,
     secure: port === 465,
     auth: { user, pass },
-    // Tolerate TLS-intercepting antivirus/proxies common on dev machines
-    // (otherwise sending fails with "self-signed certificate in certificate chain").
-    tls: { rejectUnauthorized: false },
+    tls: { rejectUnauthorized: process.env.NODE_ENV === 'production' },
   })
   const { subject, html } = applicationConfirmationEmail(opts)
   const info = await transporter.sendMail({ from: `"SmartHire AI" <${user}>`, to, subject, html })
-  console.log('[apply] confirmation email sent:', info.messageId, '→', to)
+  console.log('[apply] confirmation email sent:', info.messageId)
   return true
 }
 

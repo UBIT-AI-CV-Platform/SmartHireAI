@@ -1,10 +1,26 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
+  const [dashboardHref, setDashboardHref] = useState('/auth')
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, role_selected')
+        .eq('id', user.id)
+        .single()
+      if (!profile || !profile.role_selected) setDashboardHref('/auth/select-role')
+      else setDashboardHref(profile.role === 'recruiter' ? '/recruiter' : '/candidate')
+    })
+  }, [])
 
   const toggleMobileMenu = () => {
     if (mobileMenuOpen) {
@@ -38,7 +54,7 @@ export default function Navigation() {
 
         {/* Desktop Nav */}
         <div className="hidden lg:flex items-center gap-6 xl:gap-8 ml-auto mr-8 font-sans antialiased text-sm font-medium tracking-tight">
-          <a className="nav-link text-slate-600 hover:text-indigo-600 transition-colors duration-300" href="/auth">
+          <a className="nav-link text-slate-600 hover:text-indigo-600 transition-colors duration-300" href={dashboardHref}>
             Dashboard
           </a>
           <a className="nav-link text-slate-600 hover:text-indigo-600 transition-colors duration-300" href="#features" onClick={(e) => {
@@ -53,10 +69,10 @@ export default function Navigation() {
           }}>
             How It Works
           </a>
-          <a className="nav-link text-slate-600 hover:text-indigo-600 transition-colors duration-300" href="/auth">
+          <a className="nav-link text-slate-600 hover:text-indigo-600 transition-colors duration-300" href={dashboardHref}>
             For Candidates
           </a>
-          <a className="nav-link text-slate-600 hover:text-indigo-600 transition-colors duration-300" href="/auth">
+          <a className="nav-link text-slate-600 hover:text-indigo-600 transition-colors duration-300" href={dashboardHref}>
             For Recruiters
           </a>
           <a className="nav-link text-slate-600 hover:text-indigo-600 transition-colors duration-300" href="#faq" onClick={(e) => {
@@ -71,7 +87,7 @@ export default function Navigation() {
         <div className="flex items-center gap-2 sm:gap-4 lg:ml-0 ml-auto">
           <div className="hidden sm:flex items-center gap-4 mr-2 sm:mr-0">
             <a 
-              href="/auth"
+              href={dashboardHref}
               className="premium-gradient text-white border-2 border-transparent px-5 md:px-6 py-2 rounded-full text-sm font-semibold transition-all hover:bg-none hover:bg-[#6366f1] hover:border-[#6366f1] shadow-lg shadow-primary/20 inline-block">
               Sign Up
             </a>
@@ -98,7 +114,7 @@ export default function Navigation() {
             : 'animate-in slide-in-from-top-4 duration-500'
         }`}>
           <div className="flex flex-col items-center justify-center py-6 px-4 w-full text-center gap-4">
-            <a className="nav-link text-slate-800 font-semibold text-base hover:text-primary transition-colors" href="/auth">
+            <a className="nav-link text-slate-800 font-semibold text-base hover:text-primary transition-colors" href={dashboardHref}>
               Dashboard
             </a>
             <a className="nav-link text-slate-800 font-semibold text-base hover:text-primary transition-colors" href="#features" onClick={(e) => {
@@ -115,10 +131,10 @@ export default function Navigation() {
             }}>
               How It Works
             </a>
-            <a className="nav-link text-slate-800 font-semibold text-base hover:text-primary transition-colors" href="/auth">
+            <a className="nav-link text-slate-800 font-semibold text-base hover:text-primary transition-colors" href={dashboardHref}>
               For Candidates
             </a>
-            <a className="nav-link text-slate-800 font-semibold text-base hover:text-primary transition-colors" href="/auth">
+            <a className="nav-link text-slate-800 font-semibold text-base hover:text-primary transition-colors" href={dashboardHref}>
               For Recruiters
             </a>
             <a className="nav-link text-slate-800 font-semibold text-base hover:text-primary transition-colors" href="#faq" onClick={(e) => {
@@ -130,7 +146,7 @@ export default function Navigation() {
             </a>
             <div className="w-full h-px bg-slate-100 my-2"></div>
             <div className="flex flex-col gap-2 w-full max-w-xs sm:hidden">
-              <a href="/auth" className="w-full premium-gradient text-white py-2.5 rounded-lg font-semibold shadow-lg shadow-primary/20 transition-all border-2 border-transparent hover:bg-none hover:bg-[#6366f1] hover:border-[#6366f1] block text-center text-sm">
+              <a href={dashboardHref} className="w-full premium-gradient text-white py-2.5 rounded-lg font-semibold shadow-lg shadow-primary/20 transition-all border-2 border-transparent hover:bg-none hover:bg-[#6366f1] hover:border-[#6366f1] block text-center text-sm">
                 Sign Up
               </a>
             </div>

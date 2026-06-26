@@ -262,7 +262,11 @@ export default function Inbox({ role }: { role: Role }) {
   const openNew = async () => {
     setShowNew(true)
     if (isRecruiter) {
-      const { data } = await supabase.from('applications').select('candidate_id, candidate_name, job_id, job:jobs(title)').order('applied_at', { ascending: false })
+      const { data: jobsData } = await supabase.from('jobs').select('id').eq('recruiter_id', uid)
+      const jobIds = (jobsData ?? []).map((j) => j.id)
+      const { data } = jobIds.length
+        ? await supabase.from('applications').select('candidate_id, candidate_name, job_id, job:jobs(title)').in('job_id', jobIds).order('applied_at', { ascending: false })
+        : { data: [] }
       const seen = new Set<string>(); const items: NewItem[] = []
       ;((data as unknown as { candidate_id: string; candidate_name: string | null; job_id: string; job: { title: string } | null }[]) ?? []).forEach((a) => {
         if (seen.has(a.candidate_id)) return; seen.add(a.candidate_id)

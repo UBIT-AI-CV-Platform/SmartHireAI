@@ -65,7 +65,8 @@ export default function RecruiterInterviewsPage() {
   const setStage = async (iv: Interview, stage: Stage) => {
     setInterviews((list) => list.map((x) => (x.id === iv.id ? { ...x, stage } : x)))
     const supabase = createClient()
-    await supabase.from('interviews').update({ stage }).eq('id', iv.id)
+    const { error } = await supabase.from('interviews').update({ stage }).eq('id', iv.id)
+    if (error) { console.error('setStage failed:', error.message); setInterviews((list) => list.map((x) => (x.id === iv.id ? { ...x, stage: iv.stage } : x))); return }
     // keep the application pipeline in sync
     if (iv.application_id) {
       const appStatus = stage === 'offer' || stage === 'offer_accepted' || stage === 'offer_declined' ? 'offer' : stage === 'rejected' ? 'rejected' : null
@@ -75,8 +76,9 @@ export default function RecruiterInterviewsPage() {
 
   const removeIv = async (iv: Interview) => {
     if (!window.confirm('Delete this interview record?')) return
+    const { error } = await createClient().from('interviews').delete().eq('id', iv.id)
+    if (error) { console.error('removeIv failed:', error.message); return }
     setInterviews((list) => list.filter((x) => x.id !== iv.id))
-    await createClient().from('interviews').delete().eq('id', iv.id)
   }
 
   const openSchedule = () => { setEditId(null); setForm(EMPTY); setFormError(null); setShowForm(true) }
@@ -111,7 +113,8 @@ export default function RecruiterInterviewsPage() {
       setSaving(false)
       if (error) { setFormError(error.message); return }
       if (data) setInterviews((list) => [...list, data as Interview])
-      await supabase.from('applications').update({ status: 'interview' }).eq('id', app.id)
+      const { error: appErr } = await supabase.from('applications').update({ status: 'interview' }).eq('id', app.id)
+      if (appErr) console.error('application status sync failed:', appErr.message)
     }
     setShowForm(false)
   }

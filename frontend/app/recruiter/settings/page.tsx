@@ -45,8 +45,14 @@ export default function RecruiterSettingsPage() {
     setSavingName(true); setNameMsg(null)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (user) await supabase.from('profiles').update({ full_name: fullName.trim() }).eq('id', user.id)
-    setSavingName(false); setNameMsg('Saved!')
+    if (user) {
+      const { error } = await supabase.from('profiles').update({ full_name: fullName.trim() }).eq('id', user.id)
+      setSavingName(false)
+      if (error) { setNameMsg('Could not save. Please try again.'); return }
+    } else {
+      setSavingName(false)
+    }
+    setNameMsg('Saved!')
     setTimeout(() => setNameMsg(null), 2000)
   }
 

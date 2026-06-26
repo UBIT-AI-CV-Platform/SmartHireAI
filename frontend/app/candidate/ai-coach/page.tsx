@@ -130,7 +130,8 @@ export default function AICoachPage() {
     e.stopPropagation()
     if (!window.confirm('Delete this session?')) return
     const supabase = createClient()
-    await supabase.from('interview_sessions').delete().eq('id', id)
+    const { error } = await supabase.from('interview_sessions').delete().eq('id', id)
+    if (error) { console.error('deleteSession failed:', error.message); return }
     setSessions((s) => s.filter((x) => x.id !== id))
     if (currentId === id) newSession()
   }
@@ -140,10 +141,12 @@ export default function AICoachPage() {
     const supabase = createClient()
     const title = focusJob ? `${focusJob.title} · ${focusJob.company}` : (focusRole || msgs.find((m) => m.role === 'user')?.content.slice(0, 42) || 'Interview prep')
     if (currentId) {
-      await supabase.from('interview_sessions').update({ messages: msgs as never, title, role: focusRole || null, job_id: focusJobId || null }).eq('id', currentId)
+      const { error } = await supabase.from('interview_sessions').update({ messages: msgs as never, title, role: focusRole || null, job_id: focusJobId || null }).eq('id', currentId)
+      if (error) { console.error('persist update failed:', error.message); return }
       setSessions((s) => s.map((x) => (x.id === currentId ? { ...x, title, messages: msgs, updated_at: new Date().toISOString() } : x)))
     } else {
-      const { data } = await supabase.from('interview_sessions').insert({ profile_id: uid, messages: msgs as never, title, role: focusRole || null, job_id: focusJobId || null }).select('id, title, role, job_id, messages, updated_at').single()
+      const { data, error } = await supabase.from('interview_sessions').insert({ profile_id: uid, messages: msgs as never, title, role: focusRole || null, job_id: focusJobId || null }).select('id, title, role, job_id, messages, updated_at').single()
+      if (error) { console.error('persist insert failed:', error.message); return }
       if (data) { setCurrentId(data.id as string); setSessions((s) => [data as unknown as SessionRow, ...s]) }
     }
   }
