@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import ThemeToggle from '@/components/shared/ThemeToggle'
 
 type Interview = {
   id: string; job_title: string | null; candidate_name: string | null
@@ -211,6 +212,7 @@ export default function InterviewRoomPage() {
         </div>
         <div className="flex items-center gap-2">
           <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 text-white/80 text-xs font-bold"><span className={`w-2 h-2 rounded-full ${connState === 'connected' ? 'bg-green-400' : 'bg-amber-400 animate-pulse'}`} />{statusText}</span>
+          <ThemeToggle className="h-9 w-9 rounded-full flex items-center justify-center bg-white/10 text-white hover:bg-white/20 transition-colors" />
           <Link href={backHref} className="px-3 py-2 rounded-xl bg-white/10 text-white font-bold text-xs hover:bg-white/20 transition-colors flex items-center gap-1.5"><span className="material-symbols-outlined text-base">close</span>Leave</Link>
         </div>
       </header>

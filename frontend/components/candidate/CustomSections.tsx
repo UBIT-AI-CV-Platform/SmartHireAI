@@ -74,7 +74,7 @@ export default function CustomSections({ profileId }: { profileId: string | null
     setSections(sections.map((s) => (s.id === sec.id ? { ...s, items: newItems } : s)))
   }
 
-  const inputCls = 'w-full bg-white border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all outline-none'
+  const inputCls = 'w-full bg-white dark:bg-[#2c2c2e] border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all outline-none'
 
   return (
     <div className="w-full bg-surface-container-lowest p-6 md:p-8 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)]">
@@ -99,7 +99,7 @@ export default function CustomSections({ profileId }: { profileId: string | null
                 <button onClick={() => openAddItem(sec.id)} className="text-primary text-xs font-bold flex items-center gap-0.5 hover:bg-primary/5 px-2 py-1 rounded-lg transition-colors">
                   <span className="material-symbols-outlined text-sm">add</span>Item
                 </button>
-                <button onClick={() => deleteSection(sec.id)} className="text-on-surface-variant hover:text-red-500 p-1 rounded-lg hover:bg-red-50" title="Delete section">
+                <button onClick={() => deleteSection(sec.id)} className="text-on-surface-variant hover:text-red-500 dark:hover:text-red-300 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15" title="Delete section">
                   <span className="material-symbols-outlined text-base">delete</span>
                 </button>
               </div>

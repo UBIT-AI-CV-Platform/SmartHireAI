@@ -8,13 +8,13 @@ import { createClient } from '@/lib/supabase/client'
 type Notif = { id: string; type: string; title: string; body: string | null; link: string | null; is_read: boolean; created_at: string }
 
 const ICON: Record<string, { icon: string; cls: string }> = {
-  applied: { icon: 'send', cls: 'text-indigo-600 bg-indigo-100' },
-  applicant: { icon: 'person_add', cls: 'text-purple-600 bg-purple-100' },
-  status: { icon: 'campaign', cls: 'text-amber-600 bg-amber-100' },
-  interview: { icon: 'videocam', cls: 'text-sky-600 bg-sky-100' },
-  offer: { icon: 'workspace_premium', cls: 'text-green-600 bg-green-100' },
+  applied: { icon: 'send', cls: 'text-indigo-600 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-500/15' },
+  applicant: { icon: 'person_add', cls: 'text-purple-600 dark:text-purple-300 bg-purple-100 dark:bg-purple-500/15' },
+  status: { icon: 'campaign', cls: 'text-amber-600 dark:text-amber-300 bg-amber-100 dark:bg-amber-500/15' },
+  interview: { icon: 'videocam', cls: 'text-sky-600 dark:text-sky-300 bg-sky-100 dark:bg-sky-500/15' },
+  offer: { icon: 'workspace_premium', cls: 'text-green-600 dark:text-green-300 bg-green-100 dark:bg-green-500/15' },
   message: { icon: 'forum', cls: 'text-primary bg-primary/10' },
-  info: { icon: 'notifications', cls: 'text-sky-600 bg-sky-100' },
+  info: { icon: 'notifications', cls: 'text-sky-600 dark:text-sky-300 bg-sky-100 dark:bg-sky-500/15' },
 }
 const meta = (t: string) => ICON[t] || ICON.info
 
@@ -105,13 +105,13 @@ export default function NotificationsBell({ basePath = '/candidate' }: { basePat
 
   return (
     <div ref={ref} className="relative">
-      <button onClick={() => setOpen((o) => !o)} className="relative h-9 w-9 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors" aria-label="Notifications">
+      <button onClick={() => setOpen((o) => !o)} className="relative h-9 w-9 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors" aria-label="Notifications">
         <span className="material-symbols-outlined" style={unread > 0 ? { fontVariationSettings: "'FILL' 1" } : undefined}>notifications</span>
         {unread > 0 && <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center">{unread > 9 ? '9+' : unread}</span>}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-surface-container overflow-hidden z-[70] animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-[#2c2c2e] rounded-2xl shadow-2xl border border-surface-container overflow-hidden z-[70] animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="px-4 py-3 border-b border-surface-container flex items-center justify-between">
             <h3 className="text-sm font-bold text-on-surface">Notifications</h3>
             {unread > 0 && <button onClick={markAllRead} className="text-xs font-bold text-primary hover:underline">Mark all read</button>}

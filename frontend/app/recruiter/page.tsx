@@ -131,7 +131,7 @@ export default function RecruiterDashboard() {
         {/* LEFT */}
         <div className="lg:col-span-2 space-y-4 md:space-y-6">
           {/* Recent applicants */}
-          <div className="bg-white p-5 md:p-6 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
+          <div className="bg-white dark:bg-[#2c2c2e] p-5 md:p-6 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base md:text-lg font-bold text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">person_search</span>Recent Applicants</h3>
               <Link href="/recruiter/applicants" className="text-primary font-medium hover:underline flex items-center gap-1 text-sm">View all <span className="material-symbols-outlined text-sm">arrow_forward</span></Link>
@@ -156,7 +156,7 @@ export default function RecruiterDashboard() {
           </div>
 
           {/* Hiring pipeline */}
-          <div className="bg-white p-5 md:p-6 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
+          <div className="bg-white dark:bg-[#2c2c2e] p-5 md:p-6 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
             <h3 className="text-base font-bold text-on-surface mb-4 flex items-center gap-2"><span className="material-symbols-outlined text-primary">insights</span>Hiring Pipeline</h3>
             {totalActive === 0 ? (
               <p className="text-sm text-on-surface-variant text-center py-4">No applications in your pipeline yet.</p>
@@ -188,7 +188,7 @@ export default function RecruiterDashboard() {
               { label: 'Company', icon: 'apartment', href: '/recruiter/company-profile' },
               { label: 'Settings', icon: 'settings', href: '/recruiter/settings' },
             ].map((a) => (
-              <Link key={a.label} href={a.href} className="bg-white p-4 rounded-2xl border border-surface-container shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] flex flex-col items-center justify-center gap-2 text-center hover:border-primary/40 hover:-translate-y-0.5 transition-all">
+              <Link key={a.label} href={a.href} className="bg-white dark:bg-[#2c2c2e] p-4 rounded-2xl border border-surface-container shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] flex flex-col items-center justify-center gap-2 text-center hover:border-primary/40 hover:-translate-y-0.5 transition-all">
                 <span className="material-symbols-outlined text-primary text-2xl">{a.icon}</span>
                 <span className="text-xs font-bold text-on-surface">{a.label}</span>
               </Link>
@@ -199,7 +199,7 @@ export default function RecruiterDashboard() {
         {/* RIGHT */}
         <div className="lg:col-span-1 space-y-4 md:space-y-6">
           {/* Top jobs */}
-          <div className="bg-white p-5 md:p-6 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
+          <div className="bg-white dark:bg-[#2c2c2e] p-5 md:p-6 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
             <h3 className="text-base font-bold text-on-surface mb-4 flex items-center gap-2"><span className="material-symbols-outlined text-primary">trending_up</span>Your Top Jobs</h3>
             {topJobs.length === 0 ? (
               <div className="text-center py-4">
@@ -224,8 +224,8 @@ export default function RecruiterDashboard() {
 
           {/* Expiring soon */}
           {expiringSoon.length > 0 && (
-            <div className="bg-amber-50 border border-amber-200 p-5 md:p-6 rounded-[1.5rem]">
-              <h3 className="text-base font-bold text-amber-900 mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-amber-600">schedule</span>Closing Soon</h3>
+            <div className="bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-white/10 p-5 md:p-6 rounded-[1.5rem]">
+              <h3 className="text-base font-bold text-amber-900 dark:text-amber-300 mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-amber-600">schedule</span>Closing Soon</h3>
               <div className="space-y-2">
                 {expiringSoon.map((j) => {
                   const days = Math.ceil((new Date(j.expires_at!).getTime() - Date.now()) / 86400000)
@@ -242,7 +242,7 @@ export default function RecruiterDashboard() {
           )}
 
           {/* AI tools */}
-          <div className="bg-white p-5 md:p-6 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
+          <div className="bg-white dark:bg-[#2c2c2e] p-5 md:p-6 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
             <h3 className="text-base font-bold text-on-surface mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>AI Tools</h3>
             <div className="space-y-2">
               <Link href="/recruiter/ai-screening" className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-surface-container-low transition-colors">
@@ -295,8 +295,8 @@ function PageLoader({ label }: { label: string }) {
 function PageError({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto">
-      <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-        <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
+      <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
+        <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
         <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn’t load your dashboard</h2>
         <p className="text-sm text-on-surface-variant max-w-md mb-4">Something went wrong reaching the server. Please try again.</p>
         <button onClick={onRetry} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>

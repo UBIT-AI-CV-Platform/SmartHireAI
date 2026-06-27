@@ -93,8 +93,8 @@ export default function RecruiterSettingsPage() {
   if (loadError) {
     return (
       <div className="p-4 md:p-8 lg:p-10 max-w-3xl mx-auto">
-        <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
+        <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 dark:text-red-300 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
           <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn’t load settings</h2>
           <p className="text-sm text-on-surface-variant max-w-md mb-4">Something went wrong reaching the server. Please try again.</p>
           <button onClick={load} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>
@@ -111,7 +111,7 @@ export default function RecruiterSettingsPage() {
       </header>
 
       <div className="space-y-5">
-        <section className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-5 md:p-6">
+        <section className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-5 md:p-6">
           <h2 className="text-base font-bold text-on-surface mb-4 flex items-center gap-2"><span className="material-symbols-outlined text-primary">account_circle</span>Account</h2>
           <div className="space-y-4">
             <div>
@@ -129,29 +129,29 @@ export default function RecruiterSettingsPage() {
             <div>
               <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2 ml-1">Your name</label>
               <div className="flex flex-col sm:flex-row gap-2">
-                <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="flex-1 px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface font-medium outline-none" placeholder="Your name" />
+                <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="flex-1 px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#1c1c1e] transition-all text-on-surface font-medium outline-none" placeholder="Your name" />
                 <button onClick={saveName} disabled={savingName} className="px-5 py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 hover:scale-[1.02] transition-all disabled:opacity-60">
                   <span className="material-symbols-outlined text-base">{savingName ? 'hourglass_top' : 'check'}</span>{savingName ? 'Saving...' : 'Save'}
                 </button>
               </div>
-              {nameMsg && <p className={`text-xs font-semibold mt-2 ml-1 ${nameMsg === 'Saved!' ? 'text-green-600' : 'text-red-600'}`}>{nameMsg}</p>}
+              {nameMsg && <p className={`text-xs font-semibold mt-2 ml-1 ${nameMsg === 'Saved!' ? 'text-green-600 dark:text-green-300' : 'text-red-600 dark:text-red-300'}`}>{nameMsg}</p>}
               <p className="text-xs text-on-surface-variant mt-2 ml-1">Edit your company details and logo? <Link href="/recruiter/company-profile" className="text-primary font-semibold hover:underline">Go to Company Profile →</Link></p>
             </div>
           </div>
         </section>
 
-        <section className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-5 md:p-6">
+        <section className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-5 md:p-6">
           <h2 className="text-base font-bold text-on-surface mb-4 flex items-center gap-2"><span className="material-symbols-outlined text-primary">lock</span>Change Password</h2>
           <div className="space-y-3">
             <div className="relative">
-              <input type={showPw ? 'text' : 'password'} value={pw} onChange={(e) => setPw(e.target.value)} placeholder="New password" className="w-full px-4 py-3 pr-12 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface font-medium outline-none" />
+              <input type={showPw ? 'text' : 'password'} value={pw} onChange={(e) => setPw(e.target.value)} placeholder="New password" className="w-full px-4 py-3 pr-12 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#1c1c1e] transition-all text-on-surface font-medium outline-none" />
               <button onClick={() => setShowPw((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface"><span className="material-symbols-outlined text-lg">{showPw ? 'visibility_off' : 'visibility'}</span></button>
             </div>
-            <input type={showPw ? 'text' : 'password'} value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder="Confirm new password" className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface font-medium outline-none" />
+            <input type={showPw ? 'text' : 'password'} value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder="Confirm new password" className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#1c1c1e] transition-all text-on-surface font-medium outline-none" />
             {pwMsg && (
-              <div className={`flex items-start gap-2 rounded-xl px-4 py-3 ${pwMsg.type === 'ok' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-                <span className={`material-symbols-outlined ${pwMsg.type === 'ok' ? 'text-green-500' : 'text-red-500'}`}>{pwMsg.type === 'ok' ? 'check_circle' : 'error'}</span>
-                <p className={`text-sm font-medium ${pwMsg.type === 'ok' ? 'text-green-700' : 'text-red-700'}`}>{pwMsg.text}</p>
+              <div className={`flex items-start gap-2 rounded-xl px-4 py-3 ${pwMsg.type === 'ok' ? 'bg-green-50 dark:bg-green-500/15 border border-green-200 dark:border-green-500/30' : 'bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/30'}`}>
+                <span className={`material-symbols-outlined ${pwMsg.type === 'ok' ? 'text-green-500 dark:text-green-300' : 'text-red-500 dark:text-red-300'}`}>{pwMsg.type === 'ok' ? 'check_circle' : 'error'}</span>
+                <p className={`text-sm font-medium ${pwMsg.type === 'ok' ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>{pwMsg.text}</p>
               </div>
             )}
             <button onClick={changePassword} disabled={savingPw} className="px-5 py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 hover:scale-[1.02] transition-all disabled:opacity-60">
@@ -160,10 +160,10 @@ export default function RecruiterSettingsPage() {
           </div>
         </section>
 
-        <section className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-5 md:p-6">
+        <section className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-5 md:p-6">
           <h2 className="text-base font-bold text-on-surface mb-1 flex items-center gap-2"><span className="material-symbols-outlined text-primary">logout</span>Session</h2>
           <p className="text-sm text-on-surface-variant mb-4">Sign out of your account on this device.</p>
-          <button onClick={signOut} disabled={signingOut} className="px-5 py-3 rounded-2xl bg-red-50 text-red-600 font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-100 transition-all disabled:opacity-60">
+          <button onClick={signOut} disabled={signingOut} className="px-5 py-3 rounded-2xl bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-300 font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-100 dark:hover:bg-red-500/25 transition-all disabled:opacity-60">
             <span className="material-symbols-outlined text-base">logout</span>{signingOut ? 'Signing out...' : 'Sign out'}
           </button>
         </section>

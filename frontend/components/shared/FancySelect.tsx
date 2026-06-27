@@ -42,7 +42,7 @@ export default function FancySelect({
         <span className={`material-symbols-outlined text-outline transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>expand_more</span>
       </button>
       {open && (
-        <div className="absolute z-40 mt-2 w-full bg-white rounded-2xl shadow-xl border border-surface-container overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 max-h-72 overflow-y-auto">
+        <div className="absolute z-40 mt-2 w-full bg-white dark:bg-[#2c2c2e] rounded-2xl shadow-xl border border-surface-container overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 max-h-72 overflow-y-auto">
           {options.map((o) => (
             <button
               key={o.value}

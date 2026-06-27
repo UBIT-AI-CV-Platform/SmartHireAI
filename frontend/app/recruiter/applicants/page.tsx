@@ -22,14 +22,14 @@ type Applicant = {
 
 const PIPELINE: AppStatus[] = ['applied', 'screening', 'interview', 'offer', 'rejected']
 const STATUS_CLS: Record<AppStatus, string> = {
-  applied: 'bg-indigo-100 text-indigo-700', screening: 'bg-amber-100 text-amber-700', interview: 'bg-sky-100 text-sky-700',
-  offer: 'bg-green-100 text-green-700', rejected: 'bg-red-100 text-red-600', withdrawn: 'bg-slate-100 text-slate-500',
+  applied: 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300', screening: 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300', interview: 'bg-sky-100 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300',
+  offer: 'bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-300', rejected: 'bg-red-100 dark:bg-red-500/15 text-red-600 dark:text-red-300', withdrawn: 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400',
 }
 const STATUS_DOT: Record<AppStatus, string> = {
   applied: 'bg-indigo-500', screening: 'bg-amber-500', interview: 'bg-sky-500', offer: 'bg-green-500', rejected: 'bg-red-400', withdrawn: 'bg-slate-400',
 }
 
-const AVATAR = ['bg-indigo-100 text-indigo-700', 'bg-purple-100 text-purple-700', 'bg-sky-100 text-sky-700', 'bg-pink-100 text-pink-700', 'bg-emerald-100 text-emerald-700', 'bg-amber-100 text-amber-700']
+const AVATAR = ['bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300', 'bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300', 'bg-sky-100 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300', 'bg-pink-100 dark:bg-pink-500/15 text-pink-700 dark:text-pink-300', 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300', 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300']
 const avatarColor = (s: string) => AVATAR[Array.from(s || '?').reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR.length]
 const scoreColor = (s: number) => (s >= 75 ? 'text-green-600' : s >= 40 ? 'text-amber-600' : 'text-slate-500')
 
@@ -173,8 +173,8 @@ export default function ApplicantsPage() {
           <p className="text-on-surface-variant text-xs sm:text-sm md:text-base mt-1 sm:mt-2">Review applicants, rate them, take notes, move them through your pipeline, and reach out.</p>
         </div>
         <div className="flex bg-surface-container-low rounded-2xl p-1 self-start flex-shrink-0">
-          <button onClick={() => setView('list')} className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${view === 'list' ? 'bg-white shadow text-primary' : 'text-on-surface-variant'}`}><span className="material-symbols-outlined text-base">view_list</span>List</button>
-          <button onClick={() => setView('board')} className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${view === 'board' ? 'bg-white shadow text-primary' : 'text-on-surface-variant'}`}><span className="material-symbols-outlined text-base">view_kanban</span>Board</button>
+          <button onClick={() => setView('list')} className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${view === 'list' ? 'bg-white dark:bg-[#2c2c2e] shadow text-primary' : 'text-on-surface-variant'}`}><span className="material-symbols-outlined text-base">view_list</span>List</button>
+          <button onClick={() => setView('board')} className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${view === 'board' ? 'bg-white dark:bg-[#2c2c2e] shadow text-primary' : 'text-on-surface-variant'}`}><span className="material-symbols-outlined text-base">view_kanban</span>Board</button>
         </div>
       </header>
 
@@ -185,10 +185,10 @@ export default function ApplicantsPage() {
         {/* LEFT */}
         <div className="col-span-12 lg:col-span-8">
           {/* Filters */}
-          <div className="bg-white p-3 md:p-4 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container mb-5 space-y-3">
+          <div className="bg-white dark:bg-[#2c2c2e] p-3 md:p-4 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container mb-5 space-y-3">
             <div className="relative">
               <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name, email, or job" className="w-full pl-12 pr-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface font-medium placeholder:text-outline-variant outline-none" />
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name, email, or job" className="w-full pl-12 pr-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#2c2c2e] transition-all text-on-surface font-medium placeholder:text-outline-variant outline-none" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <FancySelect value={jobFilter} options={jobOptions} onChange={setJobFilter} icon="work" />
@@ -200,7 +200,7 @@ export default function ApplicantsPage() {
           <p className="text-sm font-bold text-on-surface-variant mb-3 px-1">{filtered.length} applicant{filtered.length === 1 ? '' : 's'}</p>
 
           {filtered.length === 0 ? (
-            <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
+            <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
               <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-5"><span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>group</span></div>
               <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">{apps.length === 0 ? 'No applicants yet' : 'No applicants match your filters'}</h2>
               <p className="text-sm text-on-surface-variant max-w-md">{apps.length === 0 ? 'Once candidates apply to your jobs, they’ll show up here with their CVs.' : 'Try a different job, status, or search.'}</p>
@@ -208,7 +208,7 @@ export default function ApplicantsPage() {
           ) : (
             <div className="space-y-3">
               {filtered.map((ap) => (
-                <div key={ap.id} className="bg-white p-4 md:p-5 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
+                <div key={ap.id} className="bg-white dark:bg-[#2c2c2e] p-4 md:p-5 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
                   <div className="flex items-center gap-3">
                     <div className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black ${avatarColor(ap.candidate_name || '?')}`}>{(ap.candidate_name || '?').charAt(0).toUpperCase()}</div>
                     <div className="flex-1 min-w-0">
@@ -232,12 +232,12 @@ export default function ApplicantsPage() {
                   <div className="flex items-center gap-2 mt-3 pt-3 border-t border-surface-container flex-wrap">
                     <button onClick={() => ap.cv_snapshot && setViewCv(ap.cv_snapshot)} disabled={!ap.cv_snapshot} className="px-3 py-2 rounded-xl bg-primary/10 text-primary font-bold text-xs flex items-center gap-1.5 hover:bg-primary/15 transition-colors disabled:opacity-40"><span className="material-symbols-outlined text-base">description</span>View CV</button>
                     <button onClick={() => openOutreach(ap)} className="px-3 py-2 rounded-xl bg-surface-container-low text-on-surface font-bold text-xs flex items-center gap-1.5 hover:bg-surface-container transition-colors"><span className="material-symbols-outlined text-base">mail</span>Draft email</button>
-                    <button onClick={() => openNotes(ap)} className={`px-3 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors ${ap.recruiter_notes ? 'bg-amber-50 text-amber-700' : 'bg-surface-container-low text-on-surface hover:bg-surface-container'}`}><span className="material-symbols-outlined text-base">sticky_note_2</span>{ap.recruiter_notes ? 'Note added' : 'Add note'}</button>
+                    <button onClick={() => openNotes(ap)} className={`px-3 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors ${ap.recruiter_notes ? 'bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300' : 'bg-surface-container-low text-on-surface hover:bg-surface-container'}`}><span className="material-symbols-outlined text-base">sticky_note_2</span>{ap.recruiter_notes ? 'Note added' : 'Add note'}</button>
                   </div>
 
                   {notesOpen === ap.id && (
                     <div className="mt-3">
-                      <textarea value={notesDraft} onChange={(e) => setNotesDraft(e.target.value)} rows={3} placeholder="Private notes about this candidate…" className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface text-sm outline-none resize-none" />
+                      <textarea value={notesDraft} onChange={(e) => setNotesDraft(e.target.value)} rows={3} placeholder="Private notes about this candidate…" className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#2c2c2e] transition-all text-on-surface text-sm outline-none resize-none" />
                       <div className="flex gap-2 mt-2">
                         <button onClick={() => saveNotes(ap.id)} className="px-4 py-2 rounded-xl premium-gradient text-white font-bold text-xs">Save note</button>
                         <button onClick={() => setNotesOpen(null)} className="px-4 py-2 rounded-xl bg-surface-container-low text-on-surface font-bold text-xs">Cancel</button>
@@ -261,7 +261,7 @@ export default function ApplicantsPage() {
             </div>
           </div>
 
-          <div className="p-5 rounded-[1.5rem] bg-white border border-surface-container shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)]">
+          <div className="p-5 rounded-[1.5rem] bg-white dark:bg-[#2c2c2e] border border-surface-container shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)]">
             <h3 className="text-sm font-black text-on-surface mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-primary text-lg">insights</span>Pipeline</h3>
             <div className="space-y-2">
               {PIPELINE.map((st) => (
@@ -288,7 +288,7 @@ export default function ApplicantsPage() {
       {viewCv && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-md" onClick={() => setViewCv(null)} />
-          <div className="relative z-10 w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
+          <div className="relative z-10 w-full max-w-2xl bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
             <div className="p-5 border-b border-surface-container flex items-center justify-between">
               <h3 className="text-base font-bold text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">description</span>Candidate CV</h3>
               <button onClick={() => setViewCv(null)} className="text-on-surface-variant hover:text-on-surface p-1"><span className="material-symbols-outlined">close</span></button>
@@ -302,7 +302,7 @@ export default function ApplicantsPage() {
       {outApp && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setOutApp(null)} />
-          <div className="relative z-10 w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
+          <div className="relative z-10 w-full max-w-xl bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
             <div className="p-5 border-b border-surface-container flex items-center justify-between">
               <div className="min-w-0">
                 <h3 className="text-lg font-bold text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">mail</span>Email {outApp.candidate_name || 'candidate'}</h3>
@@ -319,10 +319,10 @@ export default function ApplicantsPage() {
               <button onClick={draftOutreach} disabled={outLoading} className="w-full py-3 rounded-2xl bg-surface-container-low text-on-surface font-bold text-sm flex items-center justify-center gap-2 hover:bg-surface-container transition-colors disabled:opacity-60">
                 <span className="material-symbols-outlined">{outLoading ? 'hourglass_top' : 'auto_awesome'}</span>{outLoading ? 'Drafting…' : outText ? 'Re-draft with AI' : 'Draft with AI'}
               </button>
-              {outError && <div className="flex items-start gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-3"><span className="material-symbols-outlined text-red-500">error</span><p className="text-sm text-red-700 font-medium">{outError}</p></div>}
-              {outSent && <div className="flex items-start gap-2 rounded-xl bg-green-50 border border-green-200 px-4 py-3"><span className="material-symbols-outlined text-green-600">check_circle</span><p className="text-sm text-green-700 font-medium">Email sent to {outApp.candidate_email}.</p></div>}
+              {outError && <div className="flex items-start gap-2 rounded-xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 px-4 py-3"><span className="material-symbols-outlined text-red-500">error</span><p className="text-sm text-red-700 dark:text-red-300 font-medium">{outError}</p></div>}
+              {outSent && <div className="flex items-start gap-2 rounded-xl bg-green-50 dark:bg-green-500/15 border border-green-200 dark:border-green-500/20 px-4 py-3"><span className="material-symbols-outlined text-green-600">check_circle</span><p className="text-sm text-green-700 dark:text-green-300 font-medium">Email sent to {outApp.candidate_email}.</p></div>}
               {outText && (
-                <textarea value={outText} onChange={(e) => setOutText(e.target.value)} rows={9} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface text-sm leading-relaxed outline-none resize-none" />
+                <textarea value={outText} onChange={(e) => setOutText(e.target.value)} rows={9} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#2c2c2e] transition-all text-on-surface text-sm leading-relaxed outline-none resize-none" />
               )}
             </div>
             {outText && (
@@ -342,11 +342,11 @@ function Board({ apps, onMove, onView }: { apps: Applicant[]; onMove: (id: strin
   const [dragId, setDragId] = useState<string | null>(null)
   const [over, setOver] = useState<AppStatus | null>(null)
   const STAGES: { key: AppStatus; label: string; head: string }[] = [
-    { key: 'applied', label: 'Applied', head: 'bg-indigo-100 text-indigo-700' },
-    { key: 'screening', label: 'Screening', head: 'bg-amber-100 text-amber-700' },
-    { key: 'interview', label: 'Interview', head: 'bg-sky-100 text-sky-700' },
-    { key: 'offer', label: 'Offer', head: 'bg-green-100 text-green-700' },
-    { key: 'rejected', label: 'Rejected', head: 'bg-red-100 text-red-600' },
+    { key: 'applied', label: 'Applied', head: 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' },
+    { key: 'screening', label: 'Screening', head: 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300' },
+    { key: 'interview', label: 'Interview', head: 'bg-sky-100 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300' },
+    { key: 'offer', label: 'Offer', head: 'bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-300' },
+    { key: 'rejected', label: 'Rejected', head: 'bg-red-100 dark:bg-red-500/15 text-red-600 dark:text-red-300' },
   ]
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
@@ -371,7 +371,7 @@ function Board({ apps, onMove, onView }: { apps: Applicant[]; onMove: (id: strin
                   draggable
                   onDragStart={() => setDragId(c.id)}
                   onDragEnd={() => { setDragId(null); setOver(null) }}
-                  className={`bg-white p-3 rounded-2xl border border-surface-container shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow ${dragId === c.id ? 'opacity-50' : ''}`}
+                  className={`bg-white dark:bg-[#2c2c2e] p-3 rounded-2xl border border-surface-container shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow ${dragId === c.id ? 'opacity-50' : ''}`}
                 >
                   <div className="flex items-center gap-2">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-black ${avatarColor(c.candidate_name || '?')}`}>{(c.candidate_name || '?').charAt(0).toUpperCase()}</div>
@@ -421,8 +421,8 @@ function Loader() {
 function ErrorBox({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="p-4 md:p-8 lg:p-10 max-w-7xl mx-auto">
-      <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-        <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
+      <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
+        <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
         <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn’t load applicants</h2>
         <p className="text-sm text-on-surface-variant max-w-md mb-4">Something went wrong. Please try again.</p>
         <button onClick={onRetry} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>

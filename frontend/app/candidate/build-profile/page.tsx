@@ -257,9 +257,9 @@ export default function BuildProfilePage() {
       </div>
 
       {formError && (
-        <div className="mb-6 flex items-start gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-3">
+        <div className="mb-6 flex items-start gap-2 rounded-xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-white/10 px-4 py-3">
           <span className="material-symbols-outlined text-red-500">error</span>
-          <p className="text-sm text-red-700 font-medium">{formError}</p>
+          <p className="text-sm text-red-700 dark:text-red-300 font-medium">{formError}</p>
         </div>
       )}
 
@@ -274,7 +274,7 @@ export default function BuildProfilePage() {
             {/* Photo */}
             <div className="col-span-full flex flex-col items-center justify-center mb-8">
               <div className="relative group cursor-pointer">
-                <div className="w-32 h-32 rounded-full bg-surface-container flex items-center justify-center border-4 border-white shadow-sm overflow-hidden group-hover:bg-surface-container-high transition-all relative" onClick={handleCameraClick}>
+                <div className="w-32 h-32 rounded-full bg-surface-container flex items-center justify-center border-4 border-white dark:border-white/10 shadow-sm overflow-hidden group-hover:bg-surface-container-high transition-all relative" onClick={handleCameraClick}>
                   {profilePhoto ? (
                     <img alt="Profile photo" className="w-full h-full object-cover object-center" src={profilePhoto} />
                   ) : (
@@ -388,7 +388,7 @@ export default function BuildProfilePage() {
                     <button onClick={() => editSkill(skill)} className="text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-primary/5" title="Edit">
                       <span className="material-symbols-outlined text-base">edit</span>
                     </button>
-                    <button onClick={() => removeSkill(skill.id)} className="text-on-surface-variant hover:text-red-500 p-1 rounded-lg hover:bg-red-50" title="Delete">
+                    <button onClick={() => removeSkill(skill.id)} className="text-on-surface-variant hover:text-red-500 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15" title="Delete">
                       <span className="material-symbols-outlined text-base">close</span>
                     </button>
                   </div>
@@ -399,7 +399,7 @@ export default function BuildProfilePage() {
               <div className="w-full max-w-2xl gap-4 flex items-end mb-6 mx-auto bg-surface-container-low p-6 rounded-xl">
                 <div className="flex-1">
                   <label className="text-[10px] font-bold text-on-surface-variant mb-1 block uppercase">Skill Name</label>
-                  <input value={skillInput} onChange={(e) => setSkillInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveSkill()} className="w-full bg-white border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all outline-none" placeholder="e.g. Figma, Python" type="text" autoFocus />
+                  <input value={skillInput} onChange={(e) => setSkillInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveSkill()} className="w-full bg-white dark:bg-[#2c2c2e] border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all outline-none" placeholder="e.g. Figma, Python" type="text" autoFocus />
                 </div>
                 <div className="flex gap-2">
                   <button onClick={cancelSkill} className="px-6 py-2.5 text-on-surface-variant text-sm font-bold rounded-xl transition-colors border border-outline-variant/30 bg-surface-container-low hover:bg-surface-variant">Cancel</button>
@@ -440,7 +440,7 @@ export default function BuildProfilePage() {
                     <button onClick={() => editLanguage(lang)} className="text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-primary/5" title="Edit">
                       <span className="material-symbols-outlined text-base">edit</span>
                     </button>
-                    <button onClick={() => removeLanguage(lang.id)} className="text-on-surface-variant hover:text-red-500 p-1 rounded-lg hover:bg-red-50" title="Delete">
+                    <button onClick={() => removeLanguage(lang.id)} className="text-on-surface-variant hover:text-red-500 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15" title="Delete">
                       <span className="material-symbols-outlined text-base">delete</span>
                     </button>
                   </div>
@@ -451,11 +451,11 @@ export default function BuildProfilePage() {
               <div className="w-full max-w-2xl gap-4 flex items-end mb-6 mx-auto bg-surface-container-low p-6 rounded-xl">
                 <div className="flex-1">
                   <label className="text-[10px] font-bold text-on-surface-variant mb-1 block uppercase">Language Name</label>
-                  <input value={languageInput} onChange={(e) => setLanguageInput(e.target.value)} className="w-full bg-white border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all outline-none" placeholder="e.g. Spanish" type="text" autoFocus />
+                  <input value={languageInput} onChange={(e) => setLanguageInput(e.target.value)} className="w-full bg-white dark:bg-[#2c2c2e] border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all outline-none" placeholder="e.g. Spanish" type="text" autoFocus />
                 </div>
                 <div className="flex-1">
                   <label className="text-[10px] font-bold text-on-surface-variant mb-1 block uppercase">Proficiency</label>
-                  <select value={languageLevelInput} onChange={(e) => setLanguageLevelInput(e.target.value)} className="w-full bg-white border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all appearance-none cursor-pointer outline-none hover:border-primary/50">
+                  <select value={languageLevelInput} onChange={(e) => setLanguageLevelInput(e.target.value)} className="w-full bg-white dark:bg-[#2c2c2e] border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all appearance-none cursor-pointer outline-none hover:border-primary/50">
                     <option value="Native">Native</option>
                     <option value="Fluent">Fluent</option>
                     <option value="Professional">Professional</option>

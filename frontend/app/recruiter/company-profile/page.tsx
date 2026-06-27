@@ -121,11 +121,11 @@ export default function CompanyProfilePage() {
       <div className="grid grid-cols-12 gap-4 md:gap-6">
         <div className="col-span-12 lg:col-span-8 space-y-5">
         {/* Logo + identity */}
-        <section className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-5 md:p-6">
+        <section className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-5 md:p-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
             <div className="relative flex-shrink-0">
-              <div className="w-24 h-24 rounded-2xl overflow-hidden bg-indigo-100 flex items-center justify-center border border-surface-container">
-                {photo ? <img src={photo} alt="Logo" className="w-full h-full object-cover" /> : <span className="material-symbols-outlined text-indigo-700 text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>apartment</span>}
+              <div className="w-24 h-24 rounded-2xl overflow-hidden bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center border border-surface-container">
+                {photo ? <img src={photo} alt="Logo" className="w-full h-full object-cover" /> : <span className="material-symbols-outlined text-indigo-700 dark:text-indigo-300 text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>apartment</span>}
               </div>
               <button onClick={() => fileRef.current?.click()} disabled={uploading} className="absolute -bottom-2 -right-2 w-9 h-9 rounded-full premium-gradient text-white flex items-center justify-center shadow-lg hover:scale-105 transition-all disabled:opacity-60" title="Upload logo">
                 <span className="material-symbols-outlined text-lg">{uploading ? 'hourglass_top' : 'photo_camera'}</span>
@@ -140,7 +140,7 @@ export default function CompanyProfilePage() {
         </section>
 
         {/* Details */}
-        <section className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-5 md:p-6 space-y-4">
+        <section className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-5 md:p-6 space-y-4">
           <h2 className="text-base font-bold text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">info</span>Company Details</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Website" value={form.company_website} onChange={(v) => set('company_website', v)} placeholder="https://acme.com" />
@@ -149,7 +149,7 @@ export default function CompanyProfilePage() {
             <div>
               <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2 ml-1">Company size</label>
               <div className="relative">
-                <select value={form.company_size} onChange={(e) => set('company_size', e.target.value)} className="w-full appearance-none px-4 pr-10 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface font-medium outline-none cursor-pointer">
+                <select value={form.company_size} onChange={(e) => set('company_size', e.target.value)} className="w-full appearance-none px-4 pr-10 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#2c2c2e] transition-all text-on-surface font-medium outline-none cursor-pointer">
                   <option value="">Select…</option>
                   {SIZES.map((s) => <option key={s} value={s}>{s} employees</option>)}
                 </select>
@@ -159,14 +159,14 @@ export default function CompanyProfilePage() {
           </div>
           <div>
             <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2 ml-1">About the company</label>
-            <textarea value={form.company_about} onChange={(e) => set('company_about', e.target.value)} rows={5} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none resize-none" placeholder="What does your company do? What's the mission and culture?" />
+            <textarea value={form.company_about} onChange={(e) => set('company_about', e.target.value)} rows={5} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#2c2c2e] transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none resize-none" placeholder="What does your company do? What's the mission and culture?" />
           </div>
         </section>
 
         {msg && (
-          <div className={`flex items-start gap-2 rounded-xl px-4 py-3 ${msg.type === 'ok' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+          <div className={`flex items-start gap-2 rounded-xl px-4 py-3 ${msg.type === 'ok' ? 'bg-green-50 dark:bg-green-500/15 border border-green-200 dark:border-white/10' : 'bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-white/10'}`}>
             <span className={`material-symbols-outlined ${msg.type === 'ok' ? 'text-green-500' : 'text-red-500'}`}>{msg.type === 'ok' ? 'check_circle' : 'error'}</span>
-            <p className={`text-sm font-medium ${msg.type === 'ok' ? 'text-green-700' : 'text-red-700'}`}>{msg.text}</p>
+            <p className={`text-sm font-medium ${msg.type === 'ok' ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>{msg.text}</p>
           </div>
         )}
 
@@ -177,11 +177,11 @@ export default function CompanyProfilePage() {
 
         {/* Live preview + tips */}
         <aside className="col-span-12 lg:col-span-4 space-y-4 lg:sticky lg:top-20 self-start">
-          <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-5">
+          <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-5">
             <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-3">Candidate preview</p>
             <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-2xl overflow-hidden bg-indigo-100 flex items-center justify-center flex-shrink-0 border border-surface-container">
-                {photo ? <img src={photo} alt="Logo" className="w-full h-full object-cover" /> : <span className="material-symbols-outlined text-indigo-700 text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>apartment</span>}
+              <div className="w-14 h-14 rounded-2xl overflow-hidden bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center flex-shrink-0 border border-surface-container">
+                {photo ? <img src={photo} alt="Logo" className="w-full h-full object-cover" /> : <span className="material-symbols-outlined text-indigo-700 dark:text-indigo-300 text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>apartment</span>}
               </div>
               <div className="min-w-0">
                 <h4 className="text-base font-bold text-on-surface truncate">{form.company_name || 'Your Company'}</h4>
@@ -196,9 +196,9 @@ export default function CompanyProfilePage() {
             {form.full_name && <p className="text-xs text-outline mt-3 pt-3 border-t border-surface-container">Recruiter: <span className="font-semibold text-on-surface-variant">{form.full_name}</span></p>}
           </div>
 
-          <div className="p-5 rounded-[1.5rem] bg-pink-200/50 border border-pink-300/30">
-            <div className="flex items-center gap-2 mb-2"><span className="material-symbols-outlined text-pink-700" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span><h3 className="text-sm font-black text-pink-950">A strong profile</h3></div>
-            <ul className="text-xs text-pink-900/80 leading-relaxed space-y-1.5 list-disc list-inside">
+          <div className="p-5 rounded-[1.5rem] bg-pink-200/50 dark:bg-pink-500/15 border border-pink-300/30 dark:border-white/10">
+            <div className="flex items-center gap-2 mb-2"><span className="material-symbols-outlined text-pink-700 dark:text-pink-300" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span><h3 className="text-sm font-black text-pink-950 dark:text-pink-300">A strong profile</h3></div>
+            <ul className="text-xs text-pink-900/80 dark:text-pink-300 leading-relaxed space-y-1.5 list-disc list-inside">
               <li>Add a logo — posts with logos get more applicants.</li>
               <li>Write a clear, honest "About" with your mission.</li>
               <li>Keep website &amp; industry up to date for trust.</li>
@@ -216,7 +216,7 @@ function Field({ label, value, onChange, placeholder }: { label: string; value: 
   return (
     <div>
       <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2 ml-1">{label}</label>
-      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none" />
+      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#2c2c2e] transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none" />
     </div>
   )
 }
@@ -237,8 +237,8 @@ function Loader() {
 function ErrorBox({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="p-4 md:p-8 lg:p-10 max-w-3xl mx-auto">
-      <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-        <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
+      <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
+        <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 dark:text-red-300 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
         <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn’t load profile</h2>
         <p className="text-sm text-on-surface-variant max-w-md mb-4">Something went wrong. Please try again.</p>
         <button onClick={onRetry} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>

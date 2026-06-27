@@ -143,8 +143,8 @@ export default function OverviewPage() {
   if (loadError) {
     return (
       <div className="p-4 md:p-8 max-w-7xl mx-auto">
-        <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
+        <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
           <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn’t load your dashboard</h2>
           <p className="text-sm text-on-surface-variant max-w-md mb-4">Something went wrong reaching the server. Check your connection and try again.</p>
           <button onClick={load} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>
@@ -156,8 +156,8 @@ export default function OverviewPage() {
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto">
       {/* Profile hero */}
-      <div className="mb-6 rounded-[1.5rem] bg-gradient-to-br from-white to-indigo-50/60 border border-surface-container shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] p-5 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
-        <div className="h-16 w-16 md:h-20 md:w-20 rounded-2xl overflow-hidden flex-shrink-0 border-2 border-white shadow-md flex items-center justify-center bg-indigo-100">
+      <div className="mb-6 rounded-[1.5rem] bg-gradient-to-br from-white to-indigo-50/60 dark:from-[#2c2c2e] dark:to-indigo-500/10 border border-surface-container shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] p-5 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="h-16 w-16 md:h-20 md:w-20 rounded-2xl overflow-hidden flex-shrink-0 border-2 border-white dark:border-white/10 shadow-md flex items-center justify-center bg-indigo-100 dark:bg-indigo-500/15">
           {prof.photo ? (
             <img src={prof.photo} alt={prof.fullName} className="h-full w-full object-cover" />
           ) : (
@@ -172,7 +172,7 @@ export default function OverviewPage() {
             <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">trending_up</span>{completeness.percent}% profile complete</span>
           </p>
         </div>
-        <Link href="/candidate/build-profile" className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-surface-container text-on-surface font-bold text-sm hover:shadow-md hover:border-primary/40 transition-all flex-shrink-0">
+        <Link href="/candidate/build-profile" className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-on-surface font-bold text-sm hover:shadow-md hover:border-primary/40 transition-all flex-shrink-0">
           <span className="material-symbols-outlined text-base">edit</span>Edit Profile
         </Link>
       </div>
@@ -195,14 +195,14 @@ export default function OverviewPage() {
         <div className="lg:col-span-2 space-y-4 md:space-y-6">
           {/* Upcoming interviews */}
           {upcomingInterviews.length > 0 && (
-            <div className="bg-sky-50 border border-sky-100 rounded-[1.5rem] p-5 md:p-6">
+            <div className="bg-sky-50 dark:bg-sky-500/15 border border-sky-100 dark:border-white/10 rounded-[1.5rem] p-5 md:p-6">
               <h3 className="text-base font-bold text-on-surface mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-sky-600">event</span>Upcoming Interviews</h3>
               <div className="space-y-2">
                 {upcomingInterviews.map((a) => (
-                  <Link key={a.id} href="/candidate/my-applications" className="flex items-center gap-3 p-3 rounded-xl bg-white hover:shadow-sm transition-all">
+                  <Link key={a.id} href="/candidate/my-applications" className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-[#2c2c2e] hover:shadow-sm transition-all">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-sm font-black ${avatarColor(a.job?.company || '?')}`}>{(a.job?.company || '?').charAt(0).toUpperCase()}</div>
                     <div className="flex-1 min-w-0"><p className="text-sm font-bold text-on-surface truncate">{a.job?.title}</p><p className="text-xs text-on-surface-variant truncate">{a.job?.company}{a.job?.location ? ` • ${a.job.location}` : ''}</p></div>
-                    <span className="px-2.5 py-1 bg-sky-100 text-sky-700 text-xs font-bold rounded-full flex-shrink-0">Interview</span>
+                    <span className="px-2.5 py-1 bg-sky-100 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300 text-xs font-bold rounded-full flex-shrink-0">Interview</span>
                   </Link>
                 ))}
               </div>
@@ -216,14 +216,14 @@ export default function OverviewPage() {
               <Link href="/candidate/my-applications" className="text-primary font-medium hover:underline flex items-center gap-1 text-sm">View all <span className="material-symbols-outlined text-sm">arrow_forward</span></Link>
             </div>
             {recommended.length === 0 ? (
-              <div className="bg-white rounded-[1.5rem] border border-surface-container p-8 text-center shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)]">
+              <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] border border-surface-container p-8 text-center shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)]">
                 <p className="text-sm text-on-surface-variant">No job recommendations yet. {skills.length === 0 ? <>Add skills to your profile to get matched.</> : <>Check back soon for new roles.</>}</p>
                 <Link href="/candidate/my-applications" className="inline-block mt-3 text-sm font-bold text-primary hover:underline">Browse all jobs →</Link>
               </div>
             ) : (
               <div className="space-y-3">
                 {recommended.map(({ j, s }) => (
-                  <Link key={j.id} href="/candidate/my-applications" className="bg-white p-4 md:p-5 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container flex items-center gap-4 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_-8px_rgba(25,28,30,0.14)] transition-all">
+                  <Link key={j.id} href="/candidate/my-applications" className="bg-white dark:bg-[#2c2c2e] p-4 md:p-5 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container flex items-center gap-4 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_-8px_rgba(25,28,30,0.14)] transition-all">
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-lg font-black ${avatarColor(j.company)}`}>{j.company.charAt(0).toUpperCase()}</div>
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm md:text-base font-bold text-on-surface truncate">{j.title}</h4>
@@ -238,7 +238,7 @@ export default function OverviewPage() {
           </div>
 
           {/* Application pipeline */}
-          <div className="bg-white p-5 md:p-6 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
+          <div className="bg-white dark:bg-[#2c2c2e] p-5 md:p-6 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
             <h3 className="text-base font-bold text-on-surface mb-4 flex items-center gap-2"><span className="material-symbols-outlined text-primary">insights</span>Application Pipeline</h3>
             {activeApps.length === 0 ? (
               <div className="text-center py-4">
@@ -273,7 +273,7 @@ export default function OverviewPage() {
               { label: 'Find Jobs', icon: 'work', href: '/candidate/my-applications' },
               { label: 'Practice', icon: 'psychology', href: '/candidate/ai-coach' },
             ].map((a) => (
-              <Link key={a.label} href={a.href} className="bg-white p-4 rounded-2xl border border-surface-container shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] flex flex-col items-center justify-center gap-2 text-center hover:border-primary/40 hover:-translate-y-0.5 transition-all">
+              <Link key={a.label} href={a.href} className="bg-white dark:bg-[#2c2c2e] p-4 rounded-2xl border border-surface-container shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] flex flex-col items-center justify-center gap-2 text-center hover:border-primary/40 hover:-translate-y-0.5 transition-all">
                 <span className="material-symbols-outlined text-primary text-2xl">{a.icon}</span>
                 <span className="text-xs font-bold text-on-surface">{a.label}</span>
               </Link>
@@ -309,7 +309,7 @@ export default function OverviewPage() {
 
           {/* Recent activity */}
           {activity.length > 0 && (
-            <div className="bg-white p-5 md:p-6 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
+            <div className="bg-white dark:bg-[#2c2c2e] p-5 md:p-6 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
               <h3 className="text-base font-bold text-on-surface mb-4 flex items-center gap-2"><span className="material-symbols-outlined text-primary">history</span>Recent Activity</h3>
               <div className="space-y-3">
                 {activity.map((a) => {
@@ -336,7 +336,7 @@ export default function OverviewPage() {
 
           {/* Profile completeness */}
           {completeness.percent < 100 && (
-            <div className="bg-white p-5 md:p-6 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
+            <div className="bg-white dark:bg-[#2c2c2e] p-5 md:p-6 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
               <div className="flex items-center justify-between mb-1">
                 <h3 className="text-base font-bold text-on-surface">Complete your profile</h3>
                 <span className="text-sm font-black text-primary">{completeness.percent}%</span>
@@ -354,7 +354,7 @@ export default function OverviewPage() {
           )}
 
           {/* Your documents */}
-          <div className="bg-indigo-50/60 p-5 md:p-6 rounded-[1.5rem] border border-indigo-100">
+          <div className="bg-indigo-50/60 dark:bg-indigo-500/15 p-5 md:p-6 rounded-[1.5rem] border border-indigo-100 dark:border-white/10">
             <h3 className="text-base font-bold text-on-surface mb-4">Your Documents</h3>
             <div className="grid grid-cols-3 gap-3 text-center">
               <div><p className="text-2xl font-black text-primary">{cvCount}</p><p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide mt-0.5">CVs</p></div>

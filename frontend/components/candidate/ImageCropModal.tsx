@@ -36,8 +36,8 @@ export default function ImageCropModal({ imageSrc, onCancel, onCropped }: ImageC
     <div className="fixed inset-0 z-[95] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={saving ? undefined : onCancel} />
 
-      <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden auth-pop">
-        <div className="p-5 border-b border-slate-100 text-center">
+      <div className="relative z-10 w-full max-w-md bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop">
+        <div className="p-5 border-b border-slate-100 dark:border-white/10 text-center">
           <h3 className="text-lg font-bold text-on-surface">Crop your photo</h3>
           <p className="text-xs text-on-surface-variant mt-0.5">Drag to move, use the slider to zoom. Square only.</p>
         </div>
@@ -60,7 +60,7 @@ export default function ImageCropModal({ imageSrc, onCancel, onCropped }: ImageC
         {/* Controls */}
         <div className="p-5 space-y-4">
           <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-slate-400 text-lg">zoom_out</span>
+            <span className="material-symbols-outlined text-slate-400 dark:text-slate-400 text-lg">zoom_out</span>
             <input
               type="range"
               min={1}
@@ -70,14 +70,14 @@ export default function ImageCropModal({ imageSrc, onCancel, onCropped }: ImageC
               onChange={(e) => setZoom(Number(e.target.value))}
               className="flex-1 accent-[#3525cd] cursor-pointer"
             />
-            <span className="material-symbols-outlined text-slate-600 text-2xl">zoom_in</span>
+            <span className="material-symbols-outlined text-slate-600 dark:text-slate-300 text-2xl">zoom_in</span>
           </div>
 
           <div className="flex gap-3">
             <button
               onClick={onCancel}
               disabled={saving}
-              className="flex-1 py-2.5 rounded-xl border border-slate-200 text-on-surface font-bold text-sm hover:bg-slate-50 transition-colors disabled:opacity-50"
+              className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-on-surface font-bold text-sm hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
             >
               Cancel
             </button>

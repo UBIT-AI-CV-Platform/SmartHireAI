@@ -11,7 +11,7 @@ export default function Logo() {
           </span>
         </div>
         <div className="flex text-2xl md:text-3xl font-bold tracking-tight">
-          <span className="text-gray-900">SmartHire</span>
+          <span className="text-gray-900 dark:text-slate-100">SmartHire</span>
           <span className="text-primary ml-0.5">AI</span>
         </div>
       </div>

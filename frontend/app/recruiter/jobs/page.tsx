@@ -7,7 +7,7 @@ type Job = { id: string; title: string; company: string; location: string | null
 type Form = { title: string; company: string; location: string; salary: string; skills: string; description: string; expires_at: string }
 const EMPTY: Form = { title: '', company: '', location: '', salary: '', skills: '', description: '', expires_at: '' }
 
-const AVATAR = ['bg-indigo-100 text-indigo-700', 'bg-purple-100 text-purple-700', 'bg-sky-100 text-sky-700', 'bg-pink-100 text-pink-700', 'bg-emerald-100 text-emerald-700', 'bg-amber-100 text-amber-700']
+const AVATAR = ['bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300', 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300', 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300', 'bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-300', 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300', 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300']
 const avatarColor = (s: string) => AVATAR[Array.from(s || '?').reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR.length]
 
 const isExpired = (j: Job) => !!j.expires_at && new Date(j.expires_at).getTime() < Date.now()
@@ -15,9 +15,9 @@ const deadlineLabel = (j: Job) => {
   if (!j.expires_at) return null
   const d = new Date(j.expires_at)
   const diff = d.getTime() - Date.now()
-  if (diff < 0) return { text: `Expired ${d.toLocaleDateString()}`, cls: 'bg-red-50 text-red-600' }
+  if (diff < 0) return { text: `Expired ${d.toLocaleDateString()}`, cls: 'bg-red-50 text-red-600 dark:bg-red-500/15 dark:text-red-300' }
   const days = Math.ceil(diff / 86400000)
-  return { text: days <= 7 ? `Closes in ${days}d` : `Closes ${d.toLocaleDateString()}`, cls: 'bg-amber-50 text-amber-700' }
+  return { text: days <= 7 ? `Closes in ${days}d` : `Closes ${d.toLocaleDateString()}`, cls: 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' }
 }
 
 export default function RecruiterJobsPage() {
@@ -157,12 +157,12 @@ export default function RecruiterJobsPage() {
         <div className="col-span-12 lg:col-span-8">
       {/* Tabs */}
       <div className="flex bg-surface-container-low rounded-2xl p-1 mb-5 w-fit">
-        <button onClick={() => setTab('active')} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === 'active' ? 'bg-white shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>Active {activeJobs.length > 0 && <span className="ml-1 text-xs">({activeJobs.length})</span>}</button>
-        <button onClick={() => setTab('expired')} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === 'expired' ? 'bg-white shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>Old / Expired {expiredJobs.length > 0 && <span className="ml-1 text-xs">({expiredJobs.length})</span>}</button>
+        <button onClick={() => setTab('active')} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === 'active' ? 'bg-white dark:bg-[#2c2c2e] shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>Active {activeJobs.length > 0 && <span className="ml-1 text-xs">({activeJobs.length})</span>}</button>
+        <button onClick={() => setTab('expired')} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === 'expired' ? 'bg-white dark:bg-[#2c2c2e] shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>Old / Expired {expiredJobs.length > 0 && <span className="ml-1 text-xs">({expiredJobs.length})</span>}</button>
       </div>
 
       {shown.length === 0 ? (
-        <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
+        <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
           <div className="w-16 h-16 rounded-2xl premium-gradient flex items-center justify-center text-white shadow-lg mb-4"><span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>{tab === 'active' ? 'post_add' : 'history'}</span></div>
           <h3 className="text-lg md:text-xl font-bold text-on-surface mb-2">{tab === 'active' ? 'No active jobs' : 'No expired jobs'}</h3>
           <p className="text-sm text-on-surface-variant max-w-md mb-5">{tab === 'active' ? 'Post a role — it appears instantly for candidates to apply to.' : 'Jobs past their deadline land here. You can repost them anytime.'}</p>
@@ -174,16 +174,16 @@ export default function RecruiterJobsPage() {
             const dl = deadlineLabel(job)
             const expired = isExpired(job)
             return (
-              <div key={job.id} className="bg-white p-4 md:p-5 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
+              <div key={job.id} className="bg-white dark:bg-[#2c2c2e] p-4 md:p-5 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
                 <div className="flex items-start gap-4">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-lg font-black ${avatarColor(job.company)}`}>{job.company.charAt(0).toUpperCase()}</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <button onClick={() => setViewJob(job)} className="text-base font-bold text-on-surface truncate hover:text-primary transition-colors text-left">{job.title}</button>
                       {expired ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-600">Expired</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300">Expired</span>
                       ) : (
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${job.is_open ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>{job.is_open ? 'Open' : 'Closed'}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${job.is_open ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' : 'bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400'}`}>{job.is_open ? 'Open' : 'Closed'}</span>
                       )}
                       {dl && <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${dl.cls}`}>{dl.text}</span>}
                     </div>
@@ -200,7 +200,7 @@ export default function RecruiterJobsPage() {
                       <button onClick={() => toggleOpen(job)} title={job.is_open ? 'Close' : 'Reopen'} className="px-3 py-2 rounded-xl text-on-surface-variant font-bold text-sm hover:bg-surface-container-low transition-colors flex items-center gap-1.5"><span className="material-symbols-outlined text-base">{job.is_open ? 'lock' : 'lock_open'}</span><span className="hidden sm:inline">{job.is_open ? 'Close' : 'Reopen'}</span></button>
                     )}
                     <button onClick={() => openEdit(job)} title="Edit" className="px-3 py-2 rounded-xl text-on-surface-variant font-bold text-sm hover:bg-surface-container-low transition-colors flex items-center gap-1.5"><span className="material-symbols-outlined text-base">edit</span><span className="hidden sm:inline">Edit</span></button>
-                    <button onClick={() => deleteJob(job)} title="Delete" className="p-2 rounded-xl text-on-surface-variant hover:text-red-500 hover:bg-red-50 transition-colors"><span className="material-symbols-outlined text-base">delete</span></button>
+                    <button onClick={() => deleteJob(job)} title="Delete" className="p-2 rounded-xl text-on-surface-variant hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"><span className="material-symbols-outlined text-base">delete</span></button>
                   </div>
                 </div>
               </div>
@@ -225,9 +225,9 @@ export default function RecruiterJobsPage() {
             <h3 className="text-base font-bold mb-1">AI Screening</h3>
             <p className="text-indigo-200/80 text-xs">Rank applicants & build interview kits with AI.</p>
           </a>
-          <div className="p-5 rounded-[1.5rem] bg-pink-200/50 border border-pink-300/30">
-            <div className="flex items-center gap-2 mb-2"><span className="material-symbols-outlined text-pink-700" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span><h3 className="text-sm font-black text-pink-950">Posting tips</h3></div>
-            <ul className="text-xs text-pink-900/80 leading-relaxed space-y-1.5 list-disc list-inside">
+          <div className="p-5 rounded-[1.5rem] bg-pink-200/50 dark:bg-pink-500/15 border border-pink-300/30 dark:border-pink-500/20">
+            <div className="flex items-center gap-2 mb-2"><span className="material-symbols-outlined text-pink-700 dark:text-pink-300" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span><h3 className="text-sm font-black text-pink-950 dark:text-pink-200">Posting tips</h3></div>
+            <ul className="text-xs text-pink-900/80 dark:text-pink-200/80 leading-relaxed space-y-1.5 list-disc list-inside">
               <li>Set a clear deadline so the post auto-archives.</li>
               <li>List exact skills — it powers candidate match scores.</li>
               <li>Use <b>Write with AI</b> for a polished description.</li>
@@ -243,13 +243,13 @@ export default function RecruiterJobsPage() {
         return (
           <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setViewJob(null)} />
-            <div className="relative z-10 w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
+            <div className="relative z-10 w-full max-w-2xl bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
               <div className="p-5 border-b border-surface-container flex items-start gap-4">
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 text-xl font-black ${avatarColor(viewJob.company)}`}>{viewJob.company.charAt(0).toUpperCase()}</div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="text-lg font-bold text-on-surface">{viewJob.title}</h3>
-                    {expired ? <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-600">Expired</span> : <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${viewJob.is_open ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>{viewJob.is_open ? 'Open' : 'Closed'}</span>}
+                    {expired ? <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300">Expired</span> : <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${viewJob.is_open ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' : 'bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400'}`}>{viewJob.is_open ? 'Open' : 'Closed'}</span>}
                   </div>
                   <p className="text-on-surface-variant text-sm">{viewJob.company}{viewJob.location ? ` • ${viewJob.location}` : ''}</p>
                   {dl && <p className={`text-xs font-bold mt-1 inline-block px-2 py-0.5 rounded ${dl.cls}`}>{dl.text}</p>}
@@ -258,7 +258,7 @@ export default function RecruiterJobsPage() {
               </div>
               <div className="p-5 overflow-y-auto flex-1 space-y-4">
                 <div className="flex flex-wrap gap-2">
-                  {viewJob.salary && <span className="px-3 py-1.5 bg-green-50 text-green-700 text-xs font-bold rounded-lg flex items-center gap-1.5"><span className="material-symbols-outlined text-sm">payments</span>{viewJob.salary}</span>}
+                  {viewJob.salary && <span className="px-3 py-1.5 bg-green-50 text-green-700 dark:bg-green-500/15 dark:text-green-300 text-xs font-bold rounded-lg flex items-center gap-1.5"><span className="material-symbols-outlined text-sm">payments</span>{viewJob.salary}</span>}
                   <span className="px-3 py-1.5 bg-primary/10 text-primary text-xs font-bold rounded-lg flex items-center gap-1.5"><span className="material-symbols-outlined text-sm">group</span>{counts[viewJob.id] || 0} applicant{(counts[viewJob.id] || 0) === 1 ? '' : 's'}</span>
                 </div>
                 {viewJob.skills.length > 0 && (
@@ -285,7 +285,7 @@ export default function RecruiterJobsPage() {
       {showForm && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowForm(false)} />
-          <div className="relative z-10 w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
+          <div className="relative z-10 w-full max-w-xl bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
             <div className="p-5 border-b border-surface-container flex items-center justify-between">
               <h3 className="text-lg font-bold text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">{reposting ? 'restart_alt' : editId ? 'edit' : 'post_add'}</span>{reposting ? 'Repost Job' : editId ? 'Edit Job' : 'Post a Job'}</h3>
               <button onClick={() => setShowForm(false)} className="text-on-surface-variant hover:text-on-surface p-1"><span className="material-symbols-outlined">close</span></button>
@@ -309,9 +309,9 @@ export default function RecruiterJobsPage() {
                     <span className="material-symbols-outlined text-sm">{jdLoading ? 'hourglass_top' : 'auto_awesome'}</span>{jdLoading ? 'Writing…' : 'Write with AI'}
                   </button>
                 </div>
-                <textarea value={form.description} onChange={(e) => set('description', e.target.value)} rows={5} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none resize-none" placeholder="Describe the role, responsibilities, and requirements — or let AI write it." />
+                <textarea value={form.description} onChange={(e) => set('description', e.target.value)} rows={5} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#2c2c2e] transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none resize-none" placeholder="Describe the role, responsibilities, and requirements — or let AI write it." />
               </div>
-              {formError && <div className="flex items-start gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-3"><span className="material-symbols-outlined text-red-500">error</span><p className="text-sm text-red-700 font-medium">{formError}</p></div>}
+              {formError && <div className="flex items-start gap-2 rounded-xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 px-4 py-3"><span className="material-symbols-outlined text-red-500">error</span><p className="text-sm text-red-700 dark:text-red-300 font-medium">{formError}</p></div>}
             </div>
             <div className="p-4 border-t border-surface-container flex gap-3">
               <button onClick={() => setShowForm(false)} className="flex-1 py-3 rounded-2xl bg-surface-container-low text-on-surface font-bold text-sm hover:bg-surface-container transition-colors">Cancel</button>
@@ -330,7 +330,7 @@ function Field({ label, value, onChange, placeholder, type = 'text' }: { label: 
   return (
     <div>
       <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2 ml-1">{label}</label>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none" />
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#2c2c2e] transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none" />
     </div>
   )
 }
@@ -351,8 +351,8 @@ function Loader() {
 function ErrorBox({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="p-4 md:p-8 lg:p-10 max-w-5xl mx-auto">
-      <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-        <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
+      <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
+        <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
         <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn’t load jobs</h2>
         <p className="text-sm text-on-surface-variant max-w-md mb-4">Something went wrong. Please try again.</p>
         <button onClick={onRetry} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>

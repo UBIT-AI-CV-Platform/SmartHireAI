@@ -19,8 +19,8 @@ export default function SignOutModal({ open, onCancel, onConfirm, loading }: Sig
       />
 
       {/* Card */}
-      <div className="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 text-center auth-pop">
-        <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center">
+      <div className="relative z-10 w-full max-w-sm bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl p-6 text-center auth-pop">
+        <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center">
           <span className="material-symbols-outlined text-red-500 text-3xl">logout</span>
         </div>
         <h3 className="text-lg font-bold text-on-surface mb-1">Sign out?</h3>
@@ -31,7 +31,7 @@ export default function SignOutModal({ open, onCancel, onConfirm, loading }: Sig
           <button
             onClick={onCancel}
             disabled={loading}
-            className="flex-1 py-2.5 rounded-xl border border-slate-200 text-on-surface font-bold text-sm hover:bg-slate-50 transition-colors disabled:opacity-50"
+            className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-on-surface font-bold text-sm hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>

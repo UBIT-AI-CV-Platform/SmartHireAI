@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import Sidebar from '@/components/candidate/Sidebar'
 import SignOutModal from '@/components/candidate/SignOutModal'
 import NotificationsBell from '@/components/candidate/NotificationsBell'
+import ThemeToggle from '@/components/shared/ThemeToggle'
 
 const DAILY_TIPS = [
   'Use active verbs on your resume.',
@@ -97,7 +98,7 @@ export default function CandidateLayout({
       )}
 
       {/* Desktop sidebar */}
-      <aside className={`hidden md:flex md:fixed md:left-0 md:top-0 md:h-screen bg-white border-r border-slate-200/70 flex-col z-[60] transition-all duration-300 ${collapsed ? 'md:w-20 p-3' : 'md:w-64 p-5'}`}>
+      <aside className={`hidden md:flex md:fixed md:left-0 md:top-0 md:h-screen bg-white dark:bg-[#1c1c1e] border-r border-slate-200/70 dark:border-white/10 flex-col z-[60] transition-all duration-300 ${collapsed ? 'md:w-20 p-3' : 'md:w-64 p-5'}`}>
         <Sidebar
           pathname={pathname}
           userName={user.name}
@@ -111,7 +112,7 @@ export default function CandidateLayout({
 
       {/* Mobile slide-in sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen w-64 bg-white flex flex-col p-5 z-[60] md:hidden shadow-2xl transition-transform duration-300 ${
+        className={`fixed left-0 top-0 h-screen w-64 bg-white dark:bg-[#1c1c1e] flex flex-col p-5 z-[60] md:hidden shadow-2xl transition-transform duration-300 ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -129,13 +130,13 @@ export default function CandidateLayout({
       </aside>
 
       {/* Top bar */}
-      <header className={`fixed top-0 right-0 left-0 flex items-center justify-between px-4 md:px-8 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/70 z-50 transition-all duration-300 ${collapsed ? 'md:left-20' : 'md:left-64'}`}>
+      <header className={`fixed top-0 right-0 left-0 flex items-center justify-between px-4 md:px-8 h-16 bg-white/80 dark:bg-[#1c1c1e]/80 backdrop-blur-md border-b border-slate-200/70 dark:border-white/10 z-50 transition-all duration-300 ${collapsed ? 'md:left-20' : 'md:left-64'}`}>
         <div className="flex items-center gap-3">
           {/* Mobile hamburger + logo */}
           <div className="flex md:hidden items-center gap-2">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              className="p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors"
               aria-label="Open menu"
             >
               <span className="material-symbols-outlined">menu</span>
@@ -146,20 +147,21 @@ export default function CandidateLayout({
           </div>
 
           {/* Daily tip */}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-indigo-50 rounded-full border border-indigo-100">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-500/15 rounded-full border border-indigo-100 dark:border-white/10">
             <span className="material-symbols-outlined text-indigo-500 text-base">lightbulb</span>
-            <span key={tipIdx} className="text-xs font-medium text-slate-600 form-slide">Daily Tip: {DAILY_TIPS[tipIdx]}</span>
+            <span key={tipIdx} className="text-xs font-medium text-slate-600 dark:text-slate-300 form-slide">Daily Tip: {DAILY_TIPS[tipIdx]}</span>
           </div>
         </div>
 
         {/* Profile */}
         <div className="flex items-center gap-2.5">
+          <ThemeToggle />
           <NotificationsBell />
           <div className="text-right hidden sm:block">
-            <p className="text-xs font-bold text-slate-900 leading-tight">{user.name}</p>
+            <p className="text-xs font-bold text-slate-900 dark:text-slate-100 leading-tight">{user.name}</p>
             <p className="text-[10px] text-slate-400 leading-tight">Candidate</p>
           </div>
-          <div className="h-9 w-9 rounded-full bg-indigo-100 flex items-center justify-center border-2 border-white shadow-sm overflow-hidden">
+          <div className="h-9 w-9 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center border-2 border-white dark:border-white/10 shadow-sm overflow-hidden">
             {user.photo ? (
               <img src={user.photo} alt={user.name} className="h-full w-full object-cover" />
             ) : (

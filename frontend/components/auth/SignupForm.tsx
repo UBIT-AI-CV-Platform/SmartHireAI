@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import FormInput from './FormInput';
 import { createClient } from '@/lib/supabase/client';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import LegalLink from '@/components/shared/LegalModal';
 
 export default function SignupForm() {
   const router = useRouter();
@@ -121,9 +122,9 @@ export default function SignupForm() {
           <div className="mx-auto mb-3 w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center auth-pop">
             <span className="material-symbols-outlined text-primary text-2xl">mark_email_unread</span>
           </div>
-          <h1 className="text-base md:text-lg font-bold text-gray-900 mb-1">Verify your email</h1>
-          <p className="text-gray-600 text-[11px] md:text-xs">
-            Enter the code sent to <span className="font-semibold text-gray-800">{email}</span>
+          <h1 className="text-base md:text-lg font-bold text-gray-900 dark:text-slate-100 mb-1">Verify your email</h1>
+          <p className="text-gray-600 dark:text-slate-300 text-[11px] md:text-xs">
+            Enter the code sent to <span className="font-semibold text-gray-800 dark:text-slate-200">{email}</span>
           </p>
         </div>
 
@@ -134,22 +135,22 @@ export default function SignupForm() {
                 <InputOTPSlot
                   key={i}
                   index={i}
-                  className="h-11 w-9 rounded-xl border text-base font-bold bg-white/70 border-indigo-200/50 data-[active=true]:border-primary data-[active=true]:ring-primary/30"
+                  className="h-11 w-9 rounded-xl border text-base font-bold bg-white/70 dark:bg-white/5 border-indigo-200/50 dark:border-white/10 dark:text-slate-100 data-[active=true]:border-primary data-[active=true]:ring-primary/30"
                 />
               ))}
             </InputOTPGroup>
           </InputOTP>
 
           {error && (
-            <div className="w-full flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2">
+            <div className="w-full flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 px-3 py-2">
               <span className="material-symbols-outlined text-red-500 text-base flex-shrink-0">error</span>
-              <p className="text-[11px] md:text-xs text-red-700 font-medium">{error}</p>
+              <p className="text-[11px] md:text-xs text-red-700 dark:text-red-300 font-medium">{error}</p>
             </div>
           )}
           {info && !error && (
-            <div className="w-full flex items-start gap-2 rounded-lg bg-green-50 border border-green-200 px-3 py-2">
+            <div className="w-full flex items-start gap-2 rounded-lg bg-green-50 dark:bg-green-500/15 border border-green-200 dark:border-green-500/20 px-3 py-2">
               <span className="material-symbols-outlined text-green-600 text-base flex-shrink-0">mark_email_read</span>
-              <p className="text-[11px] md:text-xs text-green-700 font-medium">{info}</p>
+              <p className="text-[11px] md:text-xs text-green-700 dark:text-green-300 font-medium">{info}</p>
             </div>
           )}
 
@@ -165,11 +166,11 @@ export default function SignupForm() {
             <button type="button" onClick={handleResend} className="font-semibold text-primary hover:text-primary/80 transition-colors">
               Resend code
             </button>
-            <span className="text-gray-300">|</span>
+            <span className="text-gray-300 dark:text-slate-600">|</span>
             <button
               type="button"
               onClick={() => { setStep('form'); setOtp(''); setError(null); setInfo(null); }}
-              className="font-semibold text-gray-500 hover:text-gray-700 transition-colors"
+              className="font-semibold text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition-colors"
             >
               Change email
             </button>
@@ -183,14 +184,14 @@ export default function SignupForm() {
   return (
     <div className="flex flex-col gap-3 md:gap-4">
       <div className="text-center">
-        <h1 className="text-base md:text-lg font-bold text-gray-900 mb-1">Create Account</h1>
-        <p className="text-gray-600 text-[11px] md:text-xs">Join the network of elite tech talent</p>
+        <h1 className="text-base md:text-lg font-bold text-gray-900 dark:text-slate-100 mb-1">Create Account</h1>
+        <p className="text-gray-600 dark:text-slate-300 text-[11px] md:text-xs">Join the network of elite tech talent</p>
       </div>
 
       <form onSubmit={handleSignup} className="space-y-2 md:space-y-2.5">
         {/* Role Selection */}
         <div>
-          <label className="block text-[10px] md:text-xs font-bold text-gray-900 mb-1.5 uppercase tracking-wider">
+          <label className="block text-[10px] md:text-xs font-bold text-gray-900 dark:text-slate-100 mb-1.5 uppercase tracking-wider">
             I am a
           </label>
           <div className="grid grid-cols-2 gap-2 md:gap-2.5">
@@ -217,9 +218,9 @@ export default function SignupForm() {
         </div>
 
         {error && (
-          <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2">
+          <div className="flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 px-3 py-2">
             <span className="material-symbols-outlined text-red-500 text-base flex-shrink-0">error</span>
-            <p className="text-[11px] md:text-xs text-red-700 font-medium">{error}</p>
+            <p className="text-[11px] md:text-xs text-red-700 dark:text-red-300 font-medium">{error}</p>
           </div>
         )}
 
@@ -231,9 +232,9 @@ export default function SignupForm() {
           {isLoading ? 'Creating account...' : 'Sign Up'}
         </button>
 
-        <p className="text-center text-[10px] md:text-[11px] text-gray-600">
+        <p className="text-center text-[10px] md:text-[11px] text-gray-600 dark:text-slate-400">
           By signing up, you agree to our{' '}
-          <a href="#" className="text-primary font-semibold hover:text-primary/80 transition-colors">Terms of Service</a>
+          <LegalLink kind="terms" className="text-primary font-semibold hover:text-primary/80 transition-colors cursor-pointer">Terms of Service</LegalLink>
         </p>
       </form>
     </div>
@@ -254,13 +255,13 @@ function RoleOption({ label, icon, value, isSelected, onChange }: RoleOptionProp
       <input type="radio" name="role" value={value} checked={isSelected} onChange={onChange} className="sr-only" />
       <div
         className={`p-2.5 md:p-3 rounded-lg border-2 transition-all duration-300 flex flex-col items-center text-center gap-1.5 ${
-          isSelected ? 'border-indigo-300 bg-indigo-100/60 scale-[1.02]' : 'border-indigo-200/40 bg-white/50 hover:bg-white/70'
+          isSelected ? 'border-indigo-300 bg-indigo-100/60 dark:bg-indigo-500/15 scale-[1.02]' : 'border-indigo-200/40 dark:border-white/10 bg-white/50 dark:bg-white/5 hover:bg-white/70 dark:hover:bg-white/10'
         }`}
       >
-        <span className={`material-symbols-outlined text-lg md:text-2xl transition-colors ${isSelected ? 'text-primary' : 'text-gray-600'}`}>
+        <span className={`material-symbols-outlined text-lg md:text-2xl transition-colors ${isSelected ? 'text-primary' : 'text-gray-600 dark:text-slate-400'}`}>
           {icon}
         </span>
-        <span className="text-[8px] md:text-[9px] font-bold text-gray-900 uppercase tracking-tighter">{label}</span>
+        <span className="text-[8px] md:text-[9px] font-bold text-gray-900 dark:text-slate-100 uppercase tracking-tighter">{label}</span>
       </div>
     </label>
   );
@@ -277,7 +278,7 @@ function PasswordCondition({ met, text }: PasswordConditionProps) {
       <span className={`material-symbols-outlined text-[14px] transition-colors duration-300 flex-shrink-0 ${met ? 'text-green-500' : 'text-red-500'}`}>
         {met ? 'check_circle' : 'cancel'}
       </span>
-      <span className={`text-[10px] md:text-[11px] transition-colors duration-300 ${met ? 'text-green-600' : 'text-red-600'}`}>
+      <span className={`text-[10px] md:text-[11px] transition-colors duration-300 ${met ? 'text-green-600 dark:text-green-300' : 'text-red-600 dark:text-red-300'}`}>
         {text}
       </span>
     </div>
