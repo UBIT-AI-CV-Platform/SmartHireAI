@@ -39,6 +39,10 @@ next.user-config.*
 # Demo seed contains a plaintext demo password — keep it local
 backend/seed-demo.sql
 
+# Alternative package manager lockfiles — this repo is npm-only
+pnpm-lock.yaml
+yarn.lock
+
 # Logs
 *.log
 npm-debug.log*
