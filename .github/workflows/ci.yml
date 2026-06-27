@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches-ignore:
+      - main          # don't double-run on main (PR merge already covers it)
+  pull_request:
+    branches:
+      - main
+
+# Cancel any in-progress run for the same workflow + ref so rapid pushes don't
+# queue up and waste minutes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      # ── 1. Source ────────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── 2. Lockfile guard ────────────────────────────────────────────────────
+      # Must run BEFORE install so a bad lockfile is caught before npm sees it.
+      # Prunes every node_modules directory to avoid false positives.
+      - name: Guard — block non-npm lockfiles
+        working-directory: ${{ github.workspace }}
+        run: |
+          found=$(find . \( -name 'node_modules' -type d \) -prune \
+            -o \( -name 'pnpm-lock.yaml' -o -name 'yarn.lock' \) -print)
+          if [ -n "$found" ]; then
+            echo "::error::Non-npm lockfile detected — this repo is npm-only."
+            for f in $found; do
+              echo "  Found: $f"
+            done
+            echo "Remove the file, commit, and re-push."
+            exit 1
+          fi
+          echo "Lockfile guard passed — no pnpm-lock.yaml or yarn.lock found."
+
+      # ── 3. Node + cache ──────────────────────────────────────────────────────
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      # ── 4. Install ───────────────────────────────────────────────────────────
+      - name: Install dependencies
+        run: npm ci
+
+      # ── 5. Lint ──────────────────────────────────────────────────────────────
+      # Soft-fail: eslint is not yet a declared devDependency. When it is added,
+      # this step will automatically promote to a real lint run with no YAML change.
+      - name: Lint
+        run: |
+          if [ -f node_modules/.bin/eslint ]; then
+            npm run lint
+          else
+            echo "::warning::eslint binary not found in node_modules — skipping lint." \
+              "Add eslint to devDependencies to enable this check."
+          fi
+
+      # ── 6. Build ─────────────────────────────────────────────────────────────
+      # Secrets are injected as env vars; never echoed or printed.
+      # set -o pipefail ensures a build failure propagates through the tee pipe.
+      - name: Build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          GEMINI_API_KEYS: ${{ secrets.GEMINI_API_KEYS }}
+        run: |
+          set -eo pipefail
+          npm run build 2>&1 | tee /tmp/build.log
+
+      # ── 7. Step summary ──────────────────────────────────────────────────────
+      - name: Append build summary
+        if: success()
+        run: |
+          PAGE_COUNT=$(grep 'Generating static pages' /tmp/build.log \
+            | grep -o '[0-9]*/[0-9]*' | tail -1 | cut -d'/' -f1)
+          {
+            echo "### ✅ Build succeeded"
+            echo ""
+            echo "| Metric | Value |"
+            echo "|--------|-------|"
+            echo "| Pages generated | ${PAGE_COUNT:-unknown} |"
+            echo "| Node version | $(node --version) |"
+            echo "| Triggered by | ${{ github.event_name }} on \`${{ github.ref_name }}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
