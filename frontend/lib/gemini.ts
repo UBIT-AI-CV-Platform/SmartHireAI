@@ -78,7 +78,8 @@ export async function geminiGenerate(body: object, models: string[] = GEMINI_MOD
         lastErr = (await res.text()).slice(0, 200)
         if (res.status === 429) break // rate-limited on this key → try next key immediately
         if ([500, 503].includes(res.status)) { await sleep(800 * (attempt + 1)); continue }
-        throw new Error(lastErr) // hard error (bad key, bad request)
+        console.error(`Gemini API error (status ${res.status}):`, lastErr)
+        throw new Error('Something went wrong with the AI service. Please try again.') // hard error (bad key, bad request)
       }
     }
   }

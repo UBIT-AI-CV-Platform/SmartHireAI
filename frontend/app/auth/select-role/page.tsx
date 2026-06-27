@@ -40,7 +40,8 @@ export default function SelectRolePage() {
       router.replace('/auth')
       return
     }
-    await supabase.from('profiles').update({ role, role_selected: true }).eq('id', user.id)
+    const { error } = await supabase.from('profiles').update({ role, role_selected: true }).eq('id', user.id)
+    if (error) { setSaving(false); return }
     router.replace(role === 'recruiter' ? '/recruiter' : '/candidate')
     router.refresh()
   }

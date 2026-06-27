@@ -210,8 +210,15 @@ export default function MyApplicationsPage() {
     if (!uid) return
     const supabase = createClient()
     const next = new Set(savedIds)
-    if (next.has(jobId)) { next.delete(jobId); setSavedIds(next); await supabase.from('saved_jobs').delete().eq('profile_id', uid).eq('job_id', jobId) }
-    else { next.add(jobId); setSavedIds(next); await supabase.from('saved_jobs').insert({ profile_id: uid, job_id: jobId }) }
+    if (next.has(jobId)) {
+      next.delete(jobId); setSavedIds(next)
+      const { error } = await supabase.from('saved_jobs').delete().eq('profile_id', uid).eq('job_id', jobId)
+      if (error) { console.error('unsaveJob failed:', error.message); next.add(jobId); setSavedIds(new Set(next)) }
+    } else {
+      next.add(jobId); setSavedIds(next)
+      const { error } = await supabase.from('saved_jobs').insert({ profile_id: uid, job_id: jobId })
+      if (error) { console.error('saveJob failed:', error.message); next.delete(jobId); setSavedIds(new Set(next)) }
+    }
   }
 
   // ── Apply flow ─────────────────────────────────────────────────────────
@@ -247,7 +254,8 @@ export default function MyApplicationsPage() {
   const withdraw = async (appId: string) => {
     if (!window.confirm('Withdraw this application? The recruiter will no longer see it as active.')) return
     const supabase = createClient()
-    await supabase.from('applications').delete().eq('id', appId)
+    const { error } = await supabase.from('applications').delete().eq('id', appId)
+    if (error) { console.error('withdraw failed:', error.message); return }
     setApps((a) => a.filter((x) => x.id !== appId))
   }
 

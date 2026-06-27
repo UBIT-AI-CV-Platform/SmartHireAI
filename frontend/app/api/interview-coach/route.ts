@@ -5,7 +5,7 @@ import { pickGeminiKey } from '@/lib/gemini'
 export const runtime = 'nodejs'
 export const maxDuration = 60
 
-const GEMINI_MODEL = 'gemini-2.5-flash'
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 
 type ChatMsg = { role: 'user' | 'assistant'; content: string }
 
@@ -147,7 +147,8 @@ export async function POST(request: Request) {
 
   if (!geminiRes.ok || !geminiRes.body) {
     const errText = await geminiRes.text().catch(() => '')
-    return NextResponse.json({ error: `AI request failed: ${errText.slice(0, 300)}` }, { status: 502 })
+    console.error('Gemini API error (interview-coach):', errText.slice(0, 500))
+    return NextResponse.json({ error: 'Something went wrong with the interview coach. Please try again.' }, { status: 502 })
   }
 
   // Re-stream just the text deltas as plain text

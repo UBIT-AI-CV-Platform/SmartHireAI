@@ -45,7 +45,8 @@ export default function CustomSections({ profileId }: { profileId: string | null
   }
 
   const deleteSection = async (id: number) => {
-    await supabase.from('custom_sections').delete().eq('id', id)
+    const { error } = await supabase.from('custom_sections').delete().eq('id', id)
+    if (error) { console.error('deleteSection failed:', error.message); return }
     setSections(sections.filter((s) => s.id !== id))
   }
 
@@ -58,7 +59,8 @@ export default function CustomSections({ profileId }: { profileId: string | null
   const addItem = async (sec: Sec) => {
     if (!itemTitle.trim()) return
     const newItems = [...sec.items, { title: itemTitle.trim(), description: itemDesc.trim() || undefined }]
-    await supabase.from('custom_sections').update({ items: newItems }).eq('id', sec.id)
+    const { error } = await supabase.from('custom_sections').update({ items: newItems }).eq('id', sec.id)
+    if (error) { console.error('addItem failed:', error.message); return }
     setSections(sections.map((s) => (s.id === sec.id ? { ...s, items: newItems } : s)))
     setItemTitle('')
     setItemDesc('')
@@ -67,7 +69,8 @@ export default function CustomSections({ profileId }: { profileId: string | null
 
   const removeItem = async (sec: Sec, idx: number) => {
     const newItems = sec.items.filter((_, i) => i !== idx)
-    await supabase.from('custom_sections').update({ items: newItems }).eq('id', sec.id)
+    const { error } = await supabase.from('custom_sections').update({ items: newItems }).eq('id', sec.id)
+    if (error) { console.error('removeItem failed:', error.message); return }
     setSections(sections.map((s) => (s.id === sec.id ? { ...s, items: newItems } : s)))
   }
 

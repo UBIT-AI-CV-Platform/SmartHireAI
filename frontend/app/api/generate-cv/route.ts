@@ -7,7 +7,7 @@ export const maxDuration = 60
 
 // Free Google Gemini model. Change here if you want a different one.
 // Options (all have a free tier): gemini-2.5-flash, gemini-2.0-flash, gemini-flash-latest
-const GEMINI_MODEL = 'gemini-2.5-flash'
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 
 // The structured CV shape we ask Gemini to return (OpenAPI subset).
 const RESPONSE_SCHEMA = {
@@ -223,7 +223,7 @@ export async function POST(request: Request) {
 
   // Custom sections text
   let customText = ''
-  for (const s of (cs.data ?? []) as { heading: string; items: { title: string; description?: string }[] }[]) {
+  for (const s of (cs.data ?? []) as unknown as { heading: string; items: { title: string; description?: string }[] }[]) {
     customText += `\n${s.heading}:\n`
     for (const it of s.items ?? []) customText += `- ${it.title}${it.description ? `: ${it.description}` : ''}\n`
   }
@@ -256,7 +256,8 @@ ${customText ? `\nAdditional custom sections provided by the candidate (include 
 
     if (!res.ok) {
       const errText = await res.text()
-      return NextResponse.json({ error: `AI request failed: ${errText.slice(0, 300)}` }, { status: 502 })
+      console.error('Gemini API error (generate-cv):', errText.slice(0, 500))
+      return NextResponse.json({ error: 'Something went wrong generating your CV. Please try again.' }, { status: 502 })
     }
 
     const data = await res.json()

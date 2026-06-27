@@ -114,7 +114,8 @@ export default function CVGeneratorPage() {
     const next = !coverFav
     setCoverFav(next)
     const supabase = createClient()
-    await supabase.from('cover_letters').update({ is_favorite: next }).eq('id', coverId)
+    const { error } = await supabase.from('cover_letters').update({ is_favorite: next }).eq('id', coverId)
+    if (error) { console.error('toggleCoverFav failed:', error.message); setCoverFav(!next); return }
     setCoverHistory((h) => h.map((r) => (r.id === coverId ? { ...r, is_favorite: next } : r)))
   }
 
@@ -181,7 +182,8 @@ export default function CVGeneratorPage() {
     if (!cvId) return
     setSavingEdits(true)
     const supabase = createClient()
-    await supabase.from('cvs').update({ content: cv }).eq('id', cvId)
+    const { error } = await supabase.from('cvs').update({ content: cv }).eq('id', cvId)
+    if (error) console.error('saveEdits failed:', error.message)
     setSavingEdits(false)
   }
 
@@ -258,14 +260,16 @@ export default function CVGeneratorPage() {
     const name = window.prompt('Rename this CV', row.target_role || '')
     if (name === null) return
     const supabase = createClient()
-    await supabase.from('cvs').update({ target_role: name.trim() || null }).eq('id', row.id)
+    const { error } = await supabase.from('cvs').update({ target_role: name.trim() || null }).eq('id', row.id)
+    if (error) { console.error('renameCV failed:', error.message); return }
     setHistory((h) => h.map((r) => (r.id === row.id ? { ...r, target_role: name.trim() || null } : r)))
   }
 
   const deleteCV = async (row: CVHistoryRow) => {
     if (!window.confirm('Delete this CV permanently?')) return
     const supabase = createClient()
-    await supabase.from('cvs').delete().eq('id', row.id)
+    const { error } = await supabase.from('cvs').delete().eq('id', row.id)
+    if (error) { console.error('deleteCV failed:', error.message); return }
     setHistory((h) => h.filter((r) => r.id !== row.id))
   }
 
@@ -273,7 +277,8 @@ export default function CVGeneratorPage() {
     const next = !row.is_favorite
     setHistory((h) => h.map((r) => (r.id === row.id ? { ...r, is_favorite: next } : r)))
     const supabase = createClient()
-    await supabase.from('cvs').update({ is_favorite: next }).eq('id', row.id)
+    const { error } = await supabase.from('cvs').update({ is_favorite: next }).eq('id', row.id)
+    if (error) { console.error('toggleFavCV failed:', error.message); setHistory((h) => h.map((r) => (r.id === row.id ? { ...r, is_favorite: !next } : r))) }
   }
 
   const loadCover = (row: CoverRow) => {
@@ -289,7 +294,8 @@ export default function CVGeneratorPage() {
   const deleteCover = async (row: CoverRow) => {
     if (!window.confirm('Delete this cover letter permanently?')) return
     const supabase = createClient()
-    await supabase.from('cover_letters').delete().eq('id', row.id)
+    const { error } = await supabase.from('cover_letters').delete().eq('id', row.id)
+    if (error) { console.error('deleteCover failed:', error.message); return }
     setCoverHistory((h) => h.filter((r) => r.id !== row.id))
     if (coverId === row.id) { setCoverId(null); setCoverFav(false) }
   }
@@ -299,7 +305,8 @@ export default function CVGeneratorPage() {
     setCoverHistory((h) => h.map((r) => (r.id === row.id ? { ...r, is_favorite: next } : r)))
     if (coverId === row.id) setCoverFav(next)
     const supabase = createClient()
-    await supabase.from('cover_letters').update({ is_favorite: next }).eq('id', row.id)
+    const { error } = await supabase.from('cover_letters').update({ is_favorite: next }).eq('id', row.id)
+    if (error) { console.error('toggleFavCover failed:', error.message); setCoverHistory((h) => h.map((r) => (r.id === row.id ? { ...r, is_favorite: !next } : r))); if (coverId === row.id) setCoverFav(!next) }
   }
 
   // ── CV section blocks (reused for single & two-column layouts) ──────────
