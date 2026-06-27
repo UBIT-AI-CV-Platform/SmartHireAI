@@ -16,17 +16,17 @@ export default function Pagination({ page, totalPages, onChange }: { page: numbe
 
   return (
     <div className="flex items-center justify-center gap-1.5 mt-6">
-      <button onClick={() => go(page - 1)} disabled={page === 1} className="h-9 w-9 flex items-center justify-center rounded-xl bg-white border border-surface-container text-on-surface hover:bg-surface-container-low transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+      <button onClick={() => go(page - 1)} disabled={page === 1} className="h-9 w-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-on-surface hover:bg-surface-container-low transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
         <span className="material-symbols-outlined text-lg">chevron_left</span>
       </button>
       {pages.map((p, i) =>
         p === '…' ? (
           <span key={`e${i}`} className="px-1 text-on-surface-variant">…</span>
         ) : (
-          <button key={p} onClick={() => go(p)} className={`h-9 min-w-9 px-2 flex items-center justify-center rounded-xl text-sm font-bold transition-all ${p === page ? 'premium-gradient text-white shadow' : 'bg-white border border-surface-container text-on-surface hover:bg-surface-container-low'}`}>{p}</button>
+          <button key={p} onClick={() => go(p)} className={`h-9 min-w-9 px-2 flex items-center justify-center rounded-xl text-sm font-bold transition-all ${p === page ? 'premium-gradient text-white shadow' : 'bg-white dark:bg-[#2c2c2e] border border-surface-container text-on-surface hover:bg-surface-container-low'}`}>{p}</button>
         )
       )}
-      <button onClick={() => go(page + 1)} disabled={page === totalPages} className="h-9 w-9 flex items-center justify-center rounded-xl bg-white border border-surface-container text-on-surface hover:bg-surface-container-low transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+      <button onClick={() => go(page + 1)} disabled={page === totalPages} className="h-9 w-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-on-surface hover:bg-surface-container-low transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
         <span className="material-symbols-outlined text-lg">chevron_right</span>
       </button>
     </div>

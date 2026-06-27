@@ -48,7 +48,7 @@ export default function SelectRolePage() {
 
   if (checking) {
     return (
-      <div className="min-h-screen bg-[#f7f9fb] flex flex-col items-center justify-center gap-3">
+      <div className="min-h-screen bg-[#f7f9fb] dark:bg-[#1c1c1e] flex flex-col items-center justify-center gap-3">
         <div className="flex gap-1.5">
           <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce"></div>
           <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></div>
@@ -60,14 +60,14 @@ export default function SelectRolePage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#f7f9fb] flex items-center justify-center p-4">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl p-6 md:p-8 border border-slate-100">
+    <div className="relative min-h-screen bg-[#f7f9fb] dark:bg-[#1c1c1e] flex items-center justify-center p-4">
+      <div className="w-full max-w-lg bg-white dark:bg-[#2c2c2e] rounded-2xl shadow-2xl p-6 md:p-8 border border-slate-100 dark:border-white/10">
         <div className="text-center mb-6">
           <Logo />
         </div>
         <div className="text-center mb-6">
-          <h1 className="text-lg md:text-xl font-bold text-gray-900 mb-1">One last step</h1>
-          <p className="text-gray-600 text-xs md:text-sm">How will you be using SmartHire AI?</p>
+          <h1 className="text-lg md:text-xl font-bold text-gray-900 dark:text-slate-100 mb-1">One last step</h1>
+          <p className="text-gray-600 dark:text-slate-300 text-xs md:text-sm">How will you be using SmartHire AI?</p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 md:gap-4 mb-6">
@@ -94,7 +94,7 @@ export default function SelectRolePage() {
         >
           {saving ? 'Setting up...' : 'Continue'}
         </button>
-        <p className="text-center text-[10px] md:text-[11px] text-gray-500 mt-3">
+        <p className="text-center text-[10px] md:text-[11px] text-gray-500 dark:text-slate-400 mt-3">
           This can&apos;t be changed later, so choose carefully.
         </p>
       </div>
@@ -111,15 +111,15 @@ function RoleCard({
       onClick={onClick}
       className={`p-4 rounded-2xl border-2 text-center transition-all duration-300 ${
         selected
-          ? 'border-indigo-400 bg-indigo-100/70 scale-[1.02] shadow-md'
-          : 'border-indigo-200/40 bg-white/60 hover:bg-white/80'
+          ? 'border-indigo-400 bg-indigo-100/70 dark:bg-indigo-500/15 scale-[1.02] shadow-md'
+          : 'border-indigo-200/40 dark:border-white/10 bg-white/60 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10'
       }`}
     >
-      <div className={`mx-auto mb-2 w-11 h-11 rounded-xl flex items-center justify-center ${selected ? 'bg-primary text-white' : 'bg-indigo-100 text-primary'}`}>
+      <div className={`mx-auto mb-2 w-11 h-11 rounded-xl flex items-center justify-center ${selected ? 'bg-primary text-white' : 'bg-indigo-100 dark:bg-indigo-500/15 text-primary'}`}>
         <span className="material-symbols-outlined text-2xl">{icon}</span>
       </div>
-      <p className="text-sm font-bold text-gray-900">{label}</p>
-      <p className="text-[10px] md:text-[11px] text-gray-500 mt-0.5 leading-tight">{description}</p>
+      <p className="text-sm font-bold text-gray-900 dark:text-slate-100">{label}</p>
+      <p className="text-[10px] md:text-[11px] text-gray-500 dark:text-slate-400 mt-0.5 leading-tight">{description}</p>
     </button>
   )
 }

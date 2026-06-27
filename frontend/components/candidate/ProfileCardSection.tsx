@@ -91,7 +91,7 @@ export default function ProfileCardSection({
               <button onClick={() => openEdit(item)} className="text-on-surface-variant hover:text-primary p-1.5 rounded-lg hover:bg-primary/5" title="Edit">
                 <span className="material-symbols-outlined text-base md:text-lg">edit</span>
               </button>
-              <button onClick={() => remove(item.id)} className="text-on-surface-variant hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50" title="Delete">
+              <button onClick={() => remove(item.id)} className="text-on-surface-variant hover:text-red-500 dark:hover:text-red-300 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15" title="Delete">
                 <span className="material-symbols-outlined text-base md:text-lg">delete</span>
               </button>
             </div>
@@ -106,9 +106,9 @@ export default function ProfileCardSection({
               <div key={f.key} className={f.full || f.type === 'textarea' ? 'col-span-full' : ''}>
                 <label className="text-[10px] font-bold text-on-surface-variant mb-1 block uppercase">{f.label}</label>
                 {f.type === 'textarea' ? (
-                  <textarea value={data[f.key]} onChange={(e) => setData({ ...data, [f.key]: e.target.value })} rows={3} placeholder={f.placeholder} className="w-full bg-white border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all outline-none resize-none" />
+                  <textarea value={data[f.key]} onChange={(e) => setData({ ...data, [f.key]: e.target.value })} rows={3} placeholder={f.placeholder} className="w-full bg-white dark:bg-[#2c2c2e] border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all outline-none resize-none" />
                 ) : (
-                  <input value={data[f.key]} onChange={(e) => setData({ ...data, [f.key]: e.target.value })} placeholder={f.placeholder} type="text" className="w-full bg-white border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all outline-none" />
+                  <input value={data[f.key]} onChange={(e) => setData({ ...data, [f.key]: e.target.value })} placeholder={f.placeholder} type="text" className="w-full bg-white dark:bg-[#2c2c2e] border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all outline-none" />
                 )}
               </div>
             ))}

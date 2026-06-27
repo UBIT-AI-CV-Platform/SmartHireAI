@@ -45,8 +45,8 @@ export default function LoginForm() {
     <div className="flex flex-col gap-3 md:gap-4">
       {/* Heading */}
       <div className="text-center">
-        <h1 className="text-base md:text-lg font-bold text-gray-900 mb-1">Welcome back</h1>
-        <p className="text-gray-600 text-[11px] md:text-xs">Access your curated talent dashboard</p>
+        <h1 className="text-base md:text-lg font-bold text-gray-900 dark:text-slate-100 mb-1">Welcome back</h1>
+        <p className="text-gray-600 dark:text-slate-300 text-[11px] md:text-xs">Access your curated talent dashboard</p>
       </div>
 
       {/* Form */}
@@ -80,9 +80,9 @@ export default function LoginForm() {
 
         {/* Error message */}
         {error && (
-          <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2">
+          <div className="flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 px-3 py-2">
             <span className="material-symbols-outlined text-red-500 text-base flex-shrink-0">error</span>
-            <p className="text-[11px] md:text-xs text-red-700 font-medium">{error}</p>
+            <p className="text-[11px] md:text-xs text-red-700 dark:text-red-300 font-medium">{error}</p>
           </div>
         )}
 

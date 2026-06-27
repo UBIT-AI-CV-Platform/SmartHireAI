@@ -23,17 +23,17 @@ type AppRow = { id: string; job_id: string; candidate_id: string; candidate_name
 type NewItem = { otherId: string; name: string; sub: string; jobId: string | null }
 
 const STAGE_META: Record<string, { label: string; cls: string; icon: string }> = {
-  proposed: { label: 'Awaiting response', cls: 'bg-amber-100 text-amber-700', icon: 'schedule' },
-  accepted: { label: 'Confirmed', cls: 'bg-sky-100 text-sky-700', icon: 'event_available' },
-  declined: { label: 'Declined', cls: 'bg-red-100 text-red-600', icon: 'event_busy' },
-  completed: { label: 'Awaiting result', cls: 'bg-purple-100 text-purple-700', icon: 'how_to_reg' },
-  offer: { label: 'Offer sent', cls: 'bg-green-100 text-green-700', icon: 'workspace_premium' },
-  offer_accepted: { label: 'Hired 🎉', cls: 'bg-green-100 text-green-700', icon: 'verified' },
-  offer_declined: { label: 'Offer declined', cls: 'bg-slate-100 text-slate-500', icon: 'cancel' },
-  rejected: { label: 'Not selected', cls: 'bg-slate-100 text-slate-500', icon: 'do_not_disturb_on' },
-  cancelled: { label: 'Cancelled', cls: 'bg-slate-100 text-slate-500', icon: 'event_busy' },
+  proposed: { label: 'Awaiting response', cls: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300', icon: 'schedule' },
+  accepted: { label: 'Confirmed', cls: 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300', icon: 'event_available' },
+  declined: { label: 'Declined', cls: 'bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300', icon: 'event_busy' },
+  completed: { label: 'Awaiting result', cls: 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300', icon: 'how_to_reg' },
+  offer: { label: 'Offer sent', cls: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300', icon: 'workspace_premium' },
+  offer_accepted: { label: 'Hired 🎉', cls: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300', icon: 'verified' },
+  offer_declined: { label: 'Offer declined', cls: 'bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400', icon: 'cancel' },
+  rejected: { label: 'Not selected', cls: 'bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400', icon: 'do_not_disturb_on' },
+  cancelled: { label: 'Cancelled', cls: 'bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400', icon: 'event_busy' },
 }
-const AVATAR = ['bg-indigo-100 text-indigo-700', 'bg-purple-100 text-purple-700', 'bg-sky-100 text-sky-700', 'bg-pink-100 text-pink-700', 'bg-emerald-100 text-emerald-700', 'bg-amber-100 text-amber-700']
+const AVATAR = ['bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300', 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300', 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300', 'bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-300', 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300', 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300']
 const avatarColor = (s: string) => AVATAR[Array.from(s || '?').reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR.length]
 const initial = (s: string | null) => (s || '?').charAt(0).toUpperCase()
 const fmtWhen = (iso: string | null) => iso ? new Date(iso).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Time to be confirmed'
@@ -308,7 +308,7 @@ export default function Inbox({ role }: { role: Role }) {
   return (
     <div className="h-[calc(100vh-4rem)] flex">
       {/* Conversation list */}
-      <aside className={`${active ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col border-r border-surface-container bg-white flex-shrink-0`}>
+      <aside className={`${active ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col border-r border-surface-container bg-white dark:bg-[#1c1c1e] flex-shrink-0`}>
         <div className="p-4 border-b border-surface-container flex items-center justify-between">
           <h1 className="text-lg font-bold text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">forum</span>Inbox</h1>
           <button onClick={openNew} className="h-9 px-3 rounded-xl premium-gradient text-white text-xs font-bold flex items-center gap-1 hover:scale-105 transition-transform"><span className="material-symbols-outlined text-base">edit_square</span>New</button>
@@ -347,7 +347,7 @@ export default function Inbox({ role }: { role: Role }) {
         ) : (
           <>
             {/* Thread header */}
-            <header className="h-16 px-3 md:px-5 flex items-center gap-3 border-b border-surface-container bg-white flex-shrink-0">
+            <header className="h-16 px-3 md:px-5 flex items-center gap-3 border-b border-surface-container bg-white dark:bg-[#1c1c1e] flex-shrink-0">
               <button onClick={() => { setActive(null); activeRef.current = null }} className="md:hidden p-1.5 -ml-1 rounded-lg hover:bg-surface-container text-on-surface-variant"><span className="material-symbols-outlined">arrow_back</span></button>
               <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black ${avatarColor(otherName(active))}`}>{initial(otherName(active))}</div>
               <div className="flex-1 min-w-0">
@@ -369,7 +369,7 @@ export default function Inbox({ role }: { role: Role }) {
                 const mine = m.sender_id === uid
                 return (
                   <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[78%] md:max-w-[65%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${mine ? 'premium-gradient text-white rounded-br-md' : 'bg-white text-on-surface border border-surface-container rounded-bl-md'}`}>
+                    <div className={`max-w-[78%] md:max-w-[65%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${mine ? 'premium-gradient text-white rounded-br-md' : 'bg-white dark:bg-white/10 text-on-surface border border-surface-container rounded-bl-md'}`}>
                       <p className="whitespace-pre-wrap break-words">{m.body}</p>
                       <p className={`text-[10px] mt-1 ${mine ? 'text-white/70' : 'text-outline'}`}>{fmtTime(m.created_at)}</p>
                     </div>
@@ -380,16 +380,16 @@ export default function Inbox({ role }: { role: Role }) {
 
             {/* Recruiter quick actions */}
             {isRecruiter && (
-              <div className="px-3 md:px-5 pt-2 flex flex-wrap gap-2 bg-white border-t border-surface-container">
-                <button onClick={() => openSchedule()} disabled={busy} title="Schedule an interview" className="px-3 py-1.5 rounded-xl bg-sky-50 text-sky-700 text-xs font-bold flex items-center gap-1.5 hover:bg-sky-100 transition-colors disabled:opacity-50"><span className="material-symbols-outlined text-base">videocam</span>Schedule interview</button>
-                <button onClick={sendOfferFromMenu} disabled={busy || offerLocked} title={offerHint} className="px-3 py-1.5 rounded-xl bg-green-50 text-green-700 text-xs font-bold flex items-center gap-1.5 hover:bg-green-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-green-50"><span className="material-symbols-outlined text-base">{hired ? 'verified' : 'workspace_premium'}</span>{hired ? 'Hired' : 'Send offer'}</button>
-                <button onClick={rejectFromMenu} disabled={busy || rejectLocked} title={rejectHint} className="px-3 py-1.5 rounded-xl bg-red-50 text-red-600 text-xs font-bold flex items-center gap-1.5 hover:bg-red-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-red-50"><span className="material-symbols-outlined text-base">do_not_disturb_on</span>Reject</button>
+              <div className="px-3 md:px-5 pt-2 flex flex-wrap gap-2 bg-white dark:bg-[#1c1c1e] border-t border-surface-container">
+                <button onClick={() => openSchedule()} disabled={busy} title="Schedule an interview" className="px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300 text-xs font-bold flex items-center gap-1.5 hover:bg-sky-100 dark:hover:bg-sky-500/25 transition-colors disabled:opacity-50"><span className="material-symbols-outlined text-base">videocam</span>Schedule interview</button>
+                <button onClick={sendOfferFromMenu} disabled={busy || offerLocked} title={offerHint} className="px-3 py-1.5 rounded-xl bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300 text-xs font-bold flex items-center gap-1.5 hover:bg-green-100 dark:hover:bg-green-500/25 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-green-50 dark:disabled:hover:bg-green-500/15"><span className="material-symbols-outlined text-base">{hired ? 'verified' : 'workspace_premium'}</span>{hired ? 'Hired' : 'Send offer'}</button>
+                <button onClick={rejectFromMenu} disabled={busy || rejectLocked} title={rejectHint} className="px-3 py-1.5 rounded-xl bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-300 text-xs font-bold flex items-center gap-1.5 hover:bg-red-100 dark:hover:bg-red-500/25 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-red-50 dark:disabled:hover:bg-red-500/15"><span className="material-symbols-outlined text-base">do_not_disturb_on</span>Reject</button>
               </div>
             )}
 
             {/* Composer */}
-            <div className="p-3 md:p-4 bg-white border-t border-surface-container flex items-end gap-2 flex-shrink-0">
-              <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText() } }} rows={1} placeholder="Write a message…" className="flex-1 resize-none max-h-32 px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface text-sm outline-none" />
+            <div className="p-3 md:p-4 bg-white dark:bg-[#1c1c1e] border-t border-surface-container flex items-end gap-2 flex-shrink-0">
+              <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText() } }} rows={1} placeholder="Write a message…" className="flex-1 resize-none max-h-32 px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all text-on-surface text-sm outline-none" />
               <button onClick={sendText} disabled={!input.trim()} className="w-11 h-11 rounded-2xl premium-gradient text-white flex items-center justify-center flex-shrink-0 disabled:opacity-40 hover:scale-105 transition-transform"><span className="material-symbols-outlined">send</span></button>
             </div>
           </>
@@ -428,9 +428,9 @@ export default function Inbox({ role }: { role: Role }) {
             <Field label="Meeting link (optional)" value={sched.link} onChange={(v) => setSched((s) => ({ ...s, link: v }))} placeholder="Leave empty to use the built-in video room" />
             <div>
               <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2 ml-1">Note (optional)</label>
-              <textarea value={sched.notes} onChange={(e) => setSched((s) => ({ ...s, notes: e.target.value }))} rows={2} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface text-sm outline-none resize-none" placeholder="Anything the candidate should know…" />
+              <textarea value={sched.notes} onChange={(e) => setSched((s) => ({ ...s, notes: e.target.value }))} rows={2} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all text-on-surface text-sm outline-none resize-none" placeholder="Anything the candidate should know…" />
             </div>
-            {schedErr && <div className="flex items-start gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-3"><span className="material-symbols-outlined text-red-500">error</span><p className="text-sm text-red-700 font-medium">{schedErr}</p></div>}
+            {schedErr && <div className="flex items-start gap-2 rounded-xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/30 px-4 py-3"><span className="material-symbols-outlined text-red-500 dark:text-red-300">error</span><p className="text-sm text-red-700 dark:text-red-300 font-medium">{schedErr}</p></div>}
             <button onClick={submitSchedule} disabled={busy} className="w-full py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"><span className="material-symbols-outlined text-lg">{busy ? 'hourglass_top' : 'check'}</span>{busy ? 'Saving…' : sched.ivId ? 'Reschedule & notify' : 'Schedule & notify'}</button>
           </div>
         </Modal>
@@ -452,7 +452,7 @@ function InterviewCard({ iv, role, busy, onAction }: { iv: Iv; role: Role; busy:
     : <Link href={joinHref} className="px-3 py-1.5 rounded-xl premium-gradient text-white text-xs font-bold flex items-center gap-1.5 hover:scale-105 transition-transform"><span className="material-symbols-outlined text-base">videocam</span>Join room</Link>
 
   return (
-    <div className="w-full max-w-sm bg-white rounded-2xl border border-surface-container shadow-sm overflow-hidden">
+    <div className="w-full max-w-sm bg-white dark:bg-[#2c2c2e] rounded-2xl border border-surface-container shadow-sm overflow-hidden">
       <div className="px-4 py-3 premium-gradient text-white flex items-center gap-2">
         <span className="material-symbols-outlined text-lg">event</span>
         <div className="min-w-0"><p className="text-sm font-bold truncate">{iv.job_title || 'Interview'}</p><p className="text-[11px] text-white/80">{fmtWhen(iv.scheduled_at)} · {iv.duration_min} min</p></div>
@@ -464,10 +464,10 @@ function InterviewCard({ iv, role, busy, onAction }: { iv: Iv; role: Role; busy:
           {!isRecruiter && iv.stage === 'proposed' && <><Btn icon="check" label="Accept" onClick={() => onAction('accept')} cls="premium-gradient text-white" /><Btn icon="close" label="Decline" onClick={() => onAction('decline')} /></>}
           {!isRecruiter && iv.stage === 'accepted' && <Join />}
           {!isRecruiter && iv.stage === 'completed' && <span className="text-xs text-on-surface-variant flex items-center gap-1"><span className="material-symbols-outlined text-base text-purple-500">hourglass_top</span>Awaiting the result…</span>}
-          {!isRecruiter && iv.stage === 'offer' && <><Btn icon="celebration" label="Accept offer" onClick={() => onAction('offer_accept')} cls="bg-green-100 text-green-700 hover:bg-green-200" /><Btn icon="close" label="Decline" onClick={() => onAction('offer_decline')} /></>}
+          {!isRecruiter && iv.stage === 'offer' && <><Btn icon="celebration" label="Accept offer" onClick={() => onAction('offer_accept')} cls="bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-500/25" /><Btn icon="close" label="Decline" onClick={() => onAction('offer_decline')} /></>}
 
           {isRecruiter && (iv.stage === 'proposed' || iv.stage === 'accepted') && <><Join />{iv.stage === 'accepted' && <Btn icon="task_alt" label="Completed" onClick={() => onAction('complete')} />}<Btn icon="edit_calendar" label="Reschedule" onClick={() => onAction('reschedule')} /><Btn icon="event_busy" label="Cancel" onClick={() => onAction('cancel')} /></>}
-          {isRecruiter && iv.stage === 'completed' && <><Btn icon="workspace_premium" label="Make offer" onClick={() => onAction('offer')} cls="bg-green-100 text-green-700 hover:bg-green-200" /><Btn icon="do_not_disturb_on" label="Reject" onClick={() => onAction('reject')} cls="bg-red-50 text-red-600 hover:bg-red-100" /></>}
+          {isRecruiter && iv.stage === 'completed' && <><Btn icon="workspace_premium" label="Make offer" onClick={() => onAction('offer')} cls="bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-500/25" /><Btn icon="do_not_disturb_on" label="Reject" onClick={() => onAction('reject')} cls="bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-500/25" /></>}
           {isRecruiter && iv.stage === 'offer' && <span className="text-xs text-on-surface-variant flex items-center gap-1"><span className="material-symbols-outlined text-base text-indigo-500">hourglass_top</span>Awaiting the candidate&apos;s response…</span>}
         </div>
       </div>
@@ -479,7 +479,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden auth-pop">
+      <div className="relative z-10 w-full max-w-md bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop">
         <div className="p-4 border-b border-surface-container flex items-center justify-between">
           <h3 className="text-base font-bold text-on-surface">{title}</h3>
           <button onClick={onClose} className="text-on-surface-variant hover:text-on-surface p-1"><span className="material-symbols-outlined">close</span></button>
@@ -493,7 +493,7 @@ function Field({ label, value, onChange, placeholder, type = 'text' }: { label: 
   return (
     <div>
       <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2 ml-1">{label}</label>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none" />
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none" />
     </div>
   )
 }
@@ -501,5 +501,5 @@ function Loader() {
   return <div className="flex flex-col items-center justify-center gap-3 py-32"><div className="flex gap-1.5"><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce"></div><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></div><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></div></div><p className="text-xs font-black text-primary tracking-widest uppercase">Loading inbox...</p></div>
 }
 function ErrorBox() {
-  return <div className="p-8 max-w-3xl mx-auto"><div className="bg-white rounded-[1.5rem] border border-surface-container p-12 flex flex-col items-center text-center"><div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div><h2 className="text-lg font-bold text-on-surface mb-2">Couldn’t load your inbox</h2><p className="text-sm text-on-surface-variant">Please refresh the page.</p></div></div>
+  return <div className="p-8 max-w-3xl mx-auto"><div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] border border-surface-container p-12 flex flex-col items-center text-center"><div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 dark:text-red-300 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div><h2 className="text-lg font-bold text-on-surface mb-2">Couldn’t load your inbox</h2><p className="text-sm text-on-surface-variant">Please refresh the page.</p></div></div>
 }

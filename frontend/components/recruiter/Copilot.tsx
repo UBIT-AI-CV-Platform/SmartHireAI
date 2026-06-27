@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { useVoiceInput } from '@/lib/useVoiceInput'
 
 type ChatMsg = { role: 'user' | 'assistant'; content: string }
 
@@ -25,6 +26,20 @@ export default function Copilot() {
 
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }) }, [messages])
   const adjust = () => { const el = taRef.current; if (!el) return; el.style.height = 'auto'; el.style.height = `${Math.min(el.scrollHeight, 140)}px` }
+
+  // voice input (Web Speech API + Gemini fallback) — see lib/useVoiceInput
+  const voiceBaseRef = useRef('')
+  const voice = useVoiceInput({
+    onTranscript: (text) => {
+      const base = voiceBaseRef.current
+      setInput(base ? `${base} ${text}` : text)
+      requestAnimationFrame(adjust)
+    },
+  })
+  const toggleMic = () => {
+    if (!voice.listening && !voice.busy) voiceBaseRef.current = input.trim()
+    voice.toggle()
+  }
 
   const send = async (text: string) => {
     const content = text.trim()
@@ -52,7 +67,7 @@ export default function Copilot() {
   const onKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input) } }
 
   return (
-    <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container flex flex-col h-[72vh] overflow-hidden">
+    <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container flex flex-col h-[72vh] overflow-hidden">
       <div className="px-4 py-3 border-b border-surface-container flex items-center gap-2">
         <div className="w-8 h-8 rounded-lg premium-gradient flex items-center justify-center text-white"><span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>smart_toy</span></div>
         <p className="text-sm font-black text-on-surface">Recruiting Copilot</p>
@@ -94,8 +109,18 @@ export default function Copilot() {
       </div>
 
       <div className="border-t border-surface-container p-3">
+        {voice.error && (
+          <div className="mb-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs">
+            <span className="material-symbols-outlined text-sm flex-shrink-0">info</span>
+            <span className="flex-1">{voice.error}</span>
+            <button onClick={voice.clearError} aria-label="Dismiss" className="material-symbols-outlined text-sm hover:opacity-70 flex-shrink-0">close</button>
+          </div>
+        )}
         <div className="flex items-end gap-2 bg-surface-container-low rounded-2xl p-2 focus-within:ring-2 focus-within:ring-primary/40 transition">
-          <textarea ref={taRef} value={input} onChange={(e) => { setInput(e.target.value); adjust() }} onKeyDown={onKey} rows={1} placeholder="Ask your copilot anything about hiring…" className="flex-1 bg-transparent resize-none outline-none px-2 py-1.5 text-sm text-on-surface placeholder:text-outline-variant max-h-36" />
+          <button onClick={toggleMic} disabled={voice.busy} title={voice.listening ? 'Stop' : voice.busy ? 'Transcribing…' : 'Speak'} className={`h-9 w-9 flex items-center justify-center rounded-xl transition-colors flex-shrink-0 ${voice.listening ? 'bg-red-500 text-white animate-pulse' : voice.busy ? 'text-primary' : 'text-on-surface-variant hover:bg-surface-container'}`}>
+            <span className={`material-symbols-outlined text-lg ${voice.busy ? 'animate-spin' : ''}`}>{voice.listening ? 'mic' : voice.busy ? 'progress_activity' : 'mic_none'}</span>
+          </button>
+          <textarea ref={taRef} value={input} onChange={(e) => { setInput(e.target.value); adjust() }} onKeyDown={onKey} rows={1} placeholder={voice.listening ? 'Listening…' : voice.busy ? 'Transcribing…' : 'Ask your copilot anything about hiring…'} className="flex-1 bg-transparent resize-none outline-none px-2 py-1.5 text-sm text-on-surface placeholder:text-outline-variant max-h-36" />
           <button onClick={() => send(input)} disabled={!input.trim() || streaming} className="h-9 w-9 flex items-center justify-center rounded-xl premium-gradient text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:hover:scale-100 flex-shrink-0"><span className="material-symbols-outlined text-lg">send</span></button>
         </div>
       </div>

@@ -4,45 +4,45 @@ export default function FeaturesSection() {
       id: 1,
       title: 'AI CV Generator',
       description: 'Create ATS-optimized resumes in minutes with AI assistance.',
-      bgColor: 'bg-[#fff1f2]',
-      borderColor: 'border-pink-100',
+      bgColor: 'bg-[#fff1f2] dark:bg-rose-500/15',
+      borderColor: 'border-pink-100 dark:border-white/10',
       iconColor: 'text-pink-500',
       icon: 'description',
-      textColor: 'text-pink-950',
-      descColor: 'text-pink-900/70',
+      textColor: 'text-pink-950 dark:text-pink-200',
+      descColor: 'text-pink-900/70 dark:text-pink-200/70',
     },
     {
       id: 2,
       title: 'Smart Job Matching',
       description: 'Get matched with roles that perfectly fit your skills.',
-      bgColor: 'bg-[#f0f9ff]',
-      borderColor: 'border-blue-100',
+      bgColor: 'bg-[#f0f9ff] dark:bg-sky-500/15',
+      borderColor: 'border-blue-100 dark:border-white/10',
       iconColor: 'text-blue-500',
       icon: 'hub',
-      textColor: 'text-blue-950',
-      descColor: 'text-blue-900/70',
+      textColor: 'text-blue-950 dark:text-sky-200',
+      descColor: 'text-blue-900/70 dark:text-sky-200/70',
     },
     {
       id: 3,
       title: 'HR Dashboard',
       description: 'Streamline hiring with powerful recruitment analytics.',
-      bgColor: 'bg-[#fff7ed]',
-      borderColor: 'border-orange-100',
+      bgColor: 'bg-[#fff7ed] dark:bg-orange-500/15',
+      borderColor: 'border-orange-100 dark:border-white/10',
       iconColor: 'text-orange-500',
       icon: 'dashboard_customize',
-      textColor: 'text-orange-950',
-      descColor: 'text-orange-900/70',
+      textColor: 'text-orange-950 dark:text-orange-200',
+      descColor: 'text-orange-900/70 dark:text-orange-200/70',
     },
     {
       id: 4,
       title: 'Interview Prep',
       description: 'Practice with AI-generated questions and get feedback.',
-      bgColor: 'bg-[#faf5ff]',
-      borderColor: 'border-purple-100',
+      bgColor: 'bg-[#faf5ff] dark:bg-purple-500/15',
+      borderColor: 'border-purple-100 dark:border-white/10',
       iconColor: 'text-purple-500',
       icon: 'record_voice_over',
-      textColor: 'text-purple-950',
-      descColor: 'text-purple-900/70',
+      textColor: 'text-purple-950 dark:text-purple-200',
+      descColor: 'text-purple-900/70 dark:text-purple-200/70',
     },
   ]
 
@@ -64,7 +64,7 @@ export default function FeaturesSection() {
               key={feature.id}
               className={`group ${feature.bgColor} p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-[1.5rem] md:rounded-[2rem] transition-all duration-300 hover:shadow-xl border ${feature.borderColor}`}
             >
-              <div className="w-10 sm:w-12 h-10 sm:h-12 bg-white rounded-lg sm:rounded-xl flex items-center justify-center mb-3 sm:mb-4 shadow-sm group-hover:scale-110 transition-transform">
+              <div className="w-10 sm:w-12 h-10 sm:h-12 bg-white dark:bg-[#2c2c2e] rounded-lg sm:rounded-xl flex items-center justify-center mb-3 sm:mb-4 shadow-sm group-hover:scale-110 transition-transform">
                 <span
                   className={`material-symbols-outlined ${feature.iconColor} text-xl sm:text-2xl`}
                   style={{ fontVariationSettings: '"FILL" 1' }}

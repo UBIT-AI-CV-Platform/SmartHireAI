@@ -39,7 +39,7 @@ export default function FAQSection() {
   ]
 
   return (
-    <section className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-16 bg-slate-50/50 rounded-3xl md:rounded-[3rem] mt-4 mb-0" id="faq">
+    <section className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-16 bg-slate-50/50 dark:bg-white/5 rounded-3xl md:rounded-[3rem] mt-4 mb-0" id="faq">
       <div className="text-center mb-6 sm:mb-8 md:mb-10">
         <span className="text-primary font-extrabold tracking-widest uppercase text-[9px] sm:text-[10px] md:text-xs mb-2 block">
           Help Center
@@ -56,7 +56,7 @@ export default function FAQSection() {
         {faqs.map((faq) => (
           <div
             key={faq.id}
-            className="faq-item group bg-white border border-slate-200 rounded-lg sm:rounded-xl md:rounded-[1.25rem] overflow-hidden"
+            className="faq-item group bg-white dark:bg-[#2c2c2e] border border-slate-200 dark:border-white/10 rounded-lg sm:rounded-xl md:rounded-[1.25rem] overflow-hidden"
           >
             <div className="flex justify-between items-center px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 font-bold text-xs sm:text-sm md:text-base lg:text-lg cursor-pointer transition-colors group-hover:bg-indigo-50/30">
               <span>{faq.question}</span>
@@ -64,14 +64,14 @@ export default function FAQSection() {
                 expand_more
               </span>
             </div>
-            <div className="faq-answer px-4 sm:px-5 md:px-6 pt-0 text-slate-600 leading-relaxed text-[11px] sm:text-xs md:text-sm lg:text-base group-hover:bg-indigo-50/30">
+            <div className="faq-answer px-4 sm:px-5 md:px-6 pt-0 text-slate-600 dark:text-slate-300 leading-relaxed text-[11px] sm:text-xs md:text-sm lg:text-base group-hover:bg-indigo-50/30">
               <p className="pb-4 sm:pb-5">{faq.answer}</p>
             </div>
           </div>
         ))}
 
         {/* FAQ CTA */}
-        <div className="bg-primary/5 border border-indigo-100 rounded-lg sm:rounded-2xl md:rounded-[2rem] p-4 sm:p-5 md:p-6 text-center mt-4 sm:mt-5 md:mt-6">
+        <div className="bg-primary/5 border border-indigo-100 dark:border-white/10 rounded-lg sm:rounded-2xl md:rounded-[2rem] p-4 sm:p-5 md:p-6 text-center mt-4 sm:mt-5 md:mt-6">
           <h4 className="text-indigo-950 font-black text-sm sm:text-base md:text-lg mb-1 tracking-tight">
             Still have questions?
           </h4>

@@ -11,15 +11,15 @@ type Interview = {
 }
 
 const STAGE_META: Record<Stage, { label: string; cls: string; icon: string }> = {
-  proposed: { label: 'Awaiting your response', cls: 'bg-amber-100 text-amber-700', icon: 'schedule' },
-  accepted: { label: 'Confirmed', cls: 'bg-sky-100 text-sky-700', icon: 'event_available' },
-  declined: { label: 'You declined', cls: 'bg-slate-100 text-slate-500', icon: 'event_busy' },
-  completed: { label: 'Awaiting result', cls: 'bg-purple-100 text-purple-700', icon: 'hourglass_top' },
-  offer: { label: 'Offer received 🎉', cls: 'bg-green-100 text-green-700', icon: 'workspace_premium' },
-  offer_accepted: { label: 'Offer accepted 🎉', cls: 'bg-green-100 text-green-700', icon: 'verified' },
-  offer_declined: { label: 'Offer declined', cls: 'bg-slate-100 text-slate-500', icon: 'cancel' },
-  rejected: { label: 'Not selected', cls: 'bg-red-100 text-red-600', icon: 'do_not_disturb_on' },
-  cancelled: { label: 'Cancelled', cls: 'bg-slate-100 text-slate-500', icon: 'event_busy' },
+  proposed: { label: 'Awaiting your response', cls: 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300', icon: 'schedule' },
+  accepted: { label: 'Confirmed', cls: 'bg-sky-100 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300', icon: 'event_available' },
+  declined: { label: 'You declined', cls: 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400', icon: 'event_busy' },
+  completed: { label: 'Awaiting result', cls: 'bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300', icon: 'hourglass_top' },
+  offer: { label: 'Offer received 🎉', cls: 'bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-300', icon: 'workspace_premium' },
+  offer_accepted: { label: 'Offer accepted 🎉', cls: 'bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-300', icon: 'verified' },
+  offer_declined: { label: 'Offer declined', cls: 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400', icon: 'cancel' },
+  rejected: { label: 'Not selected', cls: 'bg-red-100 dark:bg-red-500/15 text-red-600 dark:text-red-300', icon: 'do_not_disturb_on' },
+  cancelled: { label: 'Cancelled', cls: 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400', icon: 'event_busy' },
 }
 const fmtWhen = (iso: string | null) => iso ? new Date(iso).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Time TBD'
 
@@ -56,7 +56,7 @@ export default function CandidateInterviewsPage() {
   const card = (iv: Interview) => {
     const m = STAGE_META[iv.stage]
     return (
-      <div key={iv.id} className="bg-white p-4 md:p-5 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
+      <div key={iv.id} className="bg-white dark:bg-[#2c2c2e] p-4 md:p-5 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <h4 className="text-sm md:text-base font-bold text-on-surface truncate">{iv.job_title || 'Interview'}</h4>
@@ -78,7 +78,7 @@ export default function CandidateInterviewsPage() {
           </>}
           {iv.stage === 'completed' && <span className="text-sm text-on-surface-variant flex items-center gap-1.5"><span className="material-symbols-outlined text-base text-purple-500">hourglass_top</span>Thanks! The recruiter is reviewing — you&apos;ll hear back soon.</span>}
           {iv.stage === 'offer' && <>
-            <button onClick={() => setStage(iv, 'offer_accepted')} className="px-4 py-2 rounded-xl bg-green-100 text-green-700 font-bold text-xs flex items-center gap-1.5 hover:bg-green-200 transition-colors"><span className="material-symbols-outlined text-base">celebration</span>Accept offer</button>
+            <button onClick={() => setStage(iv, 'offer_accepted')} className="px-4 py-2 rounded-xl bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-300 font-bold text-xs flex items-center gap-1.5 hover:bg-green-200 dark:hover:bg-green-500/25 transition-colors"><span className="material-symbols-outlined text-base">celebration</span>Accept offer</button>
             <button onClick={() => setStage(iv, 'offer_declined')} className="px-4 py-2 rounded-xl bg-surface-container-low text-on-surface font-bold text-xs flex items-center gap-1.5 hover:bg-surface-container transition-colors"><span className="material-symbols-outlined text-base">close</span>Decline</button>
           </>}
         </div>
@@ -94,7 +94,7 @@ export default function CandidateInterviewsPage() {
       </header>
 
       {items.length === 0 ? (
-        <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
+        <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-5"><span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>videocam</span></div>
           <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">No interviews yet</h2>
           <p className="text-sm text-on-surface-variant max-w-md">When a recruiter schedules an interview with you, it’ll appear here for you to confirm.</p>
@@ -113,5 +113,5 @@ function Loader() {
   return <div className="flex flex-col items-center justify-center gap-3 py-32"><div className="flex gap-1.5"><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce"></div><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></div><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></div></div><p className="text-xs font-black text-primary tracking-widest uppercase">Loading interviews...</p></div>
 }
 function ErrorBox({ onRetry }: { onRetry: () => void }) {
-  return <div className="p-8 max-w-3xl mx-auto"><div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-12 flex flex-col items-center text-center"><div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div><h2 className="text-lg font-bold text-on-surface mb-2">Couldn’t load interviews</h2><button onClick={onRetry} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button></div></div>
+  return <div className="p-8 max-w-3xl mx-auto"><div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-12 flex flex-col items-center text-center"><div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div><h2 className="text-lg font-bold text-on-surface mb-2">Couldn’t load interviews</h2><button onClick={onRetry} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button></div></div>
 }

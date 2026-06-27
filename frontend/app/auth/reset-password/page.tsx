@@ -70,17 +70,17 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#f7f9fb] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-gradient-to-br from-blue-50 via-purple-50 to-blue-50 auth-animated-gradient rounded-2xl shadow-2xl p-6 md:p-8 auth-fade-up">
+    <div className="relative min-h-screen bg-[#f7f9fb] dark:bg-[#1c1c1e] flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-gradient-to-br from-blue-50 via-purple-50 to-blue-50 dark:from-[#1c1c1e] dark:via-[#241d36] dark:to-[#1c1c1e] auth-animated-gradient rounded-2xl shadow-2xl p-6 md:p-8 auth-fade-up">
         <div className="text-center mb-6"><Logo /></div>
 
         {linkError ? (
           <div className="text-center auth-pop">
-            <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center">
+            <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-500/15 flex items-center justify-center">
               <span className="material-symbols-outlined text-red-500 text-3xl">link_off</span>
             </div>
-            <h1 className="text-lg font-bold text-gray-900 mb-1">Link invalid or expired</h1>
-            <p className="text-gray-600 text-xs md:text-sm mb-6">This reset link is no longer valid. Please request a new one.</p>
+            <h1 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-1">Link invalid or expired</h1>
+            <p className="text-gray-600 dark:text-slate-300 text-xs md:text-sm mb-6">This reset link is no longer valid. Please request a new one.</p>
             <Link href="/auth/forgot-password" className="inline-block w-full bg-gradient-to-r from-[#3525cd] to-[#712ae2] text-white py-2.5 rounded-xl font-bold text-sm shadow-lg hover:shadow-xl transition-all">
               Request New Link
             </Link>
@@ -92,13 +92,13 @@ export default function ResetPasswordPage() {
               <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></div>
               <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></div>
             </div>
-            <p className="text-xs text-gray-500 font-medium">Verifying link...</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">Verifying link...</p>
           </div>
         ) : (
           <>
             <div className="text-center mb-5">
-              <h1 className="text-lg font-bold text-gray-900 mb-1">Set new password</h1>
-              <p className="text-gray-600 text-xs md:text-sm">Choose a new strong password for your account.</p>
+              <h1 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-1">Set new password</h1>
+              <p className="text-gray-600 dark:text-slate-300 text-xs md:text-sm">Choose a new strong password for your account.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-3">
@@ -117,13 +117,13 @@ export default function ResetPasswordPage() {
 
               <FormInput label="Confirm Password" icon="lock" type="password" placeholder="••••••••" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
               {confirm.length > 0 && !passwordsMatch && (
-                <p className="text-[11px] text-red-600 font-medium -mt-1">Passwords do not match.</p>
+                <p className="text-[11px] text-red-600 dark:text-red-300 font-medium -mt-1">Passwords do not match.</p>
               )}
 
               {error && (
-                <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2">
+                <div className="flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 px-3 py-2">
                   <span className="material-symbols-outlined text-red-500 text-base flex-shrink-0">error</span>
-                  <p className="text-xs text-red-700 font-medium">{error}</p>
+                  <p className="text-xs text-red-700 dark:text-red-300 font-medium">{error}</p>
                 </div>
               )}
 
@@ -148,7 +148,7 @@ function Cond({ met, text }: { met: boolean; text: string }) {
       <span className={`material-symbols-outlined text-[14px] flex-shrink-0 ${met ? 'text-green-500' : 'text-red-500'}`}>
         {met ? 'check_circle' : 'cancel'}
       </span>
-      <span className={`text-[10px] md:text-[11px] ${met ? 'text-green-600' : 'text-red-600'}`}>{text}</span>
+      <span className={`text-[10px] md:text-[11px] ${met ? 'text-green-600 dark:text-green-300' : 'text-red-600 dark:text-red-300'}`}>{text}</span>
     </div>
   );
 }

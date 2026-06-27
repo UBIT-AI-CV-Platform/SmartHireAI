@@ -441,7 +441,7 @@ export default function CVGeneratorPage() {
   return (
     <div className="p-4 md:p-8 pb-32 min-h-screen">
       {/* Control bar */}
-      <section className="mb-6 bg-white p-4 md:p-6 rounded-3xl cv-preview-shadow border border-surface-container">
+      <section className="mb-6 bg-white dark:bg-[#2c2c2e] p-4 md:p-6 rounded-3xl cv-preview-shadow border border-surface-container">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">
           <div className="flex flex-col sm:flex-row flex-1 w-full gap-4 sm:gap-6 sm:items-end">
             <div className="flex-1 group">
@@ -451,7 +451,7 @@ export default function CVGeneratorPage() {
                 <input
                   value={targetRole}
                   onChange={(e) => setTargetRole(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3.5 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface font-medium placeholder:text-outline-variant outline-none"
+                  className="w-full pl-12 pr-4 py-3.5 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all text-on-surface font-medium placeholder:text-outline-variant outline-none"
                   placeholder="e.g. Frontend Developer"
                   type="text"
                 />
@@ -484,7 +484,7 @@ export default function CVGeneratorPage() {
             onChange={(e) => setCustomInstructions(e.target.value)}
             rows={2}
             maxLength={1000}
-            className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none resize-none"
+            className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none resize-none"
             placeholder="Tell the AI what you want. e.g. 'Keep it to one page, emphasize my React & e-commerce work, highlight teamwork.'"
           />
         </div>
@@ -499,14 +499,14 @@ export default function CVGeneratorPage() {
             onChange={(e) => setJobDescription(e.target.value)}
             rows={3}
             maxLength={4000}
-            className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none resize-none"
+            className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none resize-none"
             placeholder="Paste a job posting here. The AI will tailor your CV to it, score the match, and list missing keywords."
           />
         </div>
       </section>
 
       {/* Customize (layout / photo / colour / font / sections) */}
-      <section className="mb-8 bg-white p-4 md:p-5 rounded-3xl cv-preview-shadow border border-surface-container flex flex-col gap-4">
+      <section className="mb-8 bg-white dark:bg-[#2c2c2e] p-4 md:p-5 rounded-3xl cv-preview-shadow border border-surface-container flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-3 sm:gap-x-6">
           <span className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest flex items-center gap-2 w-full sm:w-auto">
             <span className="material-symbols-outlined text-primary text-base">tune</span>Customize
@@ -516,7 +516,7 @@ export default function CVGeneratorPage() {
             <span className="text-xs font-bold text-on-surface-variant">Template</span>
             <div className="flex bg-surface-container-low rounded-xl p-1">
               {TEMPLATES.map((t) => (
-                <button key={t} onClick={() => setTemplate(t)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${template === t ? 'bg-white shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
+                <button key={t} onClick={() => setTemplate(t)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${template === t ? 'bg-white dark:bg-white/10 shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
                   {t}
                 </button>
               ))}
@@ -527,7 +527,7 @@ export default function CVGeneratorPage() {
             <span className="text-xs font-bold text-on-surface-variant">Layout</span>
             <div className="flex bg-surface-container-low rounded-xl p-1">
               {(['single', 'two'] as const).map((l) => (
-                <button key={l} onClick={() => setLayout(l)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${layout === l ? 'bg-white shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
+                <button key={l} onClick={() => setLayout(l)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${layout === l ? 'bg-white dark:bg-white/10 shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
                   {l === 'single' ? 'Single' : 'Two Column'}
                 </button>
               ))}
@@ -538,7 +538,7 @@ export default function CVGeneratorPage() {
             <span className="text-xs font-bold text-on-surface-variant">Font</span>
             <div className="flex bg-surface-container-low rounded-xl p-1">
               {Object.keys(FONTS).map((f) => (
-                <button key={f} onClick={() => setFont(f)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${font === f ? 'bg-white shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
+                <button key={f} onClick={() => setFont(f)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${font === f ? 'bg-white dark:bg-white/10 shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
                   {f}
                 </button>
               ))}
@@ -593,9 +593,9 @@ export default function CVGeneratorPage() {
       </section>
 
       {error && (
-        <div className="mb-6 flex items-start gap-2 rounded-2xl bg-red-50 border border-red-200 px-4 py-3 max-w-4xl">
+        <div className="mb-6 flex items-start gap-2 rounded-2xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-white/10 px-4 py-3 max-w-4xl">
           <span className="material-symbols-outlined text-red-500">error</span>
-          <p className="text-sm text-red-700 font-medium">{error}</p>
+          <p className="text-sm text-red-700 dark:text-red-300 font-medium">{error}</p>
         </div>
       )}
 
@@ -687,7 +687,7 @@ export default function CVGeneratorPage() {
 
           {/* Score breakdown */}
           {cv?.ats_breakdown && cv.ats_breakdown.length > 0 && (
-            <div className="p-6 rounded-3xl bg-white border border-surface-container cv-preview-shadow">
+            <div className="p-6 rounded-3xl bg-white dark:bg-[#2c2c2e] border border-surface-container cv-preview-shadow">
               <h3 className="text-base font-black text-on-surface tracking-tight mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-xl">insights</span>
                 Score Breakdown
@@ -711,15 +711,15 @@ export default function CVGeneratorPage() {
 
           {/* Missing keywords (job-description match) */}
           {cv?.missing_keywords && cv.missing_keywords.length > 0 && (
-            <div className="p-6 rounded-3xl bg-amber-50 border border-amber-200">
-              <h3 className="text-base font-black text-amber-900 tracking-tight mb-1 flex items-center gap-2">
+            <div className="p-6 rounded-3xl bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-white/10">
+              <h3 className="text-base font-black text-amber-900 dark:text-amber-300 tracking-tight mb-1 flex items-center gap-2">
                 <span className="material-symbols-outlined text-amber-600 text-xl">key_off</span>
                 Missing Keywords
               </h3>
-              <p className="text-xs text-amber-800/80 mb-4">From the job description — add these to your profile if you have them.</p>
+              <p className="text-xs text-amber-800/80 dark:text-amber-300/80 mb-4">From the job description — add these to your profile if you have them.</p>
               <div className="flex flex-wrap gap-2 cv-keep">
                 {cv.missing_keywords.map((k, i) => (
-                  <span key={i} className="px-3 py-1.5 bg-white text-amber-800 font-bold text-xs rounded-lg border border-amber-200">{k}</span>
+                  <span key={i} className="px-3 py-1.5 bg-white dark:bg-white/10 text-amber-800 dark:text-amber-300 font-bold text-xs rounded-lg border border-amber-200 dark:border-white/10">{k}</span>
                 ))}
               </div>
             </div>
@@ -760,11 +760,11 @@ export default function CVGeneratorPage() {
               )
             )}
             <div className="flex gap-4">
-              <Link href="/candidate/build-profile" className="flex-1 px-4 py-3.5 rounded-2xl bg-white border border-surface-container text-on-surface font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all">
+              <Link href="/candidate/build-profile" className="flex-1 px-4 py-3.5 rounded-2xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-on-surface font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all">
                 <span className="material-symbols-outlined text-lg">person</span>
                 Edit Profile
               </Link>
-              <button onClick={generate} disabled={loading} className="flex-1 px-4 py-3.5 rounded-2xl bg-white border border-surface-container text-on-surface font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all disabled:opacity-60">
+              <button onClick={generate} disabled={loading} className="flex-1 px-4 py-3.5 rounded-2xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-on-surface font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all disabled:opacity-60">
                 <span className="material-symbols-outlined text-lg">refresh</span>
                 Regenerate
               </button>
@@ -795,7 +795,7 @@ export default function CVGeneratorPage() {
       {showCover && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowCover(false)} />
-          <div className="relative z-10 w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[88vh] flex flex-col">
+          <div className="relative z-10 w-full max-w-2xl bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[88vh] flex flex-col">
             <div className="p-5 border-b border-surface-container flex items-center justify-between">
               <h3 className="text-lg font-bold text-on-surface flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">mail</span>
@@ -809,7 +809,7 @@ export default function CVGeneratorPage() {
               <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
                 <div className="flex-1">
                   <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2 ml-1">Company (optional)</label>
-                  <input value={coverCompany} onChange={(e) => setCoverCompany(e.target.value)} placeholder="e.g. Google" className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface font-medium outline-none" />
+                  <input value={coverCompany} onChange={(e) => setCoverCompany(e.target.value)} placeholder="e.g. Google" className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all text-on-surface font-medium outline-none" />
                 </div>
                 <button onClick={generateCover} disabled={coverLoading} className="h-[50px] px-6 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:hover:scale-100">
                   <span className="material-symbols-outlined">{coverLoading ? 'hourglass_top' : 'magic_button'}</span>
@@ -819,9 +819,9 @@ export default function CVGeneratorPage() {
               <p className="text-xs text-on-surface-variant -mt-1 ml-1">Uses your profile, target role ({targetRole || '—'}), tone, and the job description (if pasted).</p>
 
               {coverError && (
-                <div className="flex items-start gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-3">
+                <div className="flex items-start gap-2 rounded-xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-white/10 px-4 py-3">
                   <span className="material-symbols-outlined text-red-500">error</span>
-                  <p className="text-sm text-red-700 font-medium">{coverError}</p>
+                  <p className="text-sm text-red-700 dark:text-red-300 font-medium">{coverError}</p>
                 </div>
               )}
 
@@ -839,11 +839,11 @@ export default function CVGeneratorPage() {
                   <div className="bg-surface-container-low rounded-2xl p-5 whitespace-pre-line text-sm text-on-surface leading-relaxed">{coverText}</div>
                   <div className="flex gap-3">
                     {coverId && (
-                      <button onClick={toggleCoverFav} title={coverFav ? 'Remove from favorites' : 'Add to favorites'} className={`px-4 py-3 rounded-2xl border font-bold text-sm flex items-center justify-center gap-2 transition-all ${coverFav ? 'bg-amber-50 border-amber-200 text-amber-600' : 'bg-white border-surface-container text-on-surface hover:shadow-lg'}`}>
+                      <button onClick={toggleCoverFav} title={coverFav ? 'Remove from favorites' : 'Add to favorites'} className={`px-4 py-3 rounded-2xl border font-bold text-sm flex items-center justify-center gap-2 transition-all ${coverFav ? 'bg-amber-50 dark:bg-amber-500/15 border-amber-200 dark:border-white/10 text-amber-600 dark:text-amber-300' : 'bg-white dark:bg-[#2c2c2e] border-surface-container text-on-surface hover:shadow-lg'}`}>
                         <span className="material-symbols-outlined text-lg" style={coverFav ? { fontVariationSettings: "'FILL' 1" } : undefined}>star</span>
                       </button>
                     )}
-                    <button onClick={() => navigator.clipboard.writeText(coverText)} className="flex-1 py-3 rounded-2xl bg-white border border-surface-container text-on-surface font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all">
+                    <button onClick={() => navigator.clipboard.writeText(coverText)} className="flex-1 py-3 rounded-2xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-on-surface font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all">
                       <span className="material-symbols-outlined text-lg">content_copy</span>Copy
                     </button>
                     <button onClick={downloadCover} className="flex-1 py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 hover:scale-[1.02] transition-all">
@@ -866,7 +866,7 @@ export default function CVGeneratorPage() {
         return (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowHistory(false)} />
-          <div className="relative z-10 w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[85vh] flex flex-col">
+          <div className="relative z-10 w-full max-w-xl bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[85vh] flex flex-col">
             <div className="p-5 border-b border-surface-container flex items-center justify-between">
               <h3 className="text-lg font-bold text-on-surface flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">folder_open</span>
@@ -880,17 +880,17 @@ export default function CVGeneratorPage() {
             {/* Tabs + favorites filter */}
             <div className="px-5 pt-4 pb-3 flex items-center gap-3 border-b border-surface-container">
               <div className="flex bg-surface-container-low rounded-xl p-1">
-                <button onClick={() => setDocTab('cvs')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${docTab === 'cvs' ? 'bg-white shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
+                <button onClick={() => setDocTab('cvs')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${docTab === 'cvs' ? 'bg-white dark:bg-white/10 shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
                   CVs ({history.length})
                 </button>
-                <button onClick={() => setDocTab('covers')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${docTab === 'covers' ? 'bg-white shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
+                <button onClick={() => setDocTab('covers')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${docTab === 'covers' ? 'bg-white dark:bg-white/10 shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
                   Cover Letters ({coverHistory.length})
                 </button>
               </div>
               <button
                 onClick={() => setFavOnly((v) => !v)}
                 title="Show favorites only"
-                className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${favOnly ? 'bg-amber-50 text-amber-600' : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'}`}
+                className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${favOnly ? 'bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-300' : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'}`}
               >
                 <span className="material-symbols-outlined text-base" style={favOnly ? { fontVariationSettings: "'FILL' 1" } : undefined}>star</span>
                 Favorites
@@ -923,7 +923,7 @@ export default function CVGeneratorPage() {
                       <button onClick={() => renameCV(row)} title="Rename" className="text-on-surface-variant hover:text-primary p-1.5 rounded-lg hover:bg-primary/5 opacity-60 group-hover:opacity-100 transition">
                         <span className="material-symbols-outlined text-base">edit</span>
                       </button>
-                      <button onClick={() => deleteCV(row)} title="Delete" className="text-on-surface-variant hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 opacity-60 group-hover:opacity-100 transition">
+                      <button onClick={() => deleteCV(row)} title="Delete" className="text-on-surface-variant hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15 opacity-60 group-hover:opacity-100 transition">
                         <span className="material-symbols-outlined text-base">delete</span>
                       </button>
                     </div>
@@ -945,7 +945,7 @@ export default function CVGeneratorPage() {
                         <p className="text-xs text-on-surface-variant mt-0.5 truncate">{row.content.replace(/\s+/g, ' ').slice(0, 70)}…</p>
                         <p className="text-[11px] text-outline mt-0.5">{new Date(row.created_at).toLocaleString()}</p>
                       </button>
-                      <button onClick={() => deleteCover(row)} title="Delete" className="text-on-surface-variant hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 opacity-60 group-hover:opacity-100 transition">
+                      <button onClick={() => deleteCover(row)} title="Delete" className="text-on-surface-variant hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15 opacity-60 group-hover:opacity-100 transition">
                         <span className="material-symbols-outlined text-base">delete</span>
                       </button>
                     </div>
@@ -981,7 +981,7 @@ export default function CVGeneratorPage() {
         return (
           <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-md" onClick={() => setPreview(null)} />
-            <div className="relative z-10 w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
+            <div className="relative z-10 w-full max-w-2xl bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
               {/* Header */}
               <div className="p-5 border-b border-surface-container flex items-center gap-3">
                 <span className="material-symbols-outlined text-primary">{preview.type === 'cv' ? 'description' : 'mail'}</span>
@@ -1005,7 +1005,7 @@ export default function CVGeneratorPage() {
                 {preview.type === 'cv' && cvRow ? (
                   <CVQuickView cv={cvRow.content} />
                 ) : coverRow ? (
-                  <div className="bg-white rounded-2xl border border-surface-container p-6 whitespace-pre-line text-sm text-on-surface leading-relaxed shadow-sm">
+                  <div className="bg-white dark:bg-[#2c2c2e] rounded-2xl border border-surface-container p-6 whitespace-pre-line text-sm text-on-surface leading-relaxed shadow-sm">
                     {coverRow.content}
                   </div>
                 ) : null}
@@ -1018,7 +1018,7 @@ export default function CVGeneratorPage() {
                     <button onClick={() => { loadFromHistory(cvRow); setPreview(null) }} className="flex-1 min-w-[140px] py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 hover:scale-[1.02] transition-all">
                       <span className="material-symbols-outlined text-lg">edit_note</span>Open &amp; Edit
                     </button>
-                    <button onClick={() => { deleteCV(cvRow); setPreview(null) }} className="px-5 py-3 rounded-2xl bg-white border border-surface-container text-red-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-50 transition-all">
+                    <button onClick={() => { deleteCV(cvRow); setPreview(null) }} className="px-5 py-3 rounded-2xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-red-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-50 dark:hover:bg-red-500/15 transition-all">
                       <span className="material-symbols-outlined text-lg">delete</span>Delete
                     </button>
                   </>
@@ -1027,13 +1027,13 @@ export default function CVGeneratorPage() {
                     <button onClick={() => { loadCover(coverRow); setPreview(null) }} className="flex-1 min-w-[120px] py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 hover:scale-[1.02] transition-all">
                       <span className="material-symbols-outlined text-lg">edit_note</span>Open &amp; Edit
                     </button>
-                    <button onClick={() => navigator.clipboard.writeText(coverRow.content)} className="px-5 py-3 rounded-2xl bg-white border border-surface-container text-on-surface font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all">
+                    <button onClick={() => navigator.clipboard.writeText(coverRow.content)} className="px-5 py-3 rounded-2xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-on-surface font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all">
                       <span className="material-symbols-outlined text-lg">content_copy</span>Copy
                     </button>
-                    <button onClick={downloadThisCover} className="px-5 py-3 rounded-2xl bg-white border border-surface-container text-on-surface font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all">
+                    <button onClick={downloadThisCover} className="px-5 py-3 rounded-2xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-on-surface font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all">
                       <span className="material-symbols-outlined text-lg">download</span>Download
                     </button>
-                    <button onClick={() => { deleteCover(coverRow); setPreview(null) }} className="px-5 py-3 rounded-2xl bg-white border border-surface-container text-red-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-50 transition-all">
+                    <button onClick={() => { deleteCover(coverRow); setPreview(null) }} className="px-5 py-3 rounded-2xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-red-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-50 dark:hover:bg-red-500/15 transition-all">
                       <span className="material-symbols-outlined text-lg">delete</span>Delete
                     </button>
                   </>
@@ -1218,7 +1218,7 @@ function FancySelect({ value, options, onChange }: { value: string; options: str
         <span className={`material-symbols-outlined text-outline transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>expand_more</span>
       </button>
       {open && (
-        <div className="absolute z-30 mt-2 w-full bg-white rounded-2xl shadow-xl border border-surface-container overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute z-30 mt-2 w-full bg-white dark:bg-[#2c2c2e] rounded-2xl shadow-xl border border-surface-container overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           {options.map((o) => (
             <button
               key={o}

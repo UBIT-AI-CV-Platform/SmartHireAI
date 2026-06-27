@@ -14,17 +14,17 @@ type Interview = {
 type AppRow = { id: string; candidate_id: string; candidate_name: string | null; status: string; job: { id: string; title: string } | null }
 
 const STAGE_META: Record<Stage, { label: string; cls: string; icon: string }> = {
-  proposed: { label: 'Awaiting candidate', cls: 'bg-amber-100 text-amber-700', icon: 'schedule' },
-  accepted: { label: 'Confirmed', cls: 'bg-sky-100 text-sky-700', icon: 'event_available' },
-  declined: { label: 'Declined by candidate', cls: 'bg-red-100 text-red-600', icon: 'event_busy' },
-  completed: { label: 'Awaiting result', cls: 'bg-purple-100 text-purple-700', icon: 'how_to_reg' },
-  offer: { label: 'Offer sent', cls: 'bg-indigo-100 text-indigo-700', icon: 'workspace_premium' },
-  offer_accepted: { label: 'Hired 🎉', cls: 'bg-green-100 text-green-700', icon: 'verified' },
-  offer_declined: { label: 'Offer declined', cls: 'bg-red-100 text-red-600', icon: 'cancel' },
-  rejected: { label: 'Not selected', cls: 'bg-slate-100 text-slate-500', icon: 'do_not_disturb_on' },
-  cancelled: { label: 'Cancelled', cls: 'bg-slate-100 text-slate-500', icon: 'event_busy' },
+  proposed: { label: 'Awaiting candidate', cls: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300', icon: 'schedule' },
+  accepted: { label: 'Confirmed', cls: 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300', icon: 'event_available' },
+  declined: { label: 'Declined by candidate', cls: 'bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300', icon: 'event_busy' },
+  completed: { label: 'Awaiting result', cls: 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300', icon: 'how_to_reg' },
+  offer: { label: 'Offer sent', cls: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300', icon: 'workspace_premium' },
+  offer_accepted: { label: 'Hired 🎉', cls: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300', icon: 'verified' },
+  offer_declined: { label: 'Offer declined', cls: 'bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300', icon: 'cancel' },
+  rejected: { label: 'Not selected', cls: 'bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400', icon: 'do_not_disturb_on' },
+  cancelled: { label: 'Cancelled', cls: 'bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400', icon: 'event_busy' },
 }
-const AVATAR = ['bg-indigo-100 text-indigo-700', 'bg-purple-100 text-purple-700', 'bg-sky-100 text-sky-700', 'bg-pink-100 text-pink-700', 'bg-emerald-100 text-emerald-700', 'bg-amber-100 text-amber-700']
+const AVATAR = ['bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300', 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300', 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300', 'bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-300', 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300', 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300']
 const avatarColor = (s: string) => AVATAR[Array.from(s || '?').reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR.length]
 const fmtWhen = (iso: string | null) => iso ? new Date(iso).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Time TBD'
 
@@ -132,7 +132,7 @@ export default function RecruiterInterviewsPage() {
   const card = (iv: Interview) => {
     const m = STAGE_META[iv.stage]
     return (
-      <div key={iv.id} className="bg-white p-4 md:p-5 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
+      <div key={iv.id} className="bg-white dark:bg-[#2c2c2e] p-4 md:p-5 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
         <div className="flex items-start gap-3">
           <div className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black ${avatarColor(iv.candidate_name || '?')}`}>{(iv.candidate_name || '?').charAt(0).toUpperCase()}</div>
           <div className="flex-1 min-w-0">
@@ -148,14 +148,14 @@ export default function RecruiterInterviewsPage() {
           {(iv.stage === 'accepted' || iv.stage === 'proposed') && <Link href={`/interview/${iv.id}`} className="px-3 py-2 rounded-xl premium-gradient text-white font-bold text-xs flex items-center gap-1.5 hover:scale-[1.03] transition-all"><span className="material-symbols-outlined text-base">videocam</span>Join room</Link>}
           {iv.stage === 'accepted' && <button onClick={() => setStage(iv, 'completed')} className="px-3 py-2 rounded-xl bg-surface-container-low text-on-surface font-bold text-xs flex items-center gap-1.5 hover:bg-surface-container transition-colors"><span className="material-symbols-outlined text-base">task_alt</span>Mark completed</button>}
           {iv.stage === 'completed' && <>
-            <button onClick={() => setStage(iv, 'offer')} className="px-3 py-2 rounded-xl bg-green-100 text-green-700 font-bold text-xs flex items-center gap-1.5 hover:bg-green-200 transition-colors"><span className="material-symbols-outlined text-base">workspace_premium</span>Make offer</button>
-            <button onClick={() => setStage(iv, 'rejected')} className="px-3 py-2 rounded-xl bg-red-50 text-red-600 font-bold text-xs flex items-center gap-1.5 hover:bg-red-100 transition-colors"><span className="material-symbols-outlined text-base">do_not_disturb_on</span>Reject</button>
+            <button onClick={() => setStage(iv, 'offer')} className="px-3 py-2 rounded-xl bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300 font-bold text-xs flex items-center gap-1.5 hover:bg-green-200 dark:hover:bg-green-500/25 transition-colors"><span className="material-symbols-outlined text-base">workspace_premium</span>Make offer</button>
+            <button onClick={() => setStage(iv, 'rejected')} className="px-3 py-2 rounded-xl bg-red-50 text-red-600 dark:bg-red-500/15 dark:text-red-300 font-bold text-xs flex items-center gap-1.5 hover:bg-red-100 dark:hover:bg-red-500/25 transition-colors"><span className="material-symbols-outlined text-base">do_not_disturb_on</span>Reject</button>
           </>}
           {(iv.stage === 'proposed' || iv.stage === 'accepted') && <>
             <button onClick={() => openReschedule(iv)} className="px-3 py-2 rounded-xl text-on-surface-variant font-bold text-xs flex items-center gap-1.5 hover:bg-surface-container-low transition-colors"><span className="material-symbols-outlined text-base">edit_calendar</span>Reschedule</button>
-            <button onClick={() => setStage(iv, 'cancelled')} className="px-3 py-2 rounded-xl text-on-surface-variant font-bold text-xs flex items-center gap-1.5 hover:bg-red-50 hover:text-red-500 transition-colors"><span className="material-symbols-outlined text-base">event_busy</span>Cancel</button>
+            <button onClick={() => setStage(iv, 'cancelled')} className="px-3 py-2 rounded-xl text-on-surface-variant font-bold text-xs flex items-center gap-1.5 hover:bg-red-50 dark:hover:bg-red-500/15 hover:text-red-500 dark:hover:text-red-300 transition-colors"><span className="material-symbols-outlined text-base">event_busy</span>Cancel</button>
           </>}
-          {['declined', 'offer_accepted', 'offer_declined', 'rejected', 'cancelled'].includes(iv.stage) && <button onClick={() => removeIv(iv)} className="ml-auto p-2 rounded-xl text-on-surface-variant hover:text-red-500 hover:bg-red-50 transition-colors"><span className="material-symbols-outlined text-base">delete</span></button>}
+          {['declined', 'offer_accepted', 'offer_declined', 'rejected', 'cancelled'].includes(iv.stage) && <button onClick={() => removeIv(iv)} className="ml-auto p-2 rounded-xl text-on-surface-variant hover:text-red-500 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"><span className="material-symbols-outlined text-base">delete</span></button>}
         </div>
       </div>
     )
@@ -174,7 +174,7 @@ export default function RecruiterInterviewsPage() {
       </header>
 
       {empty ? (
-        <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
+        <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
           <div className="w-16 h-16 rounded-2xl premium-gradient flex items-center justify-center text-white shadow-lg mb-4"><span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>videocam</span></div>
           <h3 className="text-lg md:text-xl font-bold text-on-surface mb-2">No interviews scheduled</h3>
           <p className="text-sm text-on-surface-variant max-w-md mb-5">Schedule an interview with a candidate who applied. They’ll be notified to confirm.</p>
@@ -191,7 +191,7 @@ export default function RecruiterInterviewsPage() {
       {showForm && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowForm(false)} />
-          <div className="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
+          <div className="relative z-10 w-full max-w-lg bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
             <div className="p-5 border-b border-surface-container flex items-center justify-between">
               <h3 className="text-lg font-bold text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">{editId ? 'edit_calendar' : 'videocam'}</span>{editId ? 'Reschedule interview' : 'Schedule interview'}</h3>
               <button onClick={() => setShowForm(false)} className="text-on-surface-variant hover:text-on-surface p-1"><span className="material-symbols-outlined">close</span></button>
@@ -214,9 +214,9 @@ export default function RecruiterInterviewsPage() {
               <Field label="Meeting link (optional)" value={form.link} onChange={(v) => setForm((f) => ({ ...f, link: v }))} placeholder="Leave empty to use the built-in room" />
               <div>
                 <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2 ml-1">Notes (optional)</label>
-                <textarea value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} rows={3} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface text-sm outline-none resize-none" placeholder="Anything the candidate should know…" />
+                <textarea value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} rows={3} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all text-on-surface text-sm outline-none resize-none" placeholder="Anything the candidate should know…" />
               </div>
-              {formError && <div className="flex items-start gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-3"><span className="material-symbols-outlined text-red-500">error</span><p className="text-sm text-red-700 font-medium">{formError}</p></div>}
+              {formError && <div className="flex items-start gap-2 rounded-xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/30 px-4 py-3"><span className="material-symbols-outlined text-red-500">error</span><p className="text-sm text-red-700 dark:text-red-300 font-medium">{formError}</p></div>}
             </div>
             <div className="p-4 border-t border-surface-container flex gap-3">
               <button onClick={() => setShowForm(false)} className="flex-1 py-3 rounded-2xl bg-surface-container-low text-on-surface font-bold text-sm hover:bg-surface-container transition-colors">Cancel</button>
@@ -241,7 +241,7 @@ function Field({ label, value, onChange, placeholder, type = 'text' }: { label: 
   return (
     <div>
       <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2 ml-1">{label}</label>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none" />
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none" />
     </div>
   )
 }
@@ -249,5 +249,5 @@ function Loader() {
   return <div className="flex flex-col items-center justify-center gap-3 py-32"><div className="flex gap-1.5"><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce"></div><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></div><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></div></div><p className="text-xs font-black text-primary tracking-widest uppercase">Loading interviews...</p></div>
 }
 function ErrorBox({ onRetry }: { onRetry: () => void }) {
-  return <div className="p-8 max-w-3xl mx-auto"><div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-12 flex flex-col items-center text-center"><div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div><h2 className="text-lg font-bold text-on-surface mb-2">Couldn’t load interviews</h2><button onClick={onRetry} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button></div></div>
+  return <div className="p-8 max-w-3xl mx-auto"><div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-12 flex flex-col items-center text-center"><div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div><h2 className="text-lg font-bold text-on-surface mb-2">Couldn’t load interviews</h2><button onClick={onRetry} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button></div></div>
 }

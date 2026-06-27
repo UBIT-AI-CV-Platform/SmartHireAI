@@ -4,18 +4,12 @@ import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { createClient } from '@/lib/supabase/client'
+import { useVoiceInput } from '@/lib/useVoiceInput'
 
 type ChatMsg = { role: 'user' | 'assistant'; content: string }
 type SessionRow = { id: string; title: string | null; role: string | null; job_id: string | null; messages: ChatMsg[]; updated_at: string }
 type AppliedJob = { id: string; title: string; company: string }
 type Difficulty = 'Easy' | 'Medium' | 'Hard'
-
-type SpeechRecognitionLike = {
-  lang: string; interimResults: boolean; continuous: boolean
-  start: () => void; stop: () => void
-  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null
-  onend: (() => void) | null; onerror: (() => void) | null
-}
 
 const STARTERS = [
   { icon: 'record_voice_over', label: 'Run a full mock interview' },
@@ -53,22 +47,24 @@ export default function AICoachPage() {
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null)
   const [showScrollDown, setShowScrollDown] = useState(false)
 
-  // voice input
-  const [micSupported, setMicSupported] = useState(false)
-  const [listening, setListening] = useState(false)
-  const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
-
   const scrollRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
   const taRef = useRef<HTMLTextAreaElement>(null)
+
+  // voice input (Web Speech API + Gemini fallback) — see lib/useVoiceInput
+  const voiceBaseRef = useRef('')
+  const voice = useVoiceInput({
+    onTranscript: (text) => {
+      const base = voiceBaseRef.current
+      setInput(base ? `${base} ${text}` : text)
+      requestAnimationFrame(adjustHeight)
+    },
+  })
 
   const focusJob = appliedJobs.find((j) => j.id === focusJobId)
   const focusRole = focusJob ? focusJob.title : customRole.trim()
 
   useEffect(() => {
-    const w = window as unknown as { SpeechRecognition?: new () => SpeechRecognitionLike; webkitSpeechRecognition?: new () => SpeechRecognitionLike }
-    setMicSupported(!!(w.SpeechRecognition || w.webkitSpeechRecognition))
-
     loadInit()
   }, [])
 
@@ -210,22 +206,8 @@ export default function AICoachPage() {
   }
 
   const toggleMic = () => {
-    if (listening) { recognitionRef.current?.stop(); return }
-    const w = window as unknown as { SpeechRecognition?: new () => SpeechRecognitionLike; webkitSpeechRecognition?: new () => SpeechRecognitionLike }
-    const SR = w.SpeechRecognition || w.webkitSpeechRecognition
-    if (!SR) return
-    const rec = new SR()
-    rec.lang = 'en-US'; rec.interimResults = true; rec.continuous = false
-    rec.onresult = (e) => {
-      let t = ''
-      for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript
-      setInput(t); requestAnimationFrame(adjustHeight)
-    }
-    rec.onend = () => setListening(false)
-    rec.onerror = () => setListening(false)
-    recognitionRef.current = rec
-    setListening(true)
-    rec.start()
+    if (!voice.listening && !voice.busy) voiceBaseRef.current = input.trim()
+    voice.toggle()
   }
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -237,7 +219,7 @@ export default function AICoachPage() {
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
       {/* Sessions sidebar */}
-      <aside className={`fixed md:static z-40 inset-y-16 md:inset-y-0 left-0 w-72 bg-white border-r border-surface-container flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+      <aside className={`fixed md:static z-40 inset-y-16 md:inset-y-0 left-0 w-72 bg-white dark:bg-[#1c1c1e] border-r border-surface-container flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         <div className="p-3">
           <button onClick={newSession} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
             <span className="material-symbols-outlined text-lg">add</span>New Session
@@ -263,7 +245,7 @@ export default function AICoachPage() {
       {/* Chat area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header / focus controls */}
-        <div className="border-b border-surface-container bg-white/80 backdrop-blur-md px-3 md:px-5 py-3 flex items-center gap-2 flex-wrap">
+        <div className="border-b border-surface-container bg-white/80 dark:bg-[#1c1c1e]/80 backdrop-blur-md px-3 md:px-5 py-3 flex items-center gap-2 flex-wrap">
           <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 -ml-1 text-on-surface-variant hover:bg-surface-container-low rounded-lg">
             <span className="material-symbols-outlined">menu</span>
           </button>
@@ -297,13 +279,13 @@ export default function AICoachPage() {
           {/* Difficulty */}
           <div className="flex bg-surface-container-low rounded-xl p-0.5">
             {(['Easy', 'Medium', 'Hard'] as const).map((d) => (
-              <button key={d} onClick={() => setDifficulty(d)} className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${difficulty === d ? 'bg-white shadow text-primary' : 'text-on-surface-variant'}`}>{d}</button>
+              <button key={d} onClick={() => setDifficulty(d)} className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${difficulty === d ? 'bg-white dark:bg-white/10 shadow text-primary' : 'text-on-surface-variant'}`}>{d}</button>
             ))}
           </div>
           {/* Mode toggle */}
           <div className="flex bg-surface-container-low rounded-xl p-0.5">
             {(['chat', 'mock'] as const).map((m) => (
-              <button key={m} onClick={() => setMode(m)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${mode === m ? 'bg-white shadow text-primary' : 'text-on-surface-variant'}`}>
+              <button key={m} onClick={() => setMode(m)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${mode === m ? 'bg-white dark:bg-white/10 shadow text-primary' : 'text-on-surface-variant'}`}>
                 {m === 'chat' ? 'Chat' : 'Mock'}
               </button>
             ))}
@@ -324,7 +306,7 @@ export default function AICoachPage() {
               </div>
             ) : bootError ? (
               <div className="flex flex-col items-center text-center pt-16">
-                <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-4"><span className="material-symbols-outlined text-2xl">cloud_off</span></div>
+                <div className="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-4"><span className="material-symbols-outlined text-2xl">cloud_off</span></div>
                 <h3 className="text-lg font-bold text-on-surface mb-1">Couldn’t load the coach</h3>
                 <p className="text-sm text-on-surface-variant max-w-sm mb-4">Something went wrong. Please check your connection and try again.</p>
                 <button onClick={loadInit} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>
@@ -338,7 +320,7 @@ export default function AICoachPage() {
                 <p className="text-sm text-on-surface-variant max-w-md mb-6">Pick a job or type a role, set the difficulty, choose <b>Chat</b> or <b>Mock</b>, and start practicing. I know your profile and CV, so I&apos;ll tailor everything to you.</p>
                 <div className="grid sm:grid-cols-2 gap-3 w-full max-w-xl">
                   {STARTERS.map((s) => (
-                    <button key={s.label} onClick={() => send(s.label)} className="flex items-center gap-3 p-4 rounded-2xl bg-white border border-surface-container text-left hover:border-primary/40 hover:shadow-lg transition-all">
+                    <button key={s.label} onClick={() => send(s.label)} className="flex items-center gap-3 p-4 rounded-2xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-left hover:border-primary/40 hover:shadow-lg transition-all">
                       <span className="material-symbols-outlined text-primary">{s.icon}</span>
                       <span className="text-sm font-semibold text-on-surface">{s.label}</span>
                     </button>
@@ -354,7 +336,7 @@ export default function AICoachPage() {
                     </div>
                   )}
                   <div className={`group max-w-[85%] ${m.role === 'user' ? '' : 'min-w-0'}`}>
-                    <div className={`rounded-2xl px-4 py-3 ${m.role === 'user' ? 'premium-gradient text-white rounded-br-md' : 'bg-white border border-surface-container text-on-surface rounded-bl-md shadow-sm'}`}>
+                    <div className={`rounded-2xl px-4 py-3 ${m.role === 'user' ? 'premium-gradient text-white rounded-br-md' : 'bg-white dark:bg-[#2c2c2e] border border-surface-container text-on-surface rounded-bl-md shadow-sm'}`}>
                       {m.role === 'user' ? (
                         <p className="text-sm leading-relaxed whitespace-pre-wrap">{m.content}</p>
                       ) : m.content === '' && streaming ? (
@@ -391,7 +373,7 @@ export default function AICoachPage() {
             {lastIsAssistant && !streaming && (
               <div className="flex flex-wrap gap-2 pl-11">
                 {QUICK_ACTIONS.map((q) => (
-                  <button key={q.label} onClick={() => send(q.prompt)} className="px-3 py-1.5 rounded-full bg-white border border-surface-container text-xs font-bold text-on-surface-variant hover:border-primary/40 hover:text-primary transition-all">
+                  <button key={q.label} onClick={() => send(q.prompt)} className="px-3 py-1.5 rounded-full bg-white dark:bg-[#2c2c2e] border border-surface-container text-xs font-bold text-on-surface-variant hover:border-primary/40 hover:text-primary transition-all">
                     {q.label}
                   </button>
                 ))}
@@ -400,28 +382,38 @@ export default function AICoachPage() {
           </div>
 
           {showScrollDown && (
-            <button onClick={scrollToBottom} className="sticky bottom-2 left-full ml-auto mr-3 w-9 h-9 rounded-full bg-white border border-surface-container shadow-lg flex items-center justify-center text-on-surface-variant hover:text-primary">
+            <button onClick={scrollToBottom} className="sticky bottom-2 left-full ml-auto mr-3 w-9 h-9 rounded-full bg-white dark:bg-[#2c2c2e] border border-surface-container shadow-lg flex items-center justify-center text-on-surface-variant hover:text-primary">
               <span className="material-symbols-outlined">arrow_downward</span>
             </button>
           )}
         </div>
 
         {/* Composer */}
-        <div className="border-t border-surface-container bg-white px-3 md:px-0 py-3">
+        <div className="border-t border-surface-container bg-white dark:bg-[#1c1c1e] px-3 md:px-0 py-3">
           <div className="max-w-3xl mx-auto">
+            {voice.error && (
+              <div className="mb-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs">
+                <span className="material-symbols-outlined text-sm flex-shrink-0">info</span>
+                <span className="flex-1">{voice.error}</span>
+                <button onClick={voice.clearError} aria-label="Dismiss" className="material-symbols-outlined text-sm hover:opacity-70 flex-shrink-0">close</button>
+              </div>
+            )}
             <div className="flex items-end gap-2 bg-surface-container-low rounded-2xl p-2 focus-within:ring-2 focus-within:ring-primary/40 transition">
-              {micSupported && (
-                <button onClick={toggleMic} title={listening ? 'Stop' : 'Speak your answer'} className={`h-10 w-10 flex items-center justify-center rounded-xl transition-colors flex-shrink-0 ${listening ? 'bg-red-500 text-white animate-pulse' : 'text-on-surface-variant hover:bg-surface-container'}`}>
-                  <span className="material-symbols-outlined">{listening ? 'mic' : 'mic_none'}</span>
-                </button>
-              )}
+              <button
+                onClick={toggleMic}
+                disabled={voice.busy}
+                title={voice.listening ? 'Stop' : voice.busy ? 'Transcribing…' : 'Speak your answer'}
+                className={`h-10 w-10 flex items-center justify-center rounded-xl transition-colors flex-shrink-0 ${voice.listening ? 'bg-red-500 text-white animate-pulse' : voice.busy ? 'text-primary' : 'text-on-surface-variant hover:bg-surface-container'}`}
+              >
+                <span className={`material-symbols-outlined ${voice.busy ? 'animate-spin' : ''}`}>{voice.listening ? 'mic' : voice.busy ? 'progress_activity' : 'mic_none'}</span>
+              </button>
               <textarea
                 ref={taRef}
                 value={input}
                 onChange={(e) => { setInput(e.target.value); adjustHeight() }}
                 onKeyDown={onKeyDown}
                 rows={1}
-                placeholder={listening ? 'Listening…' : mode === 'mock' ? 'Type your answer…' : 'Ask your interview coach anything…'}
+                placeholder={voice.listening ? 'Listening…' : voice.busy ? 'Transcribing…' : mode === 'mock' ? 'Type your answer…' : 'Ask your interview coach anything…'}
                 className="flex-1 bg-transparent resize-none outline-none px-2 py-2 text-sm text-on-surface placeholder:text-outline-variant max-h-40"
               />
               {streaming ? (

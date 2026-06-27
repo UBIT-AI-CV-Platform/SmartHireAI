@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, Sora } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import ThemeProvider from '@/components/shared/ThemeProvider'
+import SiteLoader from '@/components/shared/SiteLoader'
 import './globals.css'
 
 // Primary font — used for all body / UI text
@@ -22,7 +24,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#312e81' },
+    { media: '(prefers-color-scheme: dark)', color: '#1c1c1e' },
   ],
 }
 
@@ -66,7 +68,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${sora.variable} scroll-smooth`}>
+    <html lang="en" className={`${inter.variable} ${sora.variable} scroll-smooth`} suppressHydrationWarning>
       <head>
         {/* Preconnect so the Material Symbols sheet loads faster */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -74,8 +76,11 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body className="font-sans bg-surface text-on-surface antialiased overflow-x-hidden">
-        {children}
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+        <ThemeProvider>
+          <SiteLoader />
+          {children}
+          {process.env.NODE_ENV === 'production' && <Analytics />}
+        </ThemeProvider>
       </body>
     </html>
   )
