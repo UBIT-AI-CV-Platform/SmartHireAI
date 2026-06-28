@@ -13,6 +13,10 @@ const ICON: Record<string, { icon: string; cls: string }> = {
   interview: { icon: 'videocam', cls: 'text-sky-600 dark:text-sky-300 bg-sky-100 dark:bg-sky-500/15' },
   offer: { icon: 'workspace_premium', cls: 'text-green-600 dark:text-green-300 bg-green-100 dark:bg-green-500/15' },
   message: { icon: 'forum', cls: 'text-primary bg-primary/10' },
+  follow: { icon: 'group_add', cls: 'text-pink-600 dark:text-pink-300 bg-pink-100 dark:bg-pink-500/15' },
+  like: { icon: 'favorite', cls: 'text-rose-600 dark:text-rose-300 bg-rose-100 dark:bg-rose-500/15' },
+  comment: { icon: 'chat_bubble', cls: 'text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-500/15' },
+  repost: { icon: 'repeat', cls: 'text-emerald-600 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/15' },
   info: { icon: 'notifications', cls: 'text-sky-600 dark:text-sky-300 bg-sky-100 dark:bg-sky-500/15' },
 }
 const meta = (t: string) => ICON[t] || ICON.info

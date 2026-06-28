@@ -3,11 +3,10 @@
 import Link from 'next/link'
 
 export const candidateNavLinks = [
-  { href: '/candidate', label: 'Overview', icon: 'dashboard' },
+  { href: '/candidate', label: 'Dashboard', icon: 'dashboard' },
   { href: '/candidate/build-profile', label: 'Build Profile', icon: 'person_edit' },
   { href: '/candidate/cv-generator', label: 'CV Generator', icon: 'auto_awesome' },
   { href: '/candidate/my-applications', label: 'Applications', icon: 'work_history' },
-  { href: '/candidate/interviews', label: 'Interviews', icon: 'videocam' },
   { href: '/candidate/inbox', label: 'Inbox', icon: 'inbox' },
   { href: '/candidate/ai-coach', label: 'AI Coach', icon: 'psychology' },
   { href: '/candidate/settings', label: 'Settings', icon: 'settings' },
@@ -18,13 +17,15 @@ interface SidebarProps {
   userName: string
   userEmail: string
   userPhoto?: string
+  userUsername?: string
   onSignOutClick: () => void
   onLinkClick?: () => void
   collapsed?: boolean
   onToggleCollapse?: () => void
 }
 
-export default function Sidebar({ pathname, userName, userEmail, userPhoto, onSignOutClick, onLinkClick, collapsed = false, onToggleCollapse }: SidebarProps) {
+export default function Sidebar({ pathname, userName, userEmail, userPhoto, userUsername, onSignOutClick, onLinkClick, collapsed = false, onToggleCollapse }: SidebarProps) {
+  const profileHref = userUsername ? `/candidate/u/${userUsername}` : '#'
   const avatar = (
     <div className="h-9 w-9 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center flex-shrink-0 overflow-hidden">
       {userPhoto ? (
@@ -79,15 +80,15 @@ export default function Sidebar({ pathname, userName, userEmail, userPhoto, onSi
       {/* User card + sign out */}
       <div className="mt-auto pt-4 border-t border-slate-200/70 dark:border-white/10">
         {collapsed ? (
-          <div className="flex justify-center mb-2">{avatar}</div>
+          <Link href={profileHref} onClick={onLinkClick} title="View your profile" className="flex justify-center mb-2">{avatar}</Link>
         ) : (
-          <div className="flex items-center gap-3 px-2 py-2.5 mb-1">
+          <Link href={profileHref} onClick={onLinkClick} title="View your profile" className="flex items-center gap-3 px-2 py-2.5 mb-1 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
             {avatar}
             <div className="min-w-0">
               <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{userName}</p>
               <p className="text-[11px] text-slate-400 dark:text-slate-400 truncate">{userEmail}</p>
             </div>
-          </div>
+          </Link>
         )}
         <button
           onClick={onSignOutClick}

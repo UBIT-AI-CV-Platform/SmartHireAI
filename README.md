@@ -1,8 +1,10 @@
 # SmartHire AI
 
-> An AI-powered, full-stack recruitment platform that connects candidates and recruiters through intelligent CV building, job matching, AI screening, video interviews, and real-time messaging — built as a Final Year Project.
+> An AI-powered, full-stack recruitment platform **and professional network** — combining intelligent CV building, job matching, AI screening, video interviews, and real-time messaging with a LinkedIn-style social feed of public profiles, posts, and follows. Built as a Final Year Project.
 
-SmartHire AI brings the entire hiring lifecycle into one place. Candidates build ATS-optimized CVs with Google Gemini, discover jobs, apply in one click, practice interviews with an AI coach, and attend video calls — all from a single dashboard. Recruiters post jobs, screen applicants with AI, manage a full hiring pipeline, schedule interviews, and communicate with candidates through an integrated inbox.
+SmartHire AI brings the entire hiring lifecycle into one place. Candidates build ATS-optimized CVs with Google Gemini, discover jobs, apply in one click, practice interviews with an AI coach, and attend video calls. Recruiters post jobs, screen applicants with AI, manage a full hiring pipeline, schedule interviews, and message candidates.
+
+On top of the ATS sits a **social layer**: every user gets a public profile, a shared **feed** where candidates and recruiters post updates (text, images, and documents), and the ability to **follow** people, **like**, **comment**, **repost**, and **share** posts — all wired into one unified inbox where you can message anyone.
 
 ---
 
@@ -10,6 +12,7 @@ SmartHire AI brings the entire hiring lifecycle into one place. Candidates build
 
 - [Features — Candidate Portal](#-candidate-portal)
 - [Features — Recruiter Portal](#-recruiter-portal)
+- [Social Network & Feed](#-social-network--feed)
 - [Features — Auth & Accounts](#-auth--accounts)
 - [Tech Stack](#-tech-stack)
 - [Project Structure](#-project-structure)
@@ -25,18 +28,23 @@ SmartHire AI brings the entire hiring lifecycle into one place. Candidates build
 
 ## 🎓 Candidate Portal
 
-### Overview Dashboard
-The candidate home page gives a full picture of the job search at a glance:
-- **Time-based greeting** with profile photo, name, desired role, and location
-- **Stat cards** — total applications, interviews scheduled, offers received, and saved jobs
-- **Profile completeness bar** with a checklist (photo, summary, role, skills, education, CV generated)
-- **Resume strength card** — displays the latest CV's ATS score (0–100) with a color-coded progress bar and dynamic feedback
-- **Application pipeline chart** — visual breakdown of applications by status (Applied / Screening / Interview / Offer / Rejected), withdrawn excluded
-- **Recent activity feed** — last 5 applications with status badges and relative timestamps ("2h ago", "3d ago")
-- **Upcoming interviews** — next confirmed interview with job title and date
-- **Recommended jobs** — skill-matched job cards with a color-coded match percentage (green ≥75%, amber ≥40%, slate below)
-- **Document stats** — counts of CVs, cover letters, and AI coach sessions
-- **Quick action links** — Build Profile, Generate CV, Find Jobs, AI Practice
+### Dashboard (Feed + Overview)
+The candidate home page (`/candidate`) merges the social **feed** and the personal **overview** into one screen:
+
+**Left column (~60%) — the social feed**
+- **People search bar** at the top — find any user by name, `@handle`, or company with a live results dropdown
+- **Post composer** — a "Start a post" bar that opens a popup to write an update (with **bold/italic** formatting), attach a **photo** or a **document/PDF**, and publish
+- **Feed tabs:** **Following** (people you follow + yourself), **Discover** (the whole community), **Trending** (most-liked/commented posts of the last 30 days)
+- Infinite "Load more" pagination
+
+**Right column (~40%) — your details**
+- **Profile mini-card** — photo, time-based greeting, headline, follower/following counts, **View profile** and **Edit** buttons
+- **Stat cards** — Applications, Interviews, Offers, Saved jobs
+- **Upcoming interviews** shortcut
+- **Profile completeness** checklist with progress bar
+- **Recommended jobs** — top skill-matched roles with match %
+- **Quick actions** — Generate CV, Find Jobs, AI Coach, Build Profile
+- **Who to follow** — suggested people you don't follow yet
 
 ---
 
@@ -180,8 +188,8 @@ A LinkedIn/Glassdoor-style job discovery and application tracker:
 
 ---
 
-### Interviews
-Full interview lifecycle management for candidates:
+### Interviews (a tab inside the Inbox)
+Interviews now live as the **Interviews tab inside the Inbox** (the old standalone page redirects there). The tab lists every interview with its stage, date, and the other party; selecting one opens the backing chat thread, where a live **interview card** carries all the actions.
 
 **Status Pipeline**
 | Status | Meaning |
@@ -243,21 +251,22 @@ A full conversational AI coach for interview preparation:
 
 ---
 
-### Inbox
-Real-time messaging between candidates and recruiters:
-- Conversation list with recruiter name and last message preview
-- Unread count badge
-- Message thread view with sent/received alignment
-- Timestamps per message
-- Text input with send button
-- Auto-scrolls to latest message
-- Empty state when no conversations yet
+### Inbox (unified — message anyone)
+One real-time inbox for **all** conversations — hiring threads *and* social DMs:
+- **Two tabs:** **Messages** and **Interviews** (the interviews list, see above)
+- **Message anyone** — "New message" search finds any user; you can also DM straight from someone's profile (**Message** button) or by sharing a post
+- Conversation list with the other person's **photo + name** (avatar links to their profile), last-message preview, unread badges, relative time
+- Message thread with sent/received bubbles, timestamps, auto-scroll
+- **Shared-post cards** — when someone shares a post to you, it appears as a tappable preview linking to the post
+- **Hiring threads** additionally show recruiter quick-actions (Schedule interview / Send offer / Reject) and live interview cards; plain social DMs stay clean
+- Deep-linking via `?c=<conversationId>` and `?tab=interviews`
+- Real-time via Supabase (instant new-message delivery + read sync)
 
 ---
 
 ### Notifications
 A structured activity feed:
-- **Notification types** with distinct icons and colours: applied (indigo), status update (amber), interview invite (sky), offer (green), message (primary)
+- **Notification types** with distinct icons and colours: applied (indigo), status update (amber), interview invite (sky), offer (green), message (primary), **new follower (pink)**, **like (rose)**, **comment (blue)**, **repost (emerald)**
 - Filter tabs: All, Unread, Read — with counts
 - Mark all as read button
 - Per-notification toggle read/unread and delete (revealed on hover)
@@ -276,17 +285,22 @@ A structured activity feed:
 
 ## 🏢 Recruiter Portal
 
-### Overview Dashboard
-A real-time command centre for the recruiter's hiring activity:
-- **Time-based greeting** with recruiter name and company name
-- **Stat cards** — Active Jobs, Total Applicants, Interviews Scheduled, Offers Extended — all pulling live data
-- **Recent applicants** — latest 6 applications with candidate avatar, name, applied job, time ago, match score, and status badge
-- **Hiring pipeline chart** — stacked bar showing application flow across Applied / Screening / Interview / Offer / Rejected with colour-coded counts
-- **Top jobs** — 4 highest-activity jobs by applicant count with open/closed status
-- **Expiring jobs alert** — amber card listing jobs closing within 7 days with days-remaining countdown
-- **Quick action grid** — Post a Job, Applicants, Company Profile, Settings
-- **AI Tools panel** — direct links to AI Screening, AI Copilot, and Analytics with descriptions
-- **Company profile CTA** — prompts setup if not configured, or links to update
+### Dashboard (Feed + Overview)
+The recruiter home page (`/recruiter`) merges the social **feed** with a hiring overview, mirroring the candidate layout:
+
+**Left column (~60%) — the social feed**
+- **People search bar** to find any candidate or recruiter
+- **Post composer** — share company updates, hiring posts, photos, or documents (with bold/italic formatting)
+- **Following / Discover / Trending** feed tabs
+
+**Right column (~40%) — hiring at a glance**
+- **Profile mini-card** — photo, greeting, company, follower/following counts, **View profile** and **Edit**
+- **Hiring stats** — Open jobs, Applicants, Interviews
+- **Recent applicants** — latest candidates with the job they applied to
+- **Quick actions** — Post a job, Applicants, AI tools, Analytics
+- **Who to follow**
+
+> The deeper hiring tools (full pipeline chart, expiring-jobs alerts, top jobs) live on the dedicated **Jobs**, **Applicants**, and **Analytics** pages.
 
 ---
 
@@ -401,17 +415,16 @@ A full conversational AI assistant embedded in the AI Tools page:
 
 ---
 
-### Interviews Management
-Full scheduling and tracking of all interviews:
+### Interviews Management (a tab inside the Inbox)
+Scheduling and tracking now happen inside the **Inbox** — the **Interviews tab** lists every interview, and the actions live on the interview card within each candidate's chat thread (the old standalone page redirects to `/recruiter/inbox?tab=interviews`).
 
-**Scheduling**
-- Schedule Interview button opens a modal:
-  - Candidate selector (dropdown of applicants from recruiter's jobs, excludes withdrawn)
+**Scheduling** (from a candidate's chat thread)
+- A **Schedule interview** quick-action opens a modal:
   - Date and time picker (required)
   - Duration: 15, 30, 45, or 60 minutes
   - Meeting link (optional — external URL, e.g. Zoom/Meet)
   - Notes for the candidate (optional)
-- Reschedule modal — same fields, candidate pre-selected
+- Reschedule modal — same fields
 
 **Interview Status Pipeline**
 | Status | Action Available |
@@ -436,13 +449,12 @@ Full scheduling and tracking of all interviews:
 
 ---
 
-### Inbox
-Same shared messaging interface as the candidate side:
-- Conversation list with candidate names and last message previews
-- Unread count badges
-- Full message thread per conversation
-- Text input with send
-- Auto-scroll to latest
+### Inbox (unified — message anyone)
+The same shared, unified inbox as the candidate side:
+- **Messages** and **Interviews** tabs in one place
+- Message **anyone** (applicants, other recruiters, or any user via search / their profile / a shared post)
+- Hiring threads expose the **Schedule interview / Send offer / Reject** quick-actions and live interview cards; social DMs stay clean
+- Avatars show the other person's photo and link to their profile
 - Real-time via Supabase
 
 ---
@@ -496,6 +508,39 @@ What candidates see about the recruiter's company:
 
 ---
 
+## 🌐 Social Network & Feed
+
+A LinkedIn-style professional layer that both candidates and recruiters share. Visibility is **logged-in only** — any signed-in user can view profiles and the feed, but logged-out visitors are redirected to sign in.
+
+### Posts & Feed
+- **Create a post** in a popup composer: write a caption with **bold/italic** (markdown), attach **one image** and/or **one document** (PDF/DOC/PPT/XLS/CSV/TXT, up to 15 MB)
+- **Like** (with a maroon-red gradient heart), **Comment** (threaded, with add/delete), **Repost** (optionally with your own quote), and **Share**
+- **Share** menu: **Copy link** to the post's permalink (`/post/[id]`), or **Send in a message** to anyone (lands as a shared-post card in their inbox)
+- **Edit** or **Delete** your own posts; **Hide** or **Report** others' posts
+- Documents render as a downloadable chip; reposts embed the original post inline
+- **Feed tabs:** Following · Discover · Trending (most-engaged in the last 30 days)
+
+### Public Profiles (`/u/<handle>`)
+Every user gets an auto-generated `@username` and a public profile that renders **inside the portal shell** (sidebar + topbar):
+- Clean header (no cover image) — photo, name, role badge, headline, location, company, **followers/following** counts, and a bio
+- **60/40 layout** — the person's **posts** on the left, their **details** on the right. Candidates show profile sections (skills, languages, projects, education, certifications, courses, awards, custom sections); **recruiters show a Company card** (name, industry, size, website, about) since they manage company info, not personal sections
+- **Follow / Unfollow**, **Message** (opens or starts a DM), **Copy link**, and **Report**
+- **Edit in place** on your own profile — update name, headline, location, bio, and photo without leaving the page
+- Reachable from search, the feed, the "Who to follow" card, post authors, inbox avatars, and the sidebar user card
+
+### Follow Graph & Discovery
+- **Follow** anyone; followers/following are public and open in a list modal
+- **People search** (top of the Dashboard) with a live results dropdown
+- **Who to follow** suggestions (excludes people you already follow)
+- A **new follower** notification is sent on each follow
+
+### Moderation
+- **Report** a post, comment, or profile with a reason + optional details (one report per target; re-reporting is a no-op)
+- **Hide post** removes a post from your own feed locally
+- Reports are stored for admin review (service-role only); reporters can read their own reports
+
+---
+
 ## 🔐 Auth & Accounts
 
 - **Email/password signup** with OTP email verification (branded email template)
@@ -503,7 +548,7 @@ What candidates see about the recruiter's company:
 - **Forgot password** → email with a reset link → set new password flow
 - **Google OAuth** — one-click sign in, followed by a role-selection step (Candidate or Recruiter)
 - **Role-based access** — one email maps to one role only; portal gating redirects users to the correct dashboard; wrong-role access is blocked
-- **Middleware-level route protection** — all `/candidate/*` and `/recruiter/*` routes require an active session
+- **Middleware-level route protection** — `/candidate/*`, `/recruiter/*`, `/interview/*`, `/u/*`, and `/post/*` all require an active session
 
 ---
 
@@ -534,7 +579,8 @@ A peer-to-peer video call room built directly into the platform, no third-party 
 | External Jobs | Jooble API (LinkedIn, Indeed, Glassdoor aggregation) |
 | Analytics | Vercel Analytics |
 | Image Optimization | `next/image` with AVIF/WebP auto-conversion |
-| Libraries | `@supabase/ssr`, `react-easy-crop`, `react-to-print`, `docx`, `react-markdown`, `remark-gfm` |
+| Social | Public profiles, feed, follows, posts/likes/comments, reposts, sharing, moderation (Supabase tables + RLS + `public_profiles` view) |
+| Libraries | `@supabase/ssr`, `react-easy-crop`, `react-to-print`, `docx`, `react-markdown`, `remark-gfm`, `date-fns` |
 
 ---
 
@@ -561,30 +607,34 @@ SmartHireAI/
 │   │   │   ├── layout.tsx             # Sidebar + header + auth guard
 │   │   │   ├── loading.tsx            # Route-level loading spinner
 │   │   │   ├── error.tsx              # Route-level error boundary
-│   │   │   ├── page.tsx               # Overview / Dashboard
+│   │   │   ├── page.tsx               # Dashboard (social feed + overview)
+│   │   │   ├── u/[username]/          # Public profile (rendered in portal shell)
 │   │   │   ├── build-profile/         # Profile builder
 │   │   │   ├── cv-generator/          # AI CV + Cover Letter generator
 │   │   │   ├── my-applications/       # Jobs, saved, applications, web jobs
-│   │   │   ├── interviews/            # Interview tracker
-│   │   │   ├── inbox/                 # Messaging
+│   │   │   ├── inbox/                 # Unified inbox (Messages + Interviews tabs)
 │   │   │   ├── ai-coach/              # AI interview coach
 │   │   │   ├── notifications/         # Notifications feed
-│   │   │   └── settings/              # Account settings
+│   │   │   ├── settings/              # Account settings
+│   │   │   └── feed/ · people/ · interviews/   # redirect stubs → Dashboard / Inbox
 │   │   │
 │   │   ├── recruiter/                 # Recruiter portal
 │   │   │   ├── layout.tsx             # Sidebar + header + auth guard
 │   │   │   ├── loading.tsx            # Route-level loading spinner
 │   │   │   ├── error.tsx              # Route-level error boundary
-│   │   │   ├── page.tsx               # Dashboard
+│   │   │   ├── page.tsx               # Dashboard (social feed + hiring overview)
+│   │   │   ├── u/[username]/          # Public profile (rendered in portal shell)
 │   │   │   ├── jobs/                  # Job posting & management
 │   │   │   ├── applicants/            # Pipeline management (list + kanban)
 │   │   │   ├── ai-screening/          # AI rank + interview kit + copilot
-│   │   │   ├── interviews/            # Interview scheduling & tracking
-│   │   │   ├── inbox/                 # Messaging
+│   │   │   ├── inbox/                 # Unified inbox (Messages + Interviews tabs)
 │   │   │   ├── analytics/             # Hiring analytics
 │   │   │   ├── company-profile/       # Company info + logo
-│   │   │   └── settings/              # Account settings
+│   │   │   ├── settings/              # Account settings
+│   │   │   └── feed/ · people/ · interviews/   # redirect stubs → Dashboard / Inbox
 │   │   │
+│   │   ├── u/[username]/              # Public profile (standalone / shareable link)
+│   │   ├── post/[id]/                 # Single-post permalink (shareable)
 │   │   ├── interview/[id]/            # WebRTC video call room
 │   │   │
 │   │   └── api/                       # Next.js server-side routes
@@ -604,20 +654,32 @@ SmartHireAI/
 │   ├── components/
 │   │   ├── landing/                   # Landing page sections (Navigation, Hero, Features, FAQ, CTA, Footer)
 │   │   ├── auth/                      # Auth UI (SocialButton, etc.)
-│   │   ├── candidate/                 # CVPreview, Sidebar, NotificationsBell, ExternalJobs, Pagination
+│   │   ├── candidate/                 # CVPreview, Sidebar, NotificationsBell, ExternalJobs, Pagination, ImageCropModal
 │   │   ├── recruiter/                 # Copilot, Sidebar
-│   │   └── shared/                    # Inbox, FancySelect
+│   │   ├── social/                    # Dashboard, Feed, PostCard, CreatePost (+composer), PublicProfileView,
+│   │   │                              #   SinglePostView, PeopleDirectory, PeopleSearchBar, WhoToFollow,
+│   │   │                              #   FollowButton, FollowListModal, PersonCard, SharePostModal,
+│   │   │                              #   RepostModal, ReportModal
+│   │   └── shared/                    # Inbox (unified), FancySelect, ThemeToggle
 │   │
 │   ├── lib/
 │   │   ├── supabase/                  # Server + client + middleware Supabase clients, DB types
+│   │   ├── social.ts                  # Social types + helpers (relativeTime, tagline, initials…)
+│   │   ├── useProfileLink.ts          # Portal-aware profile URL hook
 │   │   ├── gemini.ts                  # Multi-key Gemini caller with rotation + model fallback
 │   │   └── emails.ts                  # Nodemailer email sending
 │   │
+│   ├── proxy.ts                       # Auth/session middleware (Next 16 "proxy") + route protection
 │   ├── .env.example                   # Environment variable template
 │   └── package.json
 │
 └── backend/
-    ├── schema.sql                     # Full DB schema: tables, RLS, triggers, storage bucket
+    ├── schema.sql                     # Full consolidated DB schema (tables, views, RLS, triggers, buckets)
+    ├── social-phase1.sql … social-phase5.sql  # Social layer deltas (profiles+follows, feed,
+    │                                  #   sharing/unified-inbox, moderation, post file attachments)
+    ├── social-fixes.sql               # Follow-up fixes (idempotent)
+    ├── seed-social.sql                # Optional demo data — posts, jobs, profile details
+    ├── cleanup-recruiter-details.sql  # Removes fake recruiter profile sections (run once)
     └── email-templates/
         ├── confirm-signup.html        # Branded OTP verification email
         └── reset-password.html        # Branded password reset email
@@ -701,15 +763,21 @@ JOOBLE_API_KEY=your-jooble-key
 ## 🗄️ Database Setup
 
 ### 1. Run the schema
-In the Supabase dashboard → **SQL Editor**, paste and run **`backend/schema.sql`**.
+In the Supabase dashboard → **SQL Editor**, paste and run **`backend/schema.sql`** (the full consolidated schema).
 
 This creates:
-- All tables (`profiles`, `skills`, `languages`, `education`, `certifications`, `courses`, `awards`, `projects`, `custom_sections`, `cvs`, `cover_letters`, `jobs`, `applications`, `interviews`, `messages`, `notifications`, `company_profiles`)
-- Row-Level Security (RLS) policies — each user can only read/write their own data
-- Signup trigger — automatically inserts a row into `profiles` when a new user registers
-- Avatars storage bucket — for profile and company logo photos
+- **Tables** — `profiles`, `skills`, `languages`, `education`, `certifications`, `courses`, `awards`, `projects`, `custom_sections`, `cvs`, `cover_letters`, `saved_jobs`, `jobs`, `applications`, `interviews`, `interview_sessions`, `conversations`, `messages`, `notifications`, `follows`, `posts`, `post_likes`, `post_comments`, `reports`
+- **`public_profiles` view** — exposes only the safe, public columns of a profile (email / phone / DOB stay private)
+- **Row-Level Security** on every table — owner-only writes; the social tables (profiles-as-public-view, follows, posts, comments, likes, profile sections) are readable by any signed-in user
+- **Triggers** — auto-create a `profiles` row + unique `@username` on signup; maintain unread counts, like/comment counts, and notifications (apply, status, interview, message, follow, like, comment, repost)
+- **Storage buckets** — `avatars` (profile + company photos) and `post-media` (feed images + documents)
 
-The script is idempotent — safe to re-run if you need to reset.
+> The social layer is also available as incremental deltas (`social-phase1.sql` … `social-phase5.sql` + `social-fixes.sql`) for upgrading an existing DB. Running the full `schema.sql` once is equivalent.
+
+The script is idempotent — safe to re-run.
+
+### 1b. (Optional) Seed demo data
+For a lively feed and sample jobs, run **`backend/seed-social.sql`** in the SQL Editor. It adds varied posts (text / image / CV / document) at past timestamps, dummy jobs for recruiters, candidate profile sections, and headline/location/bio/company details — only for users who are missing them (safe + idempotent). Recruiters intentionally do **not** get personal sections (they manage Company details instead). `cleanup-recruiter-details.sql` removes any such fake recruiter sections if they were seeded earlier.
 
 ### 2. Configure Supabase Auth
 In the Supabase dashboard → **Authentication**:
@@ -741,11 +809,11 @@ In the Supabase dashboard → **Authentication**:
 4. **Recruiter** → AI Screening → select the job → **Rank Applicants** — see AI scores, strengths, and concerns.
 5. **Recruiter** → AI Screening → **Interview Kit** — generate structured interview questions for the role.
 6. **Recruiter** → Applicants → move the candidate to **Screening** → draft an **Interview Invite** email with AI Outreach.
-7. **Recruiter** → Interviews → **Schedule Interview** (set date, time, duration).
-8. **Candidate** → Interviews → **Accept** the interview invite.
+7. **Recruiter** → **Inbox** → open the candidate's chat → **Schedule interview** (date, time, duration).
+8. **Candidate** → **Inbox → Interviews tab** → open the chat → **Accept** the interview.
 9. Both parties → **Join Room** → live WebRTC video call in the browser.
 10. **Recruiter** → Mark Completed → **Make Offer**.
-11. **Candidate** → Interviews → **Accept Offer** 🎉
+11. **Candidate** → Inbox → **Accept Offer** 🎉
 12. **Recruiter** → Analytics → review funnel, match quality, and time-to-hire data.
 
 ### AI Features Checklist
@@ -755,6 +823,16 @@ In the Supabase dashboard → **Authentication**:
 - [ ] Interview Kit: generate a full kit for any posted job
 - [ ] AI Copilot: ask it to write a job description from scratch
 - [ ] AI Outreach: draft an offer email for a candidate
+
+### Social Layer
+1. **Dashboard** → **Start a post** → add a caption (try **bold/italic**), attach a photo or a document → Post; it appears in your feed.
+2. Open the **Discover** tab to see everyone's posts → **Like**, **Comment**, and **Repost** one.
+3. Use the **search bar** to find a person → open their profile → **Follow** and **Message** them.
+4. **Share** a post → **Send in a message** (it lands in their inbox as a card) or **Copy link** (`/post/[id]`).
+5. Click your name at the bottom of the sidebar → your **public profile** → **Edit profile** (headline, bio, photo).
+6. Switch to the **Following** tab — posts from people you now follow show up live.
+
+> Tip: run the optional seed scripts (see Database Setup → 1b) first so the feed already has content to scroll.
 
 ---
 

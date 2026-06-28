@@ -714,6 +714,8 @@ begin
   returning id into v_id;
   return v_id;
 end; $$;
+-- NOTE: ensure_conversation is re-defined in section 8 to be is_hiring-aware
+-- (after the is_hiring column is added there).
 
 -- On each new message: bump the conversation summary, raise the recipient's
 -- unread count, and create a 'message' notification for the recipient.
@@ -789,6 +791,420 @@ create policy "Users can delete their own avatar"
     bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text
   );
 
+-- ────────────────────────────────────────────────────────────────────────────
+-- 6) SOCIAL LAYER · PHASE 1 — public profiles, usernames, follow/followers
+--    (Also maintained standalone in backend/social-phase1.sql)
+-- ────────────────────────────────────────────────────────────────────────────
+
+-- 6a) usernames + headline on profiles
+alter table public.profiles add column if not exists username text;
+alter table public.profiles add column if not exists headline text;
+create unique index if not exists profiles_username_key on public.profiles (lower(username));
+
+-- Slugify a base string into a unique, URL-safe handle (excludes p_id so it is
+-- safe to call for an existing row). SECURITY DEFINER: needs to read all rows.
+create or replace function public.gen_username(p_base text, p_id uuid)
+returns text language plpgsql security definer set search_path = '' as $$
+declare base text; candidate text; n int := 0;
+begin
+  base := regexp_replace(lower(coalesce(nullif(trim(p_base), ''), 'user')), '[^a-z0-9]+', '-', 'g');
+  base := trim(both '-' from base);
+  if base = '' then base := 'user'; end if;
+  base := left(base, 30);
+  candidate := base;
+  loop
+    if not exists (select 1 from public.profiles where lower(username) = candidate and id is distinct from p_id) then
+      return candidate;
+    end if;
+    n := n + 1;
+    candidate := base || n::text;
+  end loop;
+end; $$;
+
+-- Backfill handles for any profile that doesn't have one yet. Done row-by-row in
+-- a loop so each call to gen_username sees the handles assigned by prior rows —
+-- a single bulk UPDATE would let two identical names collide on the unique index.
+do $$
+declare r record;
+begin
+  for r in select id, full_name, email from public.profiles where username is null or trim(username) = '' loop
+    update public.profiles
+      set username = public.gen_username(coalesce(nullif(trim(r.full_name), ''), split_part(r.email, '@', 1)), r.id)
+      where id = r.id;
+  end loop;
+end $$;
+
+-- Re-issue the signup trigger so new users also get a handle (supersedes the
+-- earlier definition in section 1)
+create or replace function public.handle_new_user()
+returns trigger language plpgsql security definer set search_path = '' as $$
+declare v_name text; v_username text;
+begin
+  v_name := coalesce(new.raw_user_meta_data ->> 'full_name', new.raw_user_meta_data ->> 'name');
+  v_username := public.gen_username(coalesce(nullif(trim(v_name), ''), split_part(new.email, '@', 1)), new.id);
+  insert into public.profiles (id, email, full_name, role, role_selected, username)
+  values (
+    new.id, new.email, v_name,
+    coalesce((new.raw_user_meta_data ->> 'role')::public.user_role, 'candidate'),
+    (new.raw_user_meta_data ->> 'role') is not null,
+    v_username
+  );
+  return new;
+end; $$;
+
+-- 6b) follows — directional follower graph
+create table if not exists public.follows (
+  follower_id  uuid not null references public.profiles(id) on delete cascade,
+  following_id uuid not null references public.profiles(id) on delete cascade,
+  created_at   timestamptz not null default now(),
+  primary key (follower_id, following_id),
+  constraint follows_no_self check (follower_id <> following_id)
+);
+create index if not exists follows_following_idx on public.follows (following_id);
+create index if not exists follows_follower_idx  on public.follows (follower_id);
+alter table public.follows enable row level security;
+
+drop policy if exists "authenticated can read follows" on public.follows;
+create policy "authenticated can read follows" on public.follows for select using (auth.uid() is not null);
+drop policy if exists "users can follow" on public.follows;
+create policy "users can follow" on public.follows for insert with check (auth.uid() = follower_id);
+drop policy if exists "users can unfollow" on public.follows;
+create policy "users can unfollow" on public.follows for delete using (auth.uid() = follower_id);
+
+create or replace function public.handle_follow_notify()
+returns trigger language plpgsql security definer set search_path = '' as $$
+declare who record;
+begin
+  select coalesce(nullif(trim(company_name), ''), full_name, 'Someone') as label, username
+    into who from public.profiles where id = new.follower_id;
+  insert into public.notifications (profile_id, type, title, body, link)
+  values (new.following_id, 'follow', 'New follower',
+          who.label || ' started following you.', '/u/' || coalesce(who.username, ''));
+  return new;
+end; $$;
+
+drop trigger if exists follows_notify on public.follows;
+create trigger follows_notify after insert on public.follows
+  for each row execute function public.handle_follow_notify();
+
+-- 6c) public read on section tables (meant to be shown on a public profile;
+--     writes stay owner-only). RLS OR-combines SELECT policies.
+do $$
+declare t text;
+begin
+  foreach t in array array['skills','languages','education','certifications','courses','awards','projects','custom_sections']
+  loop
+    execute format('drop policy if exists "authenticated can read %1$s" on public.%1$I;', t);
+    execute format($f$create policy "authenticated can read %1$s" on public.%1$I for select using (auth.uid() is not null);$f$, t);
+  end loop;
+end $$;
+
+-- 6d) public_profiles view — safe public face of a profile (email/phone/dob never
+--     leak). Bypasses base-table RLS but exposes only safe columns; signed-in only.
+drop view if exists public.public_profiles;
+create view public.public_profiles
+with (security_invoker = off) as
+  select
+    p.id, p.username, p.full_name, p.headline, p.desired_role, p.role,
+    p.location, p.photo_url, p.summary, p.linkedin_url, p.github_url,
+    p.company_name, p.company_industry, p.company_website, p.company_size, p.company_about,
+    p.created_at,
+    (select count(*) from public.follows f where f.following_id = p.id) as followers_count,
+    (select count(*) from public.follows f where f.follower_id  = p.id) as following_count
+  from public.profiles p;
+
+revoke all on public.public_profiles from anon;
+grant select on public.public_profiles to authenticated;
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 7) SOCIAL LAYER · PHASE 2 — feed: posts, likes, comments
+--    (Also maintained standalone in backend/social-phase2.sql)
+-- ────────────────────────────────────────────────────────────────────────────
+
+-- 7a) posts (author fields denormalised so the feed renders without reading
+--     owner-only profiles — same pattern as cv_snapshot / conversations)
+create table if not exists public.posts (
+  id              uuid primary key default gen_random_uuid(),
+  author_id       uuid not null references public.profiles(id) on delete cascade,
+  author_name     text,
+  author_username text,
+  author_photo    text,
+  author_role     public.user_role,
+  content         text,
+  image_url       text,
+  like_count      int not null default 0,
+  comment_count   int not null default 0,
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now()
+);
+create index if not exists posts_author_idx on public.posts (author_id);
+create index if not exists posts_created_idx on public.posts (created_at desc);
+alter table public.posts enable row level security;
+
+drop policy if exists "authenticated can read posts" on public.posts;
+create policy "authenticated can read posts" on public.posts for select using (auth.uid() is not null);
+drop policy if exists "users can create posts" on public.posts;
+create policy "users can create posts" on public.posts for insert with check (auth.uid() = author_id);
+drop policy if exists "authors can update posts" on public.posts;
+create policy "authors can update posts" on public.posts for update using (auth.uid() = author_id);
+drop policy if exists "authors can delete posts" on public.posts;
+create policy "authors can delete posts" on public.posts for delete using (auth.uid() = author_id);
+
+drop trigger if exists posts_set_updated_at on public.posts;
+create trigger posts_set_updated_at before update on public.posts for each row execute function public.set_updated_at();
+
+-- 7b) post likes
+create table if not exists public.post_likes (
+  post_id    uuid not null references public.posts(id) on delete cascade,
+  user_id    uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (post_id, user_id)
+);
+create index if not exists post_likes_post_idx on public.post_likes (post_id);
+alter table public.post_likes enable row level security;
+
+drop policy if exists "authenticated can read post_likes" on public.post_likes;
+create policy "authenticated can read post_likes" on public.post_likes for select using (auth.uid() is not null);
+drop policy if exists "users can like" on public.post_likes;
+create policy "users can like" on public.post_likes for insert with check (auth.uid() = user_id);
+drop policy if exists "users can unlike" on public.post_likes;
+create policy "users can unlike" on public.post_likes for delete using (auth.uid() = user_id);
+
+create or replace function public.handle_post_like_ins()
+returns trigger language plpgsql security definer set search_path = '' as $$
+declare p record; liker text;
+begin
+  update public.posts set like_count = like_count + 1 where id = new.post_id returning author_id, author_name into p;
+  if p.author_id is not null and p.author_id <> new.user_id then
+    select coalesce(nullif(trim(company_name), ''), full_name, 'Someone') into liker from public.profiles where id = new.user_id;
+    insert into public.notifications (profile_id, type, title, body, link)
+    values (p.author_id, 'like', 'New like', liker || ' liked your post.', '/post/' || new.post_id);
+  end if;
+  return new;
+end; $$;
+create or replace function public.handle_post_like_del()
+returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+  update public.posts set like_count = greatest(like_count - 1, 0) where id = old.post_id;
+  return old;
+end; $$;
+drop trigger if exists post_likes_ins on public.post_likes;
+create trigger post_likes_ins after insert on public.post_likes for each row execute function public.handle_post_like_ins();
+drop trigger if exists post_likes_del on public.post_likes;
+create trigger post_likes_del after delete on public.post_likes for each row execute function public.handle_post_like_del();
+
+-- 7c) post comments
+create table if not exists public.post_comments (
+  id              uuid primary key default gen_random_uuid(),
+  post_id         uuid not null references public.posts(id) on delete cascade,
+  author_id       uuid not null references public.profiles(id) on delete cascade,
+  author_name     text,
+  author_username text,
+  author_photo    text,
+  content         text not null,
+  created_at      timestamptz not null default now()
+);
+create index if not exists post_comments_post_idx on public.post_comments (post_id, created_at);
+alter table public.post_comments enable row level security;
+
+drop policy if exists "authenticated can read post_comments" on public.post_comments;
+create policy "authenticated can read post_comments" on public.post_comments for select using (auth.uid() is not null);
+drop policy if exists "users can comment" on public.post_comments;
+create policy "users can comment" on public.post_comments for insert with check (auth.uid() = author_id);
+drop policy if exists "users can edit own comment" on public.post_comments;
+create policy "users can edit own comment" on public.post_comments for update using (auth.uid() = author_id);
+drop policy if exists "users can delete comment" on public.post_comments;
+create policy "users can delete comment" on public.post_comments for delete using (
+  auth.uid() = author_id or auth.uid() = (select author_id from public.posts where posts.id = post_comments.post_id)
+);
+
+create or replace function public.handle_post_comment_ins()
+returns trigger language plpgsql security definer set search_path = '' as $$
+declare p record;
+begin
+  update public.posts set comment_count = comment_count + 1 where id = new.post_id returning author_id into p;
+  if p.author_id is not null and p.author_id <> new.author_id then
+    insert into public.notifications (profile_id, type, title, body, link)
+    values (p.author_id, 'comment', 'New comment', coalesce(new.author_name, 'Someone') || ' commented on your post.', '/post/' || new.post_id);
+  end if;
+  return new;
+end; $$;
+create or replace function public.handle_post_comment_del()
+returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+  update public.posts set comment_count = greatest(comment_count - 1, 0) where id = old.post_id;
+  return old;
+end; $$;
+drop trigger if exists post_comments_ins on public.post_comments;
+create trigger post_comments_ins after insert on public.post_comments for each row execute function public.handle_post_comment_ins();
+drop trigger if exists post_comments_del on public.post_comments;
+create trigger post_comments_del after delete on public.post_comments for each row execute function public.handle_post_comment_del();
+
+-- 7d) storage — post-media bucket (feed images), public read / owner write
+insert into storage.buckets (id, name, public) values ('post-media', 'post-media', true) on conflict (id) do nothing;
+drop policy if exists "Post media is publicly readable" on storage.objects;
+create policy "Post media is publicly readable" on storage.objects for select using (bucket_id = 'post-media');
+drop policy if exists "Users can upload post media" on storage.objects;
+create policy "Users can upload post media" on storage.objects for insert with check (bucket_id = 'post-media' and (storage.foldername(name))[1] = auth.uid()::text);
+drop policy if exists "Users can delete their post media" on storage.objects;
+create policy "Users can delete their post media" on storage.objects for delete using (bucket_id = 'post-media' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 8) SOCIAL LAYER · PHASE 3 — sharing: unified inbox (DM anyone), share-a-post,
+--    repost. (Also maintained standalone in backend/social-phase3.sql)
+-- ────────────────────────────────────────────────────────────────────────────
+
+-- 8a) unify inbox: any two users chat in the same conversations table. Existing
+--     rows are hiring threads (is_hiring defaults true → keeps hiring actions).
+alter table public.conversations add column if not exists is_hiring boolean not null default true;
+
+-- ensure_dm canonicalises the two slots (recruiter → recruiter_id slot; same-role
+-- pairs ordered by uuid) so a social DM and a hiring thread for the SAME pair map
+-- to the same (recruiter_id, candidate_id) row → no duplicates, and is_hiring can
+-- be flipped later by ensure_conversation.
+create or replace function public.ensure_dm(p_other uuid)
+returns uuid language plpgsql security definer set search_path = '' as $$
+declare
+  me uuid := auth.uid(); v_id uuid; meR record; otR record;
+  rec_slot uuid; cand_slot uuid;
+  rec_name text; rec_email text; rec_company text; cand_name text; cand_email text;
+begin
+  if me is null then raise exception 'not signed in'; end if;
+  if me = p_other then raise exception 'cannot DM yourself'; end if;
+
+  select full_name, email, company_name, role into meR from public.profiles where id = me;
+  select full_name, email, company_name, role into otR from public.profiles where id = p_other;
+
+  if meR.role = 'recruiter' and otR.role <> 'recruiter' then
+    rec_slot := me; rec_name := meR.full_name; rec_email := meR.email; rec_company := meR.company_name;
+    cand_slot := p_other; cand_name := otR.full_name; cand_email := otR.email;
+  elsif otR.role = 'recruiter' and meR.role <> 'recruiter' then
+    rec_slot := p_other; rec_name := otR.full_name; rec_email := otR.email; rec_company := otR.company_name;
+    cand_slot := me; cand_name := meR.full_name; cand_email := meR.email;
+  elsif me < p_other then
+    rec_slot := me; rec_name := meR.full_name; rec_email := meR.email; rec_company := meR.company_name;
+    cand_slot := p_other; cand_name := otR.full_name; cand_email := otR.email;
+  else
+    rec_slot := p_other; rec_name := otR.full_name; rec_email := otR.email; rec_company := otR.company_name;
+    cand_slot := me; cand_name := meR.full_name; cand_email := meR.email;
+  end if;
+
+  select id into v_id from public.conversations where recruiter_id = rec_slot and candidate_id = cand_slot;
+  if v_id is not null then return v_id; end if;
+
+  insert into public.conversations
+    (recruiter_id, candidate_id, recruiter_name, recruiter_email, candidate_name, candidate_email, company, is_hiring)
+  values
+    (rec_slot, cand_slot, rec_name, rec_email, cand_name, cand_email,
+     case when (select role from public.profiles where id = rec_slot) = 'recruiter' then rec_company else null end,
+     false)
+  returning id into v_id;
+  return v_id;
+end; $$;
+
+-- Re-define ensure_conversation now that is_hiring exists: flip an existing thread
+-- (e.g. a prior social DM) to a hiring thread, and stamp is_hiring on new ones.
+create or replace function public.ensure_conversation(p_recruiter uuid, p_candidate uuid, p_job uuid default null)
+returns uuid language plpgsql security definer set search_path = '' as $$
+declare v_id uuid; rec record; cand record; jobrec record;
+begin
+  if auth.uid() <> p_recruiter and auth.uid() <> p_candidate then
+    raise exception 'not a participant';
+  end if;
+  select id into v_id from public.conversations where recruiter_id = p_recruiter and candidate_id = p_candidate;
+  if v_id is not null then
+    update public.conversations set is_hiring = true, job_id = coalesce(p_job, job_id) where id = v_id;
+    return v_id;
+  end if;
+  select full_name, email, company_name into rec from public.profiles where id = p_recruiter;
+  select full_name, email into cand from public.profiles where id = p_candidate;
+  if p_job is not null then select title, company into jobrec from public.jobs where id = p_job; end if;
+  insert into public.conversations (recruiter_id, candidate_id, job_id, recruiter_name, recruiter_email, candidate_name, candidate_email, company, job_title, is_hiring)
+  values (p_recruiter, p_candidate, p_job,
+    coalesce(rec.company_name, rec.full_name), rec.email,
+    cand.full_name, cand.email,
+    coalesce(jobrec.company, rec.company_name), jobrec.title, true)
+  returning id into v_id;
+  return v_id;
+end; $$;
+
+-- 8b) message notifications route by the RECIPIENT's real role + cover shared posts
+create or replace function public.handle_new_message()
+returns trigger language plpgsql security definer set search_path = '' as $$
+declare c record; recipient uuid; sender_label text; preview text; rrole public.user_role;
+begin
+  select * into c from public.conversations where id = new.conversation_id;
+  if new.sender_id = c.recruiter_id then recipient := c.candidate_id; sender_label := coalesce(c.recruiter_name, 'Someone');
+  else recipient := c.recruiter_id; sender_label := coalesce(c.candidate_name, 'Someone'); end if;
+  preview := coalesce(nullif(new.body, ''), case new.kind
+    when 'interview' then 'Interview details' when 'offer' then 'Job offer'
+    when 'rejection' then 'Application update' when 'post' then 'Shared a post' else 'New message' end);
+  update public.conversations set
+    last_message = preview, last_sender_id = new.sender_id,
+    last_message_at = new.created_at, updated_at = new.created_at,
+    recruiter_unread = recruiter_unread + (case when recipient = c.recruiter_id then 1 else 0 end),
+    candidate_unread = candidate_unread + (case when recipient = c.candidate_id then 1 else 0 end)
+  where id = new.conversation_id;
+  if new.kind in ('text', 'post') then
+    select role into rrole from public.profiles where id = recipient;
+    insert into public.notifications (profile_id, type, title, body, link)
+    values (recipient, 'message', 'New message from ' || sender_label, left(preview, 120),
+      case when rrole = 'recruiter' then '/recruiter/inbox' else '/candidate/inbox' end);
+  end if;
+  return new;
+end; $$;
+
+-- 8c) reposts — a post referencing another (optional quote in content);
+--     repost_snapshot keeps the original visible even if the source is deleted
+alter table public.posts add column if not exists repost_of uuid references public.posts(id) on delete set null;
+alter table public.posts add column if not exists repost_snapshot jsonb;
+
+create or replace function public.handle_post_repost_notify()
+returns trigger language plpgsql security definer set search_path = '' as $$
+declare orig_author uuid;
+begin
+  if new.repost_of is not null then
+    select author_id into orig_author from public.posts where id = new.repost_of;
+    if orig_author is not null and orig_author <> new.author_id then
+      insert into public.notifications (profile_id, type, title, body, link)
+      values (orig_author, 'repost', 'Your post was reposted',
+        coalesce(new.author_name, 'Someone') || ' reposted your post.', '/post/' || new.id);
+    end if;
+  end if;
+  return new;
+end; $$;
+drop trigger if exists posts_repost_notify on public.posts;
+create trigger posts_repost_notify after insert on public.posts for each row execute function public.handle_post_repost_notify();
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 9) SOCIAL LAYER · PHASE 4 — moderation (reports). Suggested-people + trending
+--    are client-side queries over existing tables (no schema). See social-phase4.sql
+-- ────────────────────────────────────────────────────────────────────────────
+create table if not exists public.reports (
+  id          uuid primary key default gen_random_uuid(),
+  reporter_id uuid not null references public.profiles(id) on delete cascade,
+  target_type text not null check (target_type in ('post', 'comment', 'profile')),
+  target_id   uuid not null,
+  reason      text not null,
+  details     text,
+  status      text not null default 'open',   -- open | reviewed | dismissed
+  created_at  timestamptz not null default now(),
+  unique (reporter_id, target_type, target_id)
+);
+create index if not exists reports_status_idx on public.reports (status, created_at desc);
+alter table public.reports enable row level security;
+
+drop policy if exists "users can file reports" on public.reports;
+create policy "users can file reports" on public.reports for insert with check (auth.uid() = reporter_id);
+drop policy if exists "reporter can read own reports" on public.reports;
+create policy "reporter can read own reports" on public.reports for select using (auth.uid() = reporter_id);
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 10) SOCIAL LAYER · PHASE 5 — posts can attach a document/file
+-- ────────────────────────────────────────────────────────────────────────────
+alter table public.posts add column if not exists file_url  text;
+alter table public.posts add column if not exists file_name text;
+
 -- ============================================================================
---  Done. 18 tables + RLS + signup trigger + avatars bucket are ready.
+--  Done. 23 tables/views + RLS + signup trigger + avatars/post-media buckets.
 -- ============================================================================

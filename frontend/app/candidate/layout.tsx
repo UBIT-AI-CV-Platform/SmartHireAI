@@ -31,7 +31,7 @@ export default function CandidateLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [signOutOpen, setSignOutOpen] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
-  const [user, setUser] = useState({ name: 'Account', email: '', photo: '' })
+  const [user, setUser] = useState({ name: 'Account', email: '', photo: '', username: '' })
   const [tipIdx, setTipIdx] = useState(0)
   const [collapsed, setCollapsed] = useState(false)
   const [ready, setReady] = useState(false)
@@ -55,7 +55,7 @@ export default function CandidateLayout({
       if (!user) return
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, photo_url, role, role_selected')
+        .select('full_name, photo_url, role, role_selected, username')
         .eq('id', user.id)
         .single()
       // Role gating: unselected -> choose role; recruiters -> their portal
@@ -71,6 +71,7 @@ export default function CandidateLayout({
         name: profile?.full_name || user.email?.split('@')[0] || 'Account',
         email: user.email || '',
         photo: profile?.photo_url || '',
+        username: profile?.username || '',
       })
       setReady(true)
       // send any due "upcoming interview" reminders (one-time per interview)
@@ -104,6 +105,7 @@ export default function CandidateLayout({
           userName={user.name}
           userEmail={user.email}
           userPhoto={user.photo}
+          userUsername={user.username}
           onSignOutClick={() => setSignOutOpen(true)}
           collapsed={collapsed}
           onToggleCollapse={toggleCollapse}
@@ -121,6 +123,7 @@ export default function CandidateLayout({
           userName={user.name}
           userEmail={user.email}
           userPhoto={user.photo}
+          userUsername={user.username}
           onLinkClick={() => setMobileMenuOpen(false)}
           onSignOutClick={() => {
             setMobileMenuOpen(false)
