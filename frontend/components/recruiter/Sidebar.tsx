@@ -6,7 +6,6 @@ export const recruiterNavLinks = [
   { href: '/recruiter', label: 'Dashboard', icon: 'dashboard' },
   { href: '/recruiter/jobs', label: 'Jobs', icon: 'work' },
   { href: '/recruiter/applicants', label: 'Applicants', icon: 'group' },
-  { href: '/recruiter/interviews', label: 'Interviews', icon: 'videocam' },
   { href: '/recruiter/inbox', label: 'Inbox', icon: 'inbox' },
   { href: '/recruiter/ai-screening', label: 'AI Tools', icon: 'auto_awesome' },
   { href: '/recruiter/analytics', label: 'Analytics', icon: 'monitoring' },
@@ -19,13 +18,15 @@ interface SidebarProps {
   userName: string
   userEmail: string
   userPhoto?: string
+  userUsername?: string
   onSignOutClick: () => void
   onLinkClick?: () => void
   collapsed?: boolean
   onToggleCollapse?: () => void
 }
 
-export default function Sidebar({ pathname, userName, userEmail, userPhoto, onSignOutClick, onLinkClick, collapsed = false, onToggleCollapse }: SidebarProps) {
+export default function Sidebar({ pathname, userName, userEmail, userPhoto, userUsername, onSignOutClick, onLinkClick, collapsed = false, onToggleCollapse }: SidebarProps) {
+  const profileHref = userUsername ? `/recruiter/u/${userUsername}` : '#'
   const avatar = (
     <div className="h-9 w-9 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center flex-shrink-0 overflow-hidden">
       {userPhoto ? (
@@ -82,15 +83,15 @@ export default function Sidebar({ pathname, userName, userEmail, userPhoto, onSi
       {/* User card + sign out */}
       <div className="mt-auto pt-4 border-t border-slate-200/70 dark:border-white/10">
         {collapsed ? (
-          <div className="flex justify-center mb-2">{avatar}</div>
+          <Link href={profileHref} onClick={onLinkClick} title="View your profile" className="flex justify-center mb-2">{avatar}</Link>
         ) : (
-          <div className="flex items-center gap-3 px-2 py-2.5 mb-1">
+          <Link href={profileHref} onClick={onLinkClick} title="View your profile" className="flex items-center gap-3 px-2 py-2.5 mb-1 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
             {avatar}
             <div className="min-w-0">
               <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{userName}</p>
               <p className="text-[11px] text-slate-400 dark:text-slate-400 truncate">{userEmail}</p>
             </div>
-          </div>
+          </Link>
         )}
         <button
           onClick={onSignOutClick}

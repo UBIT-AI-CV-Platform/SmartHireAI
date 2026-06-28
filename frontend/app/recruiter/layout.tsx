@@ -14,7 +14,7 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [signOutOpen, setSignOutOpen] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
-  const [user, setUser] = useState({ name: 'Recruiter', email: '', photo: '', company: '' })
+  const [user, setUser] = useState({ name: 'Recruiter', email: '', photo: '', company: '', username: '' })
   const [collapsed, setCollapsed] = useState(false)
   const [ready, setReady] = useState(false)
 
@@ -25,7 +25,7 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
       if (!user) { router.replace('/auth'); return }
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, photo_url, role, role_selected, company_name')
+        .select('full_name, photo_url, role, role_selected, company_name, username')
         .eq('id', user.id)
         .single()
       // Role gating: unselected -> choose role; candidates -> their portal
@@ -36,6 +36,7 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
         email: user.email || '',
         photo: profile?.photo_url || '',
         company: profile?.company_name || '',
+        username: profile?.username || '',
       })
       setReady(true)
       // send any due "upcoming interview" reminders (one-time per interview)
@@ -63,12 +64,12 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
 
       {/* Desktop sidebar */}
       <aside className={`hidden md:flex md:fixed md:left-0 md:top-0 md:h-screen bg-white dark:bg-[#1c1c1e] border-r border-slate-200/70 dark:border-white/10 flex-col z-[60] transition-all duration-300 ${collapsed ? 'md:w-20 p-3' : 'md:w-64 p-5'}`}>
-        <Sidebar pathname={pathname} userName={user.name} userEmail={user.email} userPhoto={user.photo} onSignOutClick={() => setSignOutOpen(true)} collapsed={collapsed} onToggleCollapse={toggleCollapse} />
+        <Sidebar pathname={pathname} userName={user.name} userEmail={user.email} userPhoto={user.photo} userUsername={user.username} onSignOutClick={() => setSignOutOpen(true)} collapsed={collapsed} onToggleCollapse={toggleCollapse} />
       </aside>
 
       {/* Mobile slide-in sidebar */}
       <aside className={`fixed left-0 top-0 h-screen w-64 bg-white dark:bg-[#1c1c1e] flex flex-col p-5 z-[60] md:hidden shadow-2xl transition-transform duration-300 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <Sidebar pathname={pathname} userName={user.name} userEmail={user.email} userPhoto={user.photo} onLinkClick={() => setMobileMenuOpen(false)} onSignOutClick={() => { setMobileMenuOpen(false); setSignOutOpen(true) }} />
+        <Sidebar pathname={pathname} userName={user.name} userEmail={user.email} userPhoto={user.photo} userUsername={user.username} onLinkClick={() => setMobileMenuOpen(false)} onSignOutClick={() => { setMobileMenuOpen(false); setSignOutOpen(true) }} />
       </aside>
 
       {/* Top bar */}

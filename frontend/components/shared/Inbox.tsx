@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import FancySelect from '@/components/shared/FancySelect'
+import { useProfileLink } from '@/lib/useProfileLink'
 
 type Role = 'recruiter' | 'candidate'
 
@@ -11,7 +12,7 @@ type Conv = {
   id: string; recruiter_id: string; candidate_id: string; job_id: string | null
   recruiter_name: string | null; candidate_name: string | null; company: string | null; job_title: string | null
   last_message: string | null; last_sender_id: string | null; last_message_at: string | null
-  recruiter_unread: number; candidate_unread: number; updated_at: string
+  recruiter_unread: number; candidate_unread: number; updated_at: string; is_hiring: boolean
 }
 type Msg = { id: string; conversation_id: string; sender_id: string; body: string | null; kind: string; meta: Record<string, unknown> | null; created_at: string }
 type Iv = {
@@ -50,6 +51,7 @@ const EMPTY_SCHED = { ivId: '', date: '', time: '', duration: '30', link: '', no
 
 export default function Inbox({ role }: { role: Role }) {
   const supabase = useMemo(() => createClient(), [])
+  const profileLink = useProfileLink()
   const [uid, setUid] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
@@ -64,29 +66,55 @@ export default function Inbox({ role }: { role: Role }) {
   // modals
   const [showNew, setShowNew] = useState(false)
   const [newItems, setNewItems] = useState<NewItem[]>([])
+  const [peopleQ, setPeopleQ] = useState('')
+  const [peopleResults, setPeopleResults] = useState<{ id: string; full_name: string | null; username: string | null; role: string | null; company_name: string | null }[]>([])
+  const peopleDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // other-party profile info (username + photo) for avatars that link to /u/<handle>
+  const [otherInfo, setOtherInfo] = useState<Record<string, { username: string | null; photo: string | null }>>({})
+  // top tabs: chat list vs interviews list
+  const [view, setView] = useState<'messages' | 'interviews'>('messages')
   const [showSched, setShowSched] = useState(false)
   const [sched, setSched] = useState(EMPTY_SCHED)
   const [schedErr, setSchedErr] = useState<string | null>(null)
 
   const uidRef = useRef('')
   const activeRef = useRef<string | null>(null)
+  const activeConvRef = useRef<Conv | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const isRecruiter = role === 'recruiter'
   const basePath = isRecruiter ? '/recruiter' : '/candidate'
-  const otherName = (c: Conv) => (isRecruiter ? c.candidate_name : (c.company || c.recruiter_name)) || (isRecruiter ? 'Candidate' : 'Recruiter')
-  const unreadOf = (c: Conv) => (isRecruiter ? c.recruiter_unread : c.candidate_unread)
+  // Slot-aware: a conversation has two participants in the recruiter_id/candidate_id
+  // slots. "Who am I / who is the other" is decided per-conversation, so the SAME
+  // inbox works for hiring threads AND any-to-any social DMs.
+  // NOTE: use uidRef.current (not the uid state) — openConv runs from the bootstrap
+  // effect before the uid state has committed, so the state would still be ''.
+  const iAmRecruiterSlot = (c: Conv) => c.recruiter_id === uidRef.current
+  const otherId = (c: Conv) => (iAmRecruiterSlot(c) ? c.candidate_id : c.recruiter_id)
+  const otherName = (c: Conv) => (iAmRecruiterSlot(c) ? c.candidate_name : (c.company || c.recruiter_name)) || 'User'
+  const unreadOf = (c: Conv) => (iAmRecruiterSlot(c) ? c.recruiter_unread : c.candidate_unread)
+  const myUnreadPatch = (c: Conv) => (iAmRecruiterSlot(c) ? { recruiter_unread: 0 } : { candidate_unread: 0 })
+  // Hiring quick-actions (schedule/offer/reject) show only when I'm the recruiter
+  // on a hiring thread — never on a plain social DM.
+  const canHire = (c: Conv | null) => !!c && isRecruiter && c.recruiter_id === uidRef.current && c.is_hiring
 
   // ── data loaders ───────────────────────────────────────────────────────────
   const loadConvos = async (id: string) => {
-    const col = isRecruiter ? 'recruiter_id' : 'candidate_id'
-    const { data } = await supabase.from('conversations').select('*').eq(col, id).order('updated_at', { ascending: false })
-    setConvos((data as Conv[]) ?? [])
-    return (data as Conv[]) ?? []
+    const { data } = await supabase.from('conversations').select('*').or(`recruiter_id.eq.${id},candidate_id.eq.${id}`).order('updated_at', { ascending: false })
+    const list = (data as Conv[]) ?? []
+    setConvos(list)
+    // fetch the other participant's handle + photo so avatars link to /u/<handle>
+    const ids = Array.from(new Set(list.map((c) => (c.recruiter_id === id ? c.candidate_id : c.recruiter_id))))
+    if (ids.length) {
+      const { data: profs } = await supabase.from('public_profiles').select('id, username, photo_url').in('id', ids)
+      const map: Record<string, { username: string | null; photo: string | null }> = {}
+      ;((profs as { id: string; username: string | null; photo_url: string | null }[]) ?? []).forEach((p) => { map[p.id] = { username: p.username, photo: p.photo_url } })
+      setOtherInfo(map)
+    }
+    return list
   }
   const loadInterviews = async (id: string) => {
-    const col = isRecruiter ? 'recruiter_id' : 'candidate_id'
-    const { data } = await supabase.from('interviews').select('*').eq(col, id)
+    const { data } = await supabase.from('interviews').select('*').or(`recruiter_id.eq.${id},candidate_id.eq.${id}`)
     const map: Record<string, Iv> = {}
     ;((data as Iv[]) ?? []).forEach((iv) => { map[iv.id] = iv })
     setIvById(map)
@@ -97,15 +125,15 @@ export default function Inbox({ role }: { role: Role }) {
   }
 
   const openConv = async (c: Conv) => {
-    setActive(c); activeRef.current = c.id
+    setActive(c); activeRef.current = c.id; activeConvRef.current = c
     await loadMessages(c.id)
     // mark my side read
-    const patch = isRecruiter ? { recruiter_unread: 0 } : { candidate_unread: 0 }
+    const patch = myUnreadPatch(c)
     if (unreadOf(c) > 0) {
       await supabase.from('conversations').update(patch).eq('id', c.id)
       setConvos((list) => list.map((x) => (x.id === c.id ? { ...x, ...patch } : x)))
     }
-    if (isRecruiter) {
+    if (canHire(c)) {
       const { data } = await supabase
         .from('applications')
         .select('id, job_id, candidate_id, candidate_name, status, job:jobs(id, title, company)')
@@ -113,6 +141,8 @@ export default function Inbox({ role }: { role: Role }) {
         .order('applied_at', { ascending: false })
       const rows = (data as unknown as AppRow[]) ?? []
       setActiveApp(rows.find((r) => r.job_id === c.job_id) || rows[0] || null)
+    } else {
+      setActiveApp(null)
     }
   }
 
@@ -124,7 +154,12 @@ export default function Inbox({ role }: { role: Role }) {
       setUid(user.id); uidRef.current = user.id
       try {
         const [list] = await Promise.all([loadConvos(user.id), loadInterviews(user.id)])
-        if (list.length) await openConv(list[0])
+        // deep-links: ?c=<conversationId> opens that thread; ?tab=interviews opens the Interviews tab
+        const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+        if (params?.get('tab') === 'interviews') setView('interviews')
+        const wanted = params?.get('c') || null
+        const target = (wanted && list.find((x) => x.id === wanted)) || list[0]
+        if (target) await openConv(target)
       } catch { setLoadError(true) }
       setLoading(false)
       if (cancelled) return
@@ -140,8 +175,9 @@ export default function Inbox({ role }: { role: Role }) {
           if (m.conversation_id === activeRef.current) {
             loadMessages(activeRef.current!)
             loadInterviews(uidRef.current)
-            if (m.sender_id !== uidRef.current) {
-              const patch = isRecruiter ? { recruiter_unread: 0 } : { candidate_unread: 0 }
+            const c = activeConvRef.current
+            if (m.sender_id !== uidRef.current && c) {
+              const patch = c.recruiter_id === uidRef.current ? { recruiter_unread: 0 } : { candidate_unread: 0 }
               supabase.from('conversations').update(patch).eq('id', activeRef.current!)
             }
           }
@@ -287,11 +323,49 @@ export default function Inbox({ role }: { role: Role }) {
     const recruiter = isRecruiter ? uid : item.otherId
     const candidate = isRecruiter ? item.otherId : uid
     const { data: convId } = await supabase.rpc('ensure_conversation', { p_recruiter: recruiter, p_candidate: candidate, p_job: item.jobId ?? undefined })
-    setShowNew(false)
+    closeNew()
     const list = await loadConvos(uid)
     const c = list.find((x) => x.id === convId)
     if (c) await openConv(c)
   }
+
+  // DM anyone: search all people, then ensure_dm() to open/create the thread
+  const searchPeople = (q: string) => {
+    setPeopleQ(q)
+    if (peopleDebounce.current) clearTimeout(peopleDebounce.current)
+    const term = q.trim()
+    if (!term) { setPeopleResults([]); return }
+    peopleDebounce.current = setTimeout(async () => {
+      const like = `%${term.replace(/[%,]/g, '')}%`
+      const { data } = await supabase
+        .from('public_profiles')
+        .select('id, full_name, username, role, company_name')
+        .or(`full_name.ilike.${like},username.ilike.${like},company_name.ilike.${like}`)
+        .neq('id', uid)
+        .limit(20)
+      setPeopleResults((data as typeof peopleResults) ?? [])
+    }, 250)
+  }
+  const startDm = async (otherId: string) => {
+    const { data: convId } = await supabase.rpc('ensure_dm', { p_other: otherId })
+    closeNew()
+    const list = await loadConvos(uid)
+    const c = list.find((x) => x.id === convId)
+    if (c) await openConv(c)
+  }
+  const closeNew = () => { setShowNew(false); setPeopleQ(''); setPeopleResults([]) }
+
+  // Interviews tab: open the chat that backs an interview (create the thread if needed)
+  const openFromInterview = async (iv: Iv) => {
+    let c = convos.find((x) => x.recruiter_id === iv.recruiter_id && x.candidate_id === iv.candidate_id)
+    if (!c) {
+      const { data: convId } = await supabase.rpc('ensure_conversation', { p_recruiter: iv.recruiter_id, p_candidate: iv.candidate_id, p_job: iv.job_id ?? undefined })
+      const list = await loadConvos(uid)
+      c = list.find((x) => x.id === convId)
+    }
+    if (c) { setView('messages'); await openConv(c) }
+  }
+  const interviewList = Object.values(ivById).sort((a, b) => +new Date(b.scheduled_at || 0) - +new Date(a.scheduled_at || 0))
 
   // Once the candidate has a live offer / is hired / was rejected, the recruiter
   // shouldn't be able to re-offer or reject. Scheduling an interview stays open.
@@ -311,28 +385,63 @@ export default function Inbox({ role }: { role: Role }) {
       <aside className={`${active ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col border-r border-surface-container bg-white dark:bg-[#1c1c1e] flex-shrink-0`}>
         <div className="p-4 border-b border-surface-container flex items-center justify-between">
           <h1 className="text-lg font-bold text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">forum</span>Inbox</h1>
-          <button onClick={openNew} className="h-9 px-3 rounded-xl premium-gradient text-white text-xs font-bold flex items-center gap-1 hover:scale-105 transition-transform"><span className="material-symbols-outlined text-base">edit_square</span>New</button>
+          {view === 'messages' && <button onClick={openNew} className="h-9 px-3 rounded-xl premium-gradient text-white text-xs font-bold flex items-center gap-1 hover:scale-105 transition-transform"><span className="material-symbols-outlined text-base">edit_square</span>New</button>}
+        </div>
+        {/* Tabs: Messages | Interviews */}
+        <div className="flex items-center gap-1 px-3 py-2 border-b border-surface-container">
+          {(['messages', 'interviews'] as const).map((t) => (
+            <button key={t} onClick={() => setView(t)} className={`flex-1 py-1.5 rounded-lg text-xs font-bold capitalize transition-colors ${view === t ? 'bg-primary/10 text-primary' : 'text-on-surface-variant hover:bg-surface-container-low'}`}>
+              {t}{t === 'interviews' && interviewList.length ? ` (${interviewList.length})` : ''}
+            </button>
+          ))}
         </div>
         <div className="flex-1 overflow-y-auto">
-          {convos.length === 0 ? (
-            <div className="p-8 text-center text-sm text-on-surface-variant">No conversations yet. Tap <b>New</b> to start one.</div>
-          ) : convos.map((c) => {
-            const u = unreadOf(c)
-            return (
-              <button key={c.id} onClick={() => openConv(c)} className={`w-full text-left flex items-start gap-3 px-4 py-3 border-b border-surface-container/60 hover:bg-surface-container-low transition-colors ${active?.id === c.id ? 'bg-primary/5' : ''}`}>
-                <div className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black ${avatarColor(otherName(c))}`}>{initial(otherName(c))}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-bold text-on-surface truncate">{otherName(c)}</p>
-                    <span className="text-[10px] text-outline flex-shrink-0">{timeAgo(c.last_message_at)}</span>
+          {view === 'messages' ? (
+            convos.length === 0 ? (
+              <div className="p-8 text-center text-sm text-on-surface-variant">No conversations yet. Tap <b>New</b> to start one.</div>
+            ) : convos.map((c) => {
+              const u = unreadOf(c)
+              const oi = otherInfo[otherId(c)]
+              return (
+                <button key={c.id} onClick={() => openConv(c)} className={`w-full text-left flex items-start gap-3 px-4 py-3 border-b border-surface-container/60 hover:bg-surface-container-low transition-colors ${active?.id === c.id ? 'bg-primary/5' : ''}`}>
+                  <div className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black overflow-hidden ${avatarColor(otherName(c))}`}>
+                    {oi?.photo ? <img src={oi.photo} alt={otherName(c)} className="h-full w-full object-cover" /> : initial(otherName(c))}
                   </div>
-                  <p className="text-xs text-on-surface-variant truncate">{c.job_title || 'Conversation'}</p>
-                  <p className={`text-xs truncate mt-0.5 ${u > 0 ? 'text-on-surface font-semibold' : 'text-outline'}`}>{c.last_sender_id === uid ? 'You: ' : ''}{c.last_message || 'Say hello 👋'}</p>
-                </div>
-                {u > 0 && <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-1">{u}</span>}
-              </button>
-            )
-          })}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-bold text-on-surface truncate">{otherName(c)}</p>
+                      <span className="text-[10px] text-outline flex-shrink-0">{timeAgo(c.last_message_at)}</span>
+                    </div>
+                    <p className="text-xs text-on-surface-variant truncate">{c.job_title || (c.is_hiring ? 'Conversation' : 'Direct message')}</p>
+                    <p className={`text-xs truncate mt-0.5 ${u > 0 ? 'text-on-surface font-semibold' : 'text-outline'}`}>{c.last_sender_id === uid ? 'You: ' : ''}{c.last_message || 'Say hello 👋'}</p>
+                  </div>
+                  {u > 0 && <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-1">{u}</span>}
+                </button>
+              )
+            })
+          ) : (
+            interviewList.length === 0 ? (
+              <div className="p-8 text-center text-sm text-on-surface-variant">No interviews yet.</div>
+            ) : interviewList.map((iv) => {
+              const c = convos.find((x) => x.recruiter_id === iv.recruiter_id && x.candidate_id === iv.candidate_id)
+              const who = c ? otherName(c) : (iv.candidate_name || 'Interview')
+              const sm = STAGE_META[iv.stage] || STAGE_META.proposed
+              return (
+                <button key={iv.id} onClick={() => openFromInterview(iv)} className="w-full text-left flex items-start gap-3 px-4 py-3 border-b border-surface-container/60 hover:bg-surface-container-low transition-colors">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/10 text-primary"><span className="material-symbols-outlined">{sm.icon}</span></div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-on-surface truncate">{iv.job_title || 'Interview'}</p>
+                    <p className="text-xs text-on-surface-variant truncate">with {who}</p>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${sm.cls}`}>{sm.label}</span>
+                      {iv.scheduled_at && <span className="text-[10px] text-outline">{fmtWhen(iv.scheduled_at)}</span>}
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined text-outline flex-shrink-0">chevron_right</span>
+                </button>
+              )
+            })
+          )}
         </div>
       </aside>
 
@@ -348,12 +457,25 @@ export default function Inbox({ role }: { role: Role }) {
           <>
             {/* Thread header */}
             <header className="h-16 px-3 md:px-5 flex items-center gap-3 border-b border-surface-container bg-white dark:bg-[#1c1c1e] flex-shrink-0">
-              <button onClick={() => { setActive(null); activeRef.current = null }} className="md:hidden p-1.5 -ml-1 rounded-lg hover:bg-surface-container text-on-surface-variant"><span className="material-symbols-outlined">arrow_back</span></button>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black ${avatarColor(otherName(active))}`}>{initial(otherName(active))}</div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-on-surface truncate">{otherName(active)}</p>
-                <p className="text-xs text-on-surface-variant truncate">{active.job_title || (isRecruiter ? 'Candidate' : 'Recruiter')}</p>
-              </div>
+              <button onClick={() => { setActive(null); activeRef.current = null; activeConvRef.current = null }} className="md:hidden p-1.5 -ml-1 rounded-lg hover:bg-surface-container text-on-surface-variant"><span className="material-symbols-outlined">arrow_back</span></button>
+              {(() => {
+                const oi = otherInfo[otherId(active)]
+                const avatar = (
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black overflow-hidden ${avatarColor(otherName(active))}`}>
+                    {oi?.photo ? <img src={oi.photo} alt={otherName(active)} className="h-full w-full object-cover" /> : initial(otherName(active))}
+                  </div>
+                )
+                const name = <p className="text-sm font-bold text-on-surface truncate">{otherName(active)}</p>
+                return (
+                  <>
+                    {oi?.username ? <Link href={profileLink(oi.username)} title="View profile" className="flex-shrink-0">{avatar}</Link> : avatar}
+                    <div className="flex-1 min-w-0">
+                      {oi?.username ? <Link href={profileLink(oi.username)} className="hover:underline">{name}</Link> : name}
+                      <p className="text-xs text-on-surface-variant truncate">{active.job_title || (active.is_hiring ? (isRecruiter ? 'Candidate' : 'Recruiter') : 'Direct message')}</p>
+                    </div>
+                  </>
+                )
+              })()}
             </header>
 
             {/* Messages */}
@@ -367,6 +489,25 @@ export default function Inbox({ role }: { role: Role }) {
                   return <div key={m.id} className="flex justify-center"><span className="px-3 py-1 rounded-full bg-surface-container text-on-surface-variant text-[11px]">Interview details</span></div>
                 }
                 const mine = m.sender_id === uid
+                if (m.kind === 'post') {
+                  const meta = (m.meta || {}) as { post_id?: string; author_name?: string; content?: string; image_url?: string }
+                  return (
+                    <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[78%] md:max-w-[70%] ${mine ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+                        {m.body && <p className={`px-4 py-2 rounded-2xl text-sm ${mine ? 'premium-gradient text-white' : 'bg-white dark:bg-white/10 text-on-surface border border-surface-container'}`}>{m.body}</p>}
+                        <Link href={meta.post_id ? `/post/${meta.post_id}` : '#'} className="block w-full bg-white dark:bg-white/10 border border-surface-container rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+                          {meta.image_url && <img src={meta.image_url} alt="shared post" className="w-full max-h-44 object-cover" />}
+                          <div className="p-3">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-primary flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">dynamic_feed</span>Shared post</p>
+                            <p className="text-xs font-semibold text-on-surface mt-1">{meta.author_name || 'A post'}</p>
+                            {meta.content && <p className="text-xs text-on-surface-variant line-clamp-3 mt-0.5">{meta.content}</p>}
+                          </div>
+                        </Link>
+                        <p className="text-[10px] text-outline px-1">{fmtTime(m.created_at)}</p>
+                      </div>
+                    </div>
+                  )
+                }
                 return (
                   <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[78%] md:max-w-[65%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${mine ? 'premium-gradient text-white rounded-br-md' : 'bg-white dark:bg-white/10 text-on-surface border border-surface-container rounded-bl-md'}`}>
@@ -378,8 +519,8 @@ export default function Inbox({ role }: { role: Role }) {
               })}
             </div>
 
-            {/* Recruiter quick actions */}
-            {isRecruiter && (
+            {/* Recruiter quick actions (hiring threads only) */}
+            {canHire(active) && (
               <div className="px-3 md:px-5 pt-2 flex flex-wrap gap-2 bg-white dark:bg-[#1c1c1e] border-t border-surface-container">
                 <button onClick={() => openSchedule()} disabled={busy} title="Schedule an interview" className="px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300 text-xs font-bold flex items-center gap-1.5 hover:bg-sky-100 dark:hover:bg-sky-500/25 transition-colors disabled:opacity-50"><span className="material-symbols-outlined text-base">videocam</span>Schedule interview</button>
                 <button onClick={sendOfferFromMenu} disabled={busy || offerLocked} title={offerHint} className="px-3 py-1.5 rounded-xl bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300 text-xs font-bold flex items-center gap-1.5 hover:bg-green-100 dark:hover:bg-green-500/25 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-green-50 dark:disabled:hover:bg-green-500/15"><span className="material-symbols-outlined text-base">{hired ? 'verified' : 'workspace_premium'}</span>{hired ? 'Hired' : 'Send offer'}</button>
@@ -398,17 +539,47 @@ export default function Inbox({ role }: { role: Role }) {
 
       {/* New conversation modal */}
       {showNew && (
-        <Modal title={isRecruiter ? 'Message a candidate' : 'Message a recruiter'} onClose={() => setShowNew(false)}>
-          <div className="max-h-[60vh] overflow-y-auto -mx-1 px-1">
-            {newItems.length === 0 ? (
-              <p className="text-sm text-on-surface-variant text-center py-8">{isRecruiter ? 'No applicants yet to message.' : 'Apply to a job first — then you can message that recruiter here.'}</p>
-            ) : newItems.map((it) => (
-              <button key={it.otherId} onClick={() => startConv(it)} className="w-full text-left flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-surface-container-low transition-colors">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black ${avatarColor(it.name)}`}>{initial(it.name)}</div>
-                <div className="min-w-0"><p className="text-sm font-bold text-on-surface truncate">{it.name}</p><p className="text-xs text-on-surface-variant truncate">{it.sub}</p></div>
-                <span className="material-symbols-outlined text-outline ml-auto">chat</span>
-              </button>
-            ))}
+        <Modal title="New message" onClose={closeNew}>
+          {/* Search anyone */}
+          <div className="relative mb-3">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+            <input
+              value={peopleQ}
+              onChange={(e) => searchPeople(e.target.value)}
+              placeholder="Search anyone by name, @handle, or company…"
+              className="w-full pl-10 pr-3 py-2.5 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all text-on-surface text-sm outline-none"
+            />
+          </div>
+
+          <div className="max-h-[55vh] overflow-y-auto -mx-1 px-1">
+            {peopleQ.trim() ? (
+              peopleResults.length === 0 ? (
+                <p className="text-sm text-on-surface-variant text-center py-8">No people found.</p>
+              ) : peopleResults.map((p) => {
+                const label = p.full_name || (p.username ? '@' + p.username : 'User')
+                const sub = p.role === 'recruiter' ? [p.company_name, 'Recruiter'].filter(Boolean).join(' · ') : 'Candidate'
+                return (
+                  <button key={p.id} onClick={() => startDm(p.id)} className="w-full text-left flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-surface-container-low transition-colors">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black ${avatarColor(label)}`}>{initial(label)}</div>
+                    <div className="min-w-0"><p className="text-sm font-bold text-on-surface truncate">{label}</p><p className="text-xs text-on-surface-variant truncate">{sub}</p></div>
+                    <span className="material-symbols-outlined text-outline ml-auto">chat</span>
+                  </button>
+                )
+              })
+            ) : (
+              <>
+                <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest px-2 mb-1">{isRecruiter ? 'Your applicants' : 'Companies you applied to'}</p>
+                {newItems.length === 0 ? (
+                  <p className="text-sm text-on-surface-variant text-center py-6">{isRecruiter ? 'No applicants yet — search above to message anyone.' : 'Search above to message anyone on SmartHire.'}</p>
+                ) : newItems.map((it) => (
+                  <button key={it.otherId} onClick={() => startConv(it)} className="w-full text-left flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-surface-container-low transition-colors">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black ${avatarColor(it.name)}`}>{initial(it.name)}</div>
+                    <div className="min-w-0"><p className="text-sm font-bold text-on-surface truncate">{it.name}</p><p className="text-xs text-on-surface-variant truncate">{it.sub}</p></div>
+                    <span className="material-symbols-outlined text-outline ml-auto">chat</span>
+                  </button>
+                ))}
+              </>
+            )}
           </div>
         </Modal>
       )}
