@@ -38,10 +38,11 @@
 18. [Risks & Mitigations](#18-risks--mitigations)
 19. [Testing & Validation](#19-testing--validation)
 20. [Deployment & Environments](#20-deployment--environments)
-21. [Future Work & Roadmap](#21-future-work--roadmap)
-22. [Project Team & Methodology](#22-project-team--methodology)
-23. [Requirements Traceability Matrix](#23-requirements-traceability-matrix)
-24. [Glossary](#24-glossary)
+21. [DevOps, CI/CD & Quality Engineering](#21-devops-cicd--quality-engineering)
+22. [Future Work & Roadmap](#22-future-work--roadmap)
+23. [Project Team & Methodology](#23-project-team--methodology)
+24. [Requirements Traceability Matrix](#24-requirements-traceability-matrix)
+25. [Glossary](#25-glossary)
 
 ---
 
@@ -201,7 +202,7 @@ External job aggregation depends on a third-party API (Jooble); without a key a 
 
 ## 8. Detailed Functional Specification
 
-> This section enumerates every feature with its sub-features. Requirement IDs (e.g. **FR-AUTH-1**) are summarized in the [Requirements Traceability Matrix](#23-requirements-traceability-matrix). Priorities: **M** = Must, **S** = Should, **C** = Could.
+> This section enumerates every feature with its sub-features. Requirement IDs (e.g. **FR-AUTH-1**) are summarized in the [Requirements Traceability Matrix](#24-requirements-traceability-matrix). Priorities: **M** = Must, **S** = Should, **C** = Could.
 
 ### 8.1 Authentication & Account Management
 
@@ -232,11 +233,12 @@ External job aggregation depends on a third-party API (Jooble); without a key a 
 **8.1.6 Role Model & Portal Gating** — *M*
 - One email = one role permanently (cannot switch without deleting the account).
 - A `role_selected` flag distinguishes email signups (role chosen) from fresh OAuth users (must choose).
-- Layout-level gating: unselected → role-selection; wrong-role → redirected to the correct portal.
+- Defense-in-depth portal gating: a server-side role check in the Next.js middleware (`proxy.ts` → `lib/supabase/middleware.ts`) evaluates the authenticated user's role on every request and redirects before the wrong portal renders; the portal layout applies an additional client-side check as a fallback. Unselected users are routed to role-selection at both layers.
 
 **8.1.7 Session & Route Protection** — *M*
 - Session refresh via middleware on every request.
 - Protected route prefixes: `/candidate`, `/recruiter`, `/interview`, `/u`, `/post` — signed-out users are redirected to the auth page.
+- Authenticated users are additionally restricted to their role-scoped portal: a server-side role check in middleware redirects cross-role access to `/candidate` or `/recruiter` to the user's correct portal. The routes `/interview`, `/u`, and `/post` remain shared across both roles.
 
 **8.1.8 Sign Out** — *M*
 - Sign-out from the sidebar with a confirmation modal; clears the session and returns to landing.
@@ -716,7 +718,7 @@ Every user has an auto-generated `@username` and a public profile at `/u/<handle
 |---|---|---|
 | NFR-SEC-1 | Security | All data access is governed by PostgreSQL Row-Level Security; users read/write only data they're authorized to. Writes are owner-only. |
 | NFR-SEC-2 | Privacy | Sensitive fields (email, phone, DOB) are never exposed publicly; public profile data is served via a column-limited `public_profiles` view. |
-| NFR-SEC-3 | Auth | Secure, HTTP-only Supabase auth cookies; protected routes enforced at middleware level. |
+| NFR-SEC-3 | Auth | Secure, HTTP-only Supabase auth cookies; protected routes enforced server-side in middleware (authentication gate for all protected prefixes; role-based authorisation gate for the `/candidate` and `/recruiter` portals), with a client-side layout guard as defense in depth. |
 | NFR-SEC-4 | Secrets | API keys and SMTP credentials are server-side env vars, never shipped to the client. |
 | NFR-PERF-1 | Performance | Feed, lists, and search use pagination/limits; denormalized author data avoids N+1 reads on the feed. |
 | NFR-PERF-2 | Realtime | New messages and notifications appear without a manual refresh. |
@@ -820,8 +822,8 @@ SmartHire AI is a **single Next.js (App Router) application** with role-based ro
 
 ## 13. AI Integration
 
-- **Provider:** Google Gemini (free tier), invoked only from server-side route handlers.
-- **Use cases:** CV generation (structured JSON: content, ATS score, breakdown, suggestions, missing keywords), cover letters, interview coach (streaming), applicant ranking (structured), interview kits (structured), recruiter copilot (streaming), job-description drafting, outreach email drafting.
+- **Providers:** Google Gemini (free tier) is the primary AI provider for document and screening features, invoked only from server-side route handlers. The conversational recruiter copilot is served via the Anthropic SDK (Claude), also server-side only.
+- **Use cases:** CV generation (structured JSON: content, ATS score, breakdown, suggestions, missing keywords), cover letters, interview coach (streaming), applicant ranking (structured), interview kits (structured), job-description drafting, outreach email drafting — all via Gemini. Recruiter copilot (multi-turn streaming chat) — via Anthropic SDK.
 - **Structured output:** JSON-schema-constrained responses for deterministic parsing.
 - **Resilience:** multiple API keys with automatic rotation/fallback on quota (HTTP 429) and model fallback.
 - **Privacy:** prompts are built only from the requesting user's authorized data; keys never reach the client.
@@ -833,7 +835,8 @@ SmartHire AI is a **single Next.js (App Router) application** with role-based ro
 | Service | Purpose | Notes |
 |---|---|---|
 | Supabase | DB, Auth, Storage, Realtime | Core backend |
-| Google Gemini | All AI features | Server-side only |
+| Google Gemini | Primary AI provider — documents, screening, structured output | Server-side only |
+| Anthropic (Claude) | Recruiter copilot (conversational) | Server-side only |
 | Google OAuth | Social sign-in | Optional |
 | SMTP (e.g. Gmail) | Transactional emails | Best-effort; app works without it |
 | Jooble (+ Adzuna) | External job listings | Optional; demo fallback |
@@ -885,7 +888,7 @@ SmartHire AI is a **single Next.js (App Router) application** with role-based ro
 - A Postgres-compatible managed backend is used.
 
 **Constraints**
-- AI features depend on Gemini free-tier quota (mitigated by key rotation/model fallback).
+- Most AI features depend on Gemini free-tier quota (mitigated by key rotation/model fallback); the recruiter copilot depends on Anthropic API availability.
 - WebRTC uses STUN only (no TURN); symmetric-NAT users may fail to connect P2P (external link fallback).
 - Email delivery requires SMTP configuration.
 - Built and tested as a web application (no native mobile build).
@@ -926,7 +929,49 @@ SmartHire AI is a **single Next.js (App Router) application** with role-based ro
 
 ---
 
-## 21. Future Work & Roadmap
+## 21. DevOps, CI/CD & Quality Engineering
+
+### 21.1 Continuous Integration
+
+A GitHub Actions workflow (`.github/workflows/ci.yml`) executes a `lint-and-build` job on every push to a non-main branch and on every pull request targeting `main`. The job installs dependencies with `npm ci` (a clean, reproducible install from the lockfile), runs the Next.js production build with the required environment secrets injected from GitHub Actions secrets, and includes a package-manager guard step that fails the pipeline if a non-npm package manager (pnpm or Yarn) is detected.
+
+### 21.2 Branch Protection & Merge Gate
+
+The `main` branch is protected by a GitHub repository ruleset with the following requirements enforced before any merge:
+
+- A pull request is required; direct pushes to `main` are blocked.
+- The `lint-and-build` status check must pass on the PR head commit.
+- The branch must be up to date with `main` before merge.
+- Force-pushes and branch deletion are blocked.
+
+This gate was validated empirically: a pull request with a deliberately introduced build failure was blocked from merging until the CI check passed.
+
+### 21.3 Package-Manager Enforcement
+
+Reproducibility of the dependency graph is enforced at three levels: an `only-allow npm` preinstall script rejects install commands issued with pnpm or Yarn; the `packageManager` field in `package.json` pins the exact npm version; and engine-strict configuration prevents use of an unsupported Node.js version.
+
+### 21.4 Secrets & Security Posture
+
+- All AI provider keys and SMTP credentials are server-side environment variables; no secret is bundled into the client.
+- `.env*` files are gitignored across the repository.
+- The repository history was scanned with `gitleaks` and confirmed free of committed secrets prior to the repository being made public.
+- Security response headers are configured via `vercel.json`.
+
+### 21.5 Deployment Pipeline
+
+The application is deployed via Vercel's native Next.js build pipeline, with the `frontend/` directory configured as the project root. The `main` branch is the production branch; merges trigger an automatic production deployment. Each branch and pull request receives an automatic preview deployment, enabling pre-merge verification in an environment identical to production.
+
+### 21.6 Quality Assurance Methodology
+
+A claimed-versus-actual verification practice is applied throughout development: Must-have requirements are audited against the live codebase — confirming implementation at the file level, verifying zero TypeScript compiler errors (`npx tsc --noEmit`), and performing manual end-to-end checks — rather than assumed from documentation. This keeps the specification continuously aligned with the implemented system.
+
+### 21.7 Linting
+
+An ESLint lint stage is wired into the CI pipeline. Full ESLint rule integration is documented as deferred work, pending stabilisation of the ESLint v9-to-v10 ecosystem with Next.js config tooling. Type safety is the primary static-analysis gate, enforced by the TypeScript compiler with a zero-error build requirement.
+
+---
+
+## 22. Future Work & Roadmap
 
 - Native mobile apps (iOS/Android) or full PWA.
 - Subscriptions / billing for premium recruiter features.
@@ -940,9 +985,9 @@ SmartHire AI is a **single Next.js (App Router) application** with role-based ro
 
 ---
 
-## 22. Project Team & Methodology
+## 23. Project Team & Methodology
 
-### 22.1 Team
+### 23.1 Team
 | Contributor | Project |
 |---|---|
 | **Shanza Iftikhar** | SmartHire AI — Final Year Project |
@@ -951,7 +996,7 @@ SmartHire AI is a **single Next.js (App Router) application** with role-based ro
 
 **Institution:** University of Karachi — **UBIT** (Department of Computer Science).
 
-### 22.2 Development Methodology
+### 23.2 Development Methodology
 The project followed an **iterative, incremental** approach: requirements and design first, then feature modules delivered and integrated in phases, each verified by type-checking and a successful production build before moving on.
 
 | Phase | Focus |
@@ -965,7 +1010,7 @@ The project followed an **iterative, incremental** approach: requirements and de
 
 ---
 
-## 23. Requirements Traceability Matrix
+## 24. Requirements Traceability Matrix
 
 | ID | Feature | Priority |
 |---|---|---|
@@ -988,7 +1033,7 @@ The project followed an **iterative, incremental** approach: requirements and de
 
 ---
 
-## 24. Glossary
+## 25. Glossary
 
 | Term | Meaning |
 |---|---|
