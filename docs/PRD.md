@@ -835,7 +835,8 @@ SmartHire AI is a **single Next.js (App Router) application** with role-based ro
 | Service | Purpose | Notes |
 |---|---|---|
 | Supabase | DB, Auth, Storage, Realtime | Core backend |
-| Google Gemini | All AI features | Server-side only |
+| Google Gemini | Primary AI provider — documents, screening, structured output | Server-side only |
+| Anthropic (Claude) | Recruiter copilot (conversational) | Server-side only |
 | Google OAuth | Social sign-in | Optional |
 | SMTP (e.g. Gmail) | Transactional emails | Best-effort; app works without it |
 | Jooble (+ Adzuna) | External job listings | Optional; demo fallback |
@@ -887,7 +888,7 @@ SmartHire AI is a **single Next.js (App Router) application** with role-based ro
 - A Postgres-compatible managed backend is used.
 
 **Constraints**
-- AI features depend on Gemini free-tier quota (mitigated by key rotation/model fallback).
+- Most AI features depend on Gemini free-tier quota (mitigated by key rotation/model fallback); the recruiter copilot depends on Anthropic API availability.
 - WebRTC uses STUN only (no TURN); symmetric-NAT users may fail to connect P2P (external link fallback).
 - Email delivery requires SMTP configuration.
 - Built and tested as a web application (no native mobile build).
