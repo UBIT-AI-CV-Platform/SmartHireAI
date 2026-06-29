@@ -72,5 +72,36 @@ export async function updateSession(request: NextRequest) {
   }
   // ──────────────────────────────────────────────────────────────────
 
+  // ── Cross-role enforcement (server-side, defense-in-depth) ────────
+  // Only applies to role-scoped paths. /interview, /u/, /post/ are shared.
+  const isRoleScoped = path.startsWith('/candidate') || path.startsWith('/recruiter')
+  if (user && isRoleScoped) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, role_selected')
+      .eq('id', user.id)
+      .single()
+
+    let dest: string | null = null
+    if (!profile || !profile.role_selected) {
+      dest = '/auth/select-role'
+    } else if (path.startsWith('/recruiter') && profile.role !== 'recruiter') {
+      dest = '/candidate'
+    } else if (path.startsWith('/candidate') && profile.role !== 'candidate') {
+      dest = '/recruiter'
+    }
+
+    if (dest) {
+      const url = request.nextUrl.clone()
+      url.pathname = dest
+      const redirectRes = NextResponse.redirect(url)
+      supabaseResponse.cookies.getAll().forEach((c) =>
+        redirectRes.cookies.set(c.name, c.value, { maxAge: SESSION_MAX_AGE })
+      )
+      return redirectRes
+    }
+  }
+  // ──────────────────────────────────────────────────────────────────
+
   return supabaseResponse
 }
