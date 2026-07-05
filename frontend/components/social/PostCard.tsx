@@ -11,6 +11,7 @@ import type { MeSnapshot } from './CreatePost'
 import SharePostModal from './SharePostModal'
 import RepostModal from './RepostModal'
 import ReportModal from './ReportModal'
+import { Icon } from '@/components/ui/icon'
 
 type Snapshot = { post_id: string; author_name: string | null; author_username: string | null; author_photo: string | null; content: string | null; image_url: string | null; created_at: string | null }
 
@@ -128,7 +129,7 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
     <article className="bg-white dark:bg-[#1c1c1e] rounded-3xl border border-slate-200/70 dark:border-white/10 shadow-sm overflow-hidden">
       {repost && (
         <div className="flex items-center gap-1.5 px-4 md:px-5 pt-3 text-xs font-semibold text-slate-400 dark:text-slate-500">
-          <span className="material-symbols-outlined text-[15px]">repeat</span>
+          <Icon name="repeat" className="text-[15px]" />
           {post.author_name || 'Someone'} reposted
         </div>
       )}
@@ -149,7 +150,7 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
         {me && (
           <div className="relative flex-shrink-0">
             <button onClick={() => setMenuOpen((o) => !o)} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10">
-              <span className="material-symbols-outlined text-[20px]">more_horiz</span>
+              <Icon name="more_horiz" className="text-[20px]" />
             </button>
             {menuOpen && (
               <>
@@ -158,19 +159,19 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
                   {isOwn ? (
                     <>
                       <button onClick={() => { setMenuOpen(false); setShowEdit(true) }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10">
-                        <span className="material-symbols-outlined text-[18px]">edit</span> Edit post
+                        <Icon name="edit" className="text-[18px]" /> Edit post
                       </button>
                       <button onClick={deletePost} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10">
-                        <span className="material-symbols-outlined text-[18px]">delete</span> Delete post
+                        <Icon name="delete" className="text-[18px]" /> Delete post
                       </button>
                     </>
                   ) : (
                     <>
                       <button onClick={() => { setMenuOpen(false); setReport({ type: 'post', id: post.id, label: post.author_name || 'this post' }) }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10">
-                        <span className="material-symbols-outlined text-[18px]">flag</span> Report post
+                        <Icon name="flag" className="text-[18px]" /> Report post
                       </button>
                       <button onClick={() => { setMenuOpen(false); setHidden(true) }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10">
-                        <span className="material-symbols-outlined text-[18px]">visibility_off</span> Hide post
+                        <Icon name="visibility_off" className="text-[18px]" /> Hide post
                       </button>
                     </>
                   )}
@@ -209,19 +210,19 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
       {/* Document attachment */}
       {post.file_url && (
         <a href={post.file_url} target="_blank" rel="noopener noreferrer" className="mx-4 md:mx-5 mb-3 flex items-center gap-3 p-3 rounded-2xl border border-slate-200/70 dark:border-white/10 bg-slate-50 dark:bg-white/5 hover:border-primary/40 transition-colors">
-          <span className="material-symbols-outlined text-primary text-[28px]">description</span>
+          <Icon name="description" className="text-primary text-[28px]" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{post.file_name || 'Attachment'}</p>
             <p className="text-[11px] text-slate-400">Tap to open</p>
           </div>
-          <span className="material-symbols-outlined text-slate-400 text-[20px]">download</span>
+          <Icon name="download" className="text-slate-400 text-[20px]" />
         </a>
       )}
 
       {/* Counts */}
       {(likeCount > 0 || commentCount > 0) && (
         <div className="flex items-center justify-between px-4 md:px-5 pt-3 text-xs text-slate-400 dark:text-slate-500">
-          <span>{likeCount > 0 && <><span className="material-symbols-outlined text-[14px] text-[#b91c1c] dark:text-rose-400 align-middle" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span> {likeCount}</>}</span>
+          <span>{likeCount > 0 && <><Icon name="favorite" className="text-[14px] text-[#b91c1c] dark:text-rose-400 align-middle" solid /> {likeCount}</>}</span>
           <button onClick={toggleComments} className="hover:underline">{commentCount > 0 && `${commentCount} comment${commentCount === 1 ? '' : 's'}`}</button>
         </div>
       )}
@@ -233,17 +234,17 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
         <ActionBtn onClick={() => me && setShowRepost(true)} icon="repeat" label="Repost" />
         <div className="flex-1 relative">
           <button onClick={() => setShareOpen((o) => !o)} className="w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
-            <span className="material-symbols-outlined text-[19px]">share</span>Share
+            <Icon name="share" className="text-[19px]" />Share
           </button>
           {shareOpen && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShareOpen(false)} />
               <div className="absolute right-0 bottom-11 z-20 w-48 bg-white dark:bg-[#26262a] rounded-xl shadow-xl border border-slate-200/70 dark:border-white/10 py-1">
                 <button onClick={() => { setShareOpen(false); copyLink() }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10">
-                  <span className="material-symbols-outlined text-[18px]">{copied ? 'check' : 'link'}</span>{copied ? 'Copied!' : 'Copy link'}
+                  <Icon name={copied ? 'check' : 'link'} className="text-[18px]" />{copied ? 'Copied!' : 'Copy link'}
                 </button>
                 <button onClick={() => { setShareOpen(false); setShowShareModal(true) }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10">
-                  <span className="material-symbols-outlined text-[18px]">forward_to_inbox</span>Send in a message
+                  <Icon name="forward_to_inbox" className="text-[18px]" />Send in a message
                 </button>
               </div>
             </>
@@ -273,7 +274,7 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
                   className="flex-1 bg-slate-100 dark:bg-white/5 rounded-full px-4 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary/30"
                 />
                 <button onClick={addComment} disabled={!newComment.trim() || sending} className="h-9 w-9 rounded-full premium-gradient text-white flex items-center justify-center disabled:opacity-50 flex-shrink-0">
-                  <span className="material-symbols-outlined text-[18px]">send</span>
+                  <Icon name="send" className="text-[18px]" />
                 </button>
               </div>
             </div>
@@ -298,12 +299,12 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
                         <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           {me && me.id !== c.author_id && (
                             <button onClick={() => setReport({ type: 'comment', id: c.id, label: c.author_name || 'this comment' })} title="Report comment" className="text-slate-400 hover:text-amber-500">
-                              <span className="material-symbols-outlined text-[15px]">flag</span>
+                              <Icon name="flag" className="text-[15px]" />
                             </button>
                           )}
                           {canDelete && (
                             <button onClick={() => deleteComment(c.id)} title="Delete comment" className="text-slate-400 hover:text-red-500">
-                              <span className="material-symbols-outlined text-[15px]">delete</span>
+                              <Icon name="delete" className="text-[15px]" />
                             </button>
                           )}
                         </div>
@@ -349,7 +350,7 @@ function EditPostModal({ postId, initial, onClose, onSaved }: { postId: string; 
       <div className="relative w-full max-w-lg bg-white dark:bg-[#1c1c1e] rounded-3xl shadow-2xl border border-slate-200/70 dark:border-white/10 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200/70 dark:border-white/10">
           <h3 className="font-bold text-slate-900 dark:text-slate-100">Edit post</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400"><span className="material-symbols-outlined">close</span></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400"><Icon name="close" /></button>
         </div>
         <div className="p-5">
           <div className="flex items-center gap-1 mb-2">
@@ -371,7 +372,7 @@ function ActionBtn({ icon, label, onClick, active = false, activeCls = 'text-pri
       className="flex-1 inline-flex items-center justify-center py-2 rounded-xl text-sm font-semibold transition-colors hover:bg-slate-100 dark:hover:bg-white/10"
     >
       <span className={`inline-flex items-center gap-1.5 ${active ? activeCls : 'text-slate-500 dark:text-slate-400'}`}>
-        <span className="material-symbols-outlined text-[19px]" style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}>{icon}</span>
+        <Icon name={icon} className="text-[19px]" solid={active} />
         {label}
       </span>
     </button>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import CVPreview, { type CVContent } from '@/components/candidate/CVPreview'
 import FancySelect from '@/components/shared/FancySelect'
+import { Icon } from '@/components/ui/icon'
 
 type AppStatus = 'applied' | 'screening' | 'interview' | 'offer' | 'rejected' | 'withdrawn'
 type Applicant = {
@@ -173,8 +174,8 @@ export default function ApplicantsPage() {
           <p className="text-on-surface-variant text-xs sm:text-sm md:text-base mt-1 sm:mt-2">Review applicants, rate them, take notes, move them through your pipeline, and reach out.</p>
         </div>
         <div className="flex bg-surface-container-low rounded-2xl p-1 self-start flex-shrink-0">
-          <button onClick={() => setView('list')} className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${view === 'list' ? 'bg-white dark:bg-[#2c2c2e] shadow text-primary' : 'text-on-surface-variant'}`}><span className="material-symbols-outlined text-base">view_list</span>List</button>
-          <button onClick={() => setView('board')} className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${view === 'board' ? 'bg-white dark:bg-[#2c2c2e] shadow text-primary' : 'text-on-surface-variant'}`}><span className="material-symbols-outlined text-base">view_kanban</span>Board</button>
+          <button onClick={() => setView('list')} className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${view === 'list' ? 'bg-white dark:bg-[#2c2c2e] shadow text-primary' : 'text-on-surface-variant'}`}><Icon name="view_list" className="text-base" />List</button>
+          <button onClick={() => setView('board')} className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${view === 'board' ? 'bg-white dark:bg-[#2c2c2e] shadow text-primary' : 'text-on-surface-variant'}`}><Icon name="view_kanban" className="text-base" />Board</button>
         </div>
       </header>
 
@@ -187,7 +188,7 @@ export default function ApplicantsPage() {
           {/* Filters */}
           <div className="bg-white dark:bg-[#2c2c2e] p-3 md:p-4 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container mb-5 space-y-3">
             <div className="relative">
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+              <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" />
               <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name, email, or job" className="w-full pl-12 pr-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#2c2c2e] transition-all text-on-surface font-medium placeholder:text-outline-variant outline-none" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -201,7 +202,7 @@ export default function ApplicantsPage() {
 
           {filtered.length === 0 ? (
             <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-5"><span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>group</span></div>
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-5"><Icon name="group" className="text-3xl" solid /></div>
               <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">{apps.length === 0 ? 'No applicants yet' : 'No applicants match your filters'}</h2>
               <p className="text-sm text-on-surface-variant max-w-md">{apps.length === 0 ? 'Once candidates apply to your jobs, they’ll show up here with their CVs.' : 'Try a different job, status, or search.'}</p>
             </div>
@@ -213,7 +214,7 @@ export default function ApplicantsPage() {
                     <div className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black ${avatarColor(ap.candidate_name || '?')}`}>{(ap.candidate_name || '?').charAt(0).toUpperCase()}</div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm md:text-base font-bold text-on-surface truncate">{ap.candidate_name || 'Candidate'}</p>
-                      <p className="text-xs text-on-surface-variant truncate">{ap.candidate_email || '—'} · {ap.job?.title || 'a job'} · {timeAgo(ap.applied_at)}</p>
+                      <p className="text-xs text-on-surface-variant truncate">{ap.candidate_email || '-'} · {ap.job?.title || 'a job'} · {timeAgo(ap.applied_at)}</p>
                     </div>
                     {ap.match_score !== null && <div className="text-right flex-shrink-0 hidden sm:block"><p className={`text-lg font-black leading-none ${scoreColor(ap.match_score)}`}>{ap.match_score}%</p><p className="text-[10px] text-on-surface-variant">match</p></div>}
                   </div>
@@ -230,9 +231,9 @@ export default function ApplicantsPage() {
 
                   {/* actions */}
                   <div className="flex items-center gap-2 mt-3 pt-3 border-t border-surface-container flex-wrap">
-                    <button onClick={() => ap.cv_snapshot && setViewCv(ap.cv_snapshot)} disabled={!ap.cv_snapshot} className="px-3 py-2 rounded-xl bg-primary/10 text-primary font-bold text-xs flex items-center gap-1.5 hover:bg-primary/15 transition-colors disabled:opacity-40"><span className="material-symbols-outlined text-base">description</span>View CV</button>
-                    <button onClick={() => openOutreach(ap)} className="px-3 py-2 rounded-xl bg-surface-container-low text-on-surface font-bold text-xs flex items-center gap-1.5 hover:bg-surface-container transition-colors"><span className="material-symbols-outlined text-base">mail</span>Draft email</button>
-                    <button onClick={() => openNotes(ap)} className={`px-3 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors ${ap.recruiter_notes ? 'bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300' : 'bg-surface-container-low text-on-surface hover:bg-surface-container'}`}><span className="material-symbols-outlined text-base">sticky_note_2</span>{ap.recruiter_notes ? 'Note added' : 'Add note'}</button>
+                    <button onClick={() => ap.cv_snapshot && setViewCv(ap.cv_snapshot)} disabled={!ap.cv_snapshot} className="px-3 py-2 rounded-xl bg-primary/10 text-primary font-bold text-xs flex items-center gap-1.5 hover:bg-primary/15 transition-colors disabled:opacity-40"><Icon name="description" className="text-base" />View CV</button>
+                    <button onClick={() => openOutreach(ap)} className="px-3 py-2 rounded-xl bg-surface-container-low text-on-surface font-bold text-xs flex items-center gap-1.5 hover:bg-surface-container transition-colors"><Icon name="mail" className="text-base" />Draft email</button>
+                    <button onClick={() => openNotes(ap)} className={`px-3 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors ${ap.recruiter_notes ? 'bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300' : 'bg-surface-container-low text-on-surface hover:bg-surface-container'}`}><Icon name="sticky_note_2" className="text-base" />{ap.recruiter_notes ? 'Note added' : 'Add note'}</button>
                   </div>
 
                   {notesOpen === ap.id && (
@@ -262,7 +263,7 @@ export default function ApplicantsPage() {
           </div>
 
           <div className="p-5 rounded-[1.5rem] bg-white dark:bg-[#2c2c2e] border border-surface-container shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)]">
-            <h3 className="text-sm font-black text-on-surface mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-primary text-lg">insights</span>Pipeline</h3>
+            <h3 className="text-sm font-black text-on-surface mb-3 flex items-center gap-2"><Icon name="insights" className="text-primary text-lg" />Pipeline</h3>
             <div className="space-y-2">
               {PIPELINE.map((st) => (
                 <button key={st} onClick={() => setStatusFilter(statusFilter === st ? 'all' : st)} className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors ${statusFilter === st ? 'bg-primary/5' : 'hover:bg-surface-container-low'}`}>
@@ -275,10 +276,10 @@ export default function ApplicantsPage() {
           </div>
 
           <Link href="/recruiter/ai-screening" className="block p-5 rounded-[1.5rem] bg-[#2c1f4a] text-white shadow-xl hover:-translate-y-0.5 transition-all">
-            <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center mb-3"><span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span></div>
+            <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center mb-3"><Icon name="auto_awesome" solid /></div>
             <h3 className="text-base font-bold mb-1">AI Screening</h3>
             <p className="text-indigo-200/80 text-xs">Let AI rank these applicants by fit and build an interview kit.</p>
-            <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold bg-white/10 px-3 py-1.5 rounded-lg">Open <span className="material-symbols-outlined text-base">arrow_forward</span></span>
+            <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold bg-white/10 px-3 py-1.5 rounded-lg">Open <Icon name="arrow_forward" className="text-base" /></span>
           </Link>
         </aside>
       </div>
@@ -290,8 +291,8 @@ export default function ApplicantsPage() {
           <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-md" onClick={() => setViewCv(null)} />
           <div className="relative z-10 w-full max-w-2xl bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
             <div className="p-5 border-b border-surface-container flex items-center justify-between">
-              <h3 className="text-base font-bold text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">description</span>Candidate CV</h3>
-              <button onClick={() => setViewCv(null)} className="text-on-surface-variant hover:text-on-surface p-1"><span className="material-symbols-outlined">close</span></button>
+              <h3 className="text-base font-bold text-on-surface flex items-center gap-2"><Icon name="description" className="text-primary" />Candidate CV</h3>
+              <button onClick={() => setViewCv(null)} className="text-on-surface-variant hover:text-on-surface p-1"><Icon name="close" /></button>
             </div>
             <div className="overflow-y-auto p-6 flex-1 bg-surface-container-low/40"><CVPreview cv={viewCv} /></div>
           </div>
@@ -305,10 +306,10 @@ export default function ApplicantsPage() {
           <div className="relative z-10 w-full max-w-xl bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
             <div className="p-5 border-b border-surface-container flex items-center justify-between">
               <div className="min-w-0">
-                <h3 className="text-lg font-bold text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">mail</span>Email {outApp.candidate_name || 'candidate'}</h3>
+                <h3 className="text-lg font-bold text-on-surface flex items-center gap-2"><Icon name="mail" className="text-primary" />Email {outApp.candidate_name || 'candidate'}</h3>
                 <p className="text-xs text-on-surface-variant truncate">{outApp.candidate_email || 'No email on file'}</p>
               </div>
-              <button onClick={() => setOutApp(null)} className="text-on-surface-variant hover:text-on-surface p-1"><span className="material-symbols-outlined">close</span></button>
+              <button onClick={() => setOutApp(null)} className="text-on-surface-variant hover:text-on-surface p-1"><Icon name="close" /></button>
             </div>
             <div className="p-5 overflow-y-auto space-y-4">
               <div className="flex gap-2">
@@ -317,18 +318,18 @@ export default function ApplicantsPage() {
                 ))}
               </div>
               <button onClick={draftOutreach} disabled={outLoading} className="w-full py-3 rounded-2xl bg-surface-container-low text-on-surface font-bold text-sm flex items-center justify-center gap-2 hover:bg-surface-container transition-colors disabled:opacity-60">
-                <span className="material-symbols-outlined">{outLoading ? 'hourglass_top' : 'auto_awesome'}</span>{outLoading ? 'Drafting…' : outText ? 'Re-draft with AI' : 'Draft with AI'}
+                <Icon name={outLoading ? 'hourglass_top' : 'auto_awesome'} />{outLoading ? 'Drafting…' : outText ? 'Re-draft with AI' : 'Draft with AI'}
               </button>
-              {outError && <div className="flex items-start gap-2 rounded-xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 px-4 py-3"><span className="material-symbols-outlined text-red-500">error</span><p className="text-sm text-red-700 dark:text-red-300 font-medium">{outError}</p></div>}
-              {outSent && <div className="flex items-start gap-2 rounded-xl bg-green-50 dark:bg-green-500/15 border border-green-200 dark:border-green-500/20 px-4 py-3"><span className="material-symbols-outlined text-green-600">check_circle</span><p className="text-sm text-green-700 dark:text-green-300 font-medium">Email sent to {outApp.candidate_email}.</p></div>}
+              {outError && <div className="flex items-start gap-2 rounded-xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 px-4 py-3"><Icon name="error" className="text-red-500" /><p className="text-sm text-red-700 dark:text-red-300 font-medium">{outError}</p></div>}
+              {outSent && <div className="flex items-start gap-2 rounded-xl bg-green-50 dark:bg-green-500/15 border border-green-200 dark:border-green-500/20 px-4 py-3"><Icon name="check_circle" className="text-green-600" /><p className="text-sm text-green-700 dark:text-green-300 font-medium">Email sent to {outApp.candidate_email}.</p></div>}
               {outText && (
                 <textarea value={outText} onChange={(e) => setOutText(e.target.value)} rows={9} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#2c2c2e] transition-all text-on-surface text-sm leading-relaxed outline-none resize-none" />
               )}
             </div>
             {outText && (
               <div className="p-4 border-t border-surface-container flex gap-3">
-                <button onClick={() => navigator.clipboard.writeText(outText)} className="flex-1 py-3 rounded-2xl bg-surface-container-low text-on-surface font-bold text-sm flex items-center justify-center gap-2 hover:bg-surface-container transition-colors"><span className="material-symbols-outlined text-lg">content_copy</span>Copy</button>
-                <button onClick={sendOutreach} disabled={outSending || !outApp.candidate_email} className="flex-1 py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 hover:scale-[1.02] transition-all disabled:opacity-60"><span className="material-symbols-outlined text-lg">{outSending ? 'hourglass_top' : 'send'}</span>{outSending ? 'Sending…' : 'Send email'}</button>
+                <button onClick={() => navigator.clipboard.writeText(outText)} className="flex-1 py-3 rounded-2xl bg-surface-container-low text-on-surface font-bold text-sm flex items-center justify-center gap-2 hover:bg-surface-container transition-colors"><Icon name="content_copy" className="text-lg" />Copy</button>
+                <button onClick={sendOutreach} disabled={outSending || !outApp.candidate_email} className="flex-1 py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 hover:scale-[1.02] transition-all disabled:opacity-60"><Icon name={outSending ? 'hourglass_top' : 'send'} className="text-lg" />{outSending ? 'Sending…' : 'Send email'}</button>
               </div>
             )}
           </div>
@@ -381,7 +382,7 @@ function Board({ apps, onMove, onView }: { apps: Applicant[]; onMove: (id: strin
                     </div>
                     {c.match_score !== null && <span className={`text-xs font-black flex-shrink-0 ${scoreColor(c.match_score)}`}>{c.match_score}%</span>}
                   </div>
-                  <button onClick={() => onView(c.cv_snapshot)} disabled={!c.cv_snapshot} className="mt-2 text-[11px] font-bold text-primary hover:underline disabled:opacity-40 flex items-center gap-1"><span className="material-symbols-outlined text-sm">description</span>View CV</button>
+                  <button onClick={() => onView(c.cv_snapshot)} disabled={!c.cv_snapshot} className="mt-2 text-[11px] font-bold text-primary hover:underline disabled:opacity-40 flex items-center gap-1"><Icon name="description" className="text-sm" />View CV</button>
                 </div>
               ))}
               {items.length === 0 && <p className="text-xs text-outline-variant text-center py-6">Drop here</p>}
@@ -398,7 +399,7 @@ function Stars({ value, onChange }: { value: number | null; onChange: (n: number
     <div className="flex items-center gap-0.5" title="Rate this candidate">
       {[1, 2, 3, 4, 5].map((n) => (
         <button key={n} onClick={() => onChange(n === value ? 0 : n)} className="text-amber-400 hover:scale-110 transition-transform">
-          <span className="material-symbols-outlined text-xl" style={n <= (value || 0) ? { fontVariationSettings: "'FILL' 1" } : undefined}>star</span>
+          <Icon name="star" className="text-xl" solid={n <= (value || 0)} />
         </button>
       ))}
     </div>
@@ -422,10 +423,10 @@ function ErrorBox({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="p-4 md:p-8 lg:p-10 max-w-7xl mx-auto">
       <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-        <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
-        <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn’t load applicants</h2>
+        <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-5"><Icon name="cloud_off" className="text-3xl" /></div>
+        <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn't load applicants</h2>
         <p className="text-sm text-on-surface-variant max-w-md mb-4">Something went wrong. Please try again.</p>
-        <button onClick={onRetry} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>
+        <button onClick={onRetry} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><Icon name="refresh" className="text-base" />Retry</button>
       </div>
     </div>
   )

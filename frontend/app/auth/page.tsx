@@ -6,6 +6,7 @@ import LoginForm from '@/components/auth/LoginForm';
 import SignupForm from '@/components/auth/SignupForm';
 import SocialButton from '@/components/auth/SocialButton';
 import Logo from '@/components/auth/Logo';
+import { Icon } from '@/components/ui/icon';
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
@@ -18,9 +19,7 @@ export default function AuthPage() {
         className="absolute top-4 left-4 md:top-6 md:left-6 lg:top-8 lg:left-8 z-50 flex items-center justify-center w-10 h-10 rounded-full bg-white/60 dark:bg-white/10 backdrop-blur-md border border-white/70 dark:border-white/10 text-gray-700 dark:text-slate-300 hover:bg-white dark:hover:bg-white/20 hover:text-primary transition-all duration-300 shadow-lg group"
         aria-label="Go back"
       >
-        <span className="material-symbols-outlined text-xl transition-transform duration-300 group-hover:-translate-x-0.5">
-          west
-        </span>
+        <Icon name="west" className="text-xl transition-transform duration-300 group-hover:-translate-x-0.5" />
       </a>
 
       {/* Main Content Container */}
@@ -38,16 +37,16 @@ export default function AuthPage() {
           </div>
           {/* Top: Login/Signup Tabs with Slide Indicator */}
           <div className="shrink-0 mb-2 md:mb-3 lg:mb-4 auth-fade-up" style={{ animationDelay: '0.15s' }}>
-            <div className="relative flex gap-2 bg-gray-200/50 dark:bg-white/10 backdrop-blur-sm p-1 rounded-lg">
+            <div className="relative flex bg-gray-200/50 dark:bg-white/10 backdrop-blur-sm p-1 rounded-lg">
               {/* Sliding background */}
               <div
-                className="absolute h-full bg-white dark:bg-[#2c2c2e] rounded-md transition-all duration-500 ease-in-out shadow-md"
+                className="absolute top-1 bottom-1 bg-white dark:bg-[#2c2c2e] rounded-md transition-all duration-500 ease-in-out shadow-md"
                 style={{
-                  width: '50%',
-                  left: activeTab === 'login' ? '0%' : '50%',
+                  width: 'calc(50% - 0.25rem)',
+                  left: activeTab === 'login' ? '0.25rem' : '50%',
                 }}
               />
-              
+
               {/* Buttons */}
               <button
                 onClick={() => setActiveTab('login')}
@@ -84,7 +83,7 @@ export default function AuthPage() {
                   pointerEvents: activeTab === 'login' ? 'auto' : 'none',
                 }}
               >
-                <div className="py-2 md:py-4 px-2">
+                <div className="auth-fade-up py-2 md:py-4 px-2" style={{ animationDelay: '0.22s' }}>
                   <LoginForm />
                 </div>
               </div>
@@ -98,7 +97,7 @@ export default function AuthPage() {
                   pointerEvents: activeTab === 'signup' ? 'auto' : 'none',
                 }}
               >
-                <div className="py-2 md:py-4 px-2">
+                <div className="auth-fade-up py-2 md:py-4 px-2" style={{ animationDelay: '0.22s' }}>
                   <SignupForm />
                 </div>
               </div>

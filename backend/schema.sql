@@ -1,5 +1,5 @@
 -- ============================================================================
---  SmartHireAI — Database Schema (Supabase / PostgreSQL)
+--  SmartHireAI - Database Schema (Supabase / PostgreSQL)
 --  How to apply:
 --    1. Open your Supabase project → SQL Editor → "New query"
 --    2. Paste this entire file → Run
@@ -99,7 +99,7 @@ create trigger on_auth_user_created
 
 -- ────────────────────────────────────────────────────────────────────────────
 -- 2) PROFILE SECTION TABLES  (skills, languages, education, certifications,
---    courses, awards, projects) — owner-only access
+--    courses, awards, projects) - owner-only access
 -- ────────────────────────────────────────────────────────────────────────────
 create table if not exists public.skills (
   id bigint generated always as identity primary key,
@@ -318,7 +318,7 @@ create trigger applications_set_updated_at
   for each row execute function public.set_updated_at();
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 4) AI FEATURE TABLES  (cvs, interview_sessions) — owner-only
+-- 4) AI FEATURE TABLES  (cvs, interview_sessions) - owner-only
 -- ────────────────────────────────────────────────────────────────────────────
 create table if not exists public.cvs (
   id          uuid primary key default gen_random_uuid(),
@@ -439,7 +439,7 @@ create trigger interview_sessions_set_updated_at
   for each row execute function public.set_updated_at();
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 4b) NOTIFICATIONS  — in-app alerts (apply confirmation + status changes)
+-- 4b) NOTIFICATIONS  - in-app alerts (apply confirmation + status changes)
 -- ────────────────────────────────────────────────────────────────────────────
 create table if not exists public.notifications (
   id         uuid primary key default gen_random_uuid(),
@@ -488,7 +488,7 @@ begin
     end if;
   elsif (tg_op = 'UPDATE' and new.status is distinct from old.status and new.status <> 'applied') then
     -- if an interview drives this application, the interviews trigger sends the
-    -- (richer) notification instead — avoid a duplicate "status changed" ping.
+    -- (richer) notification instead - avoid a duplicate "status changed" ping.
     if not exists (select 1 from public.interviews i where i.application_id = new.id) then
       insert into public.notifications (profile_id, type, title, body, link)
       values (new.candidate_id, 'status', 'Application update',
@@ -516,7 +516,7 @@ do $$ begin
 exception when others then null; end $$;
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 4c) INTERVIEWS — schedule + offer lifecycle (recruiter <-> candidate)
+-- 4c) INTERVIEWS - schedule + offer lifecycle (recruiter <-> candidate)
 --   stage: proposed -> accepted/declined -> completed -> offer -> offer_accepted/offer_declined
 --          (or rejected after interview, or cancelled)
 -- ────────────────────────────────────────────────────────────────────────────
@@ -572,7 +572,7 @@ begin
     elsif new.stage = 'declined' then
       insert into public.notifications (profile_id, type, title, body, link) values (new.recruiter_id, 'interview', 'Interview declined', coalesce(new.candidate_name, 'The candidate') || ' declined the interview for ' || role_txt || '.', '/recruiter/interviews');
     elsif new.stage = 'completed' then
-      insert into public.notifications (profile_id, type, title, body, link) values (new.candidate_id, 'interview', 'Interview complete', 'Your interview for ' || role_txt || ' is complete — awaiting the result.', '/candidate/interviews');
+      insert into public.notifications (profile_id, type, title, body, link) values (new.candidate_id, 'interview', 'Interview complete', 'Your interview for ' || role_txt || ' is complete - awaiting the result.', '/candidate/interviews');
     elsif new.stage = 'offer' then
       insert into public.notifications (profile_id, type, title, body, link) values (new.candidate_id, 'offer', 'You received an offer! 🎉', 'You got an offer for ' || role_txt || '. Review and respond.', '/candidate/interviews');
     elsif new.stage = 'offer_accepted' then
@@ -615,7 +615,7 @@ begin
 end; $$;
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 4d) INBOX — direct messaging (recruiter <-> candidate), one thread per pair
+-- 4d) INBOX - direct messaging (recruiter <-> candidate), one thread per pair
 --   conversations hold denormalised names/emails so each party can render the
 --   other side + send branded emails WITHOUT reading the other's profile (which
 --   is owner-only under RLS). messages.kind: text | system | interview | offer | rejection
@@ -763,7 +763,7 @@ do $$ begin
 exception when others then null; end $$;
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 5) STORAGE — avatars bucket (profile photos). Public read, owner-only write.
+-- 5) STORAGE - avatars bucket (profile photos). Public read, owner-only write.
 -- ────────────────────────────────────────────────────────────────────────────
 insert into storage.buckets (id, name, public)
 values ('avatars', 'avatars', true)
@@ -792,7 +792,7 @@ create policy "Users can delete their own avatar"
   );
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 6) SOCIAL LAYER · PHASE 1 — public profiles, usernames, follow/followers
+-- 6) SOCIAL LAYER · PHASE 1 - public profiles, usernames, follow/followers
 --    (Also maintained standalone in backend/social-phase1.sql)
 -- ────────────────────────────────────────────────────────────────────────────
 
@@ -822,7 +822,7 @@ begin
 end; $$;
 
 -- Backfill handles for any profile that doesn't have one yet. Done row-by-row in
--- a loop so each call to gen_username sees the handles assigned by prior rows —
+-- a loop so each call to gen_username sees the handles assigned by prior rows -
 -- a single bulk UPDATE would let two identical names collide on the unique index.
 do $$
 declare r record;
@@ -852,7 +852,7 @@ begin
   return new;
 end; $$;
 
--- 6b) follows — directional follower graph
+-- 6b) follows - directional follower graph
 create table if not exists public.follows (
   follower_id  uuid not null references public.profiles(id) on delete cascade,
   following_id uuid not null references public.profiles(id) on delete cascade,
@@ -899,7 +899,7 @@ begin
   end loop;
 end $$;
 
--- 6d) public_profiles view — safe public face of a profile (email/phone/dob never
+-- 6d) public_profiles view - safe public face of a profile (email/phone/dob never
 --     leak). Bypasses base-table RLS but exposes only safe columns; signed-in only.
 drop view if exists public.public_profiles;
 create view public.public_profiles
@@ -917,12 +917,12 @@ revoke all on public.public_profiles from anon;
 grant select on public.public_profiles to authenticated;
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 7) SOCIAL LAYER · PHASE 2 — feed: posts, likes, comments
+-- 7) SOCIAL LAYER · PHASE 2 - feed: posts, likes, comments
 --    (Also maintained standalone in backend/social-phase2.sql)
 -- ────────────────────────────────────────────────────────────────────────────
 
 -- 7a) posts (author fields denormalised so the feed renders without reading
---     owner-only profiles — same pattern as cv_snapshot / conversations)
+--     owner-only profiles - same pattern as cv_snapshot / conversations)
 create table if not exists public.posts (
   id              uuid primary key default gen_random_uuid(),
   author_id       uuid not null references public.profiles(id) on delete cascade,
@@ -1040,7 +1040,7 @@ create trigger post_comments_ins after insert on public.post_comments for each r
 drop trigger if exists post_comments_del on public.post_comments;
 create trigger post_comments_del after delete on public.post_comments for each row execute function public.handle_post_comment_del();
 
--- 7d) storage — post-media bucket (feed images), public read / owner write
+-- 7d) storage - post-media bucket (feed images), public read / owner write
 insert into storage.buckets (id, name, public) values ('post-media', 'post-media', true) on conflict (id) do nothing;
 drop policy if exists "Post media is publicly readable" on storage.objects;
 create policy "Post media is publicly readable" on storage.objects for select using (bucket_id = 'post-media');
@@ -1050,7 +1050,7 @@ drop policy if exists "Users can delete their post media" on storage.objects;
 create policy "Users can delete their post media" on storage.objects for delete using (bucket_id = 'post-media' and (storage.foldername(name))[1] = auth.uid()::text);
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 8) SOCIAL LAYER · PHASE 3 — sharing: unified inbox (DM anyone), share-a-post,
+-- 8) SOCIAL LAYER · PHASE 3 - sharing: unified inbox (DM anyone), share-a-post,
 --    repost. (Also maintained standalone in backend/social-phase3.sql)
 -- ────────────────────────────────────────────────────────────────────────────
 
@@ -1154,7 +1154,7 @@ begin
   return new;
 end; $$;
 
--- 8c) reposts — a post referencing another (optional quote in content);
+-- 8c) reposts - a post referencing another (optional quote in content);
 --     repost_snapshot keeps the original visible even if the source is deleted
 alter table public.posts add column if not exists repost_of uuid references public.posts(id) on delete set null;
 alter table public.posts add column if not exists repost_snapshot jsonb;
@@ -1177,7 +1177,7 @@ drop trigger if exists posts_repost_notify on public.posts;
 create trigger posts_repost_notify after insert on public.posts for each row execute function public.handle_post_repost_notify();
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 9) SOCIAL LAYER · PHASE 4 — moderation (reports). Suggested-people + trending
+-- 9) SOCIAL LAYER · PHASE 4 - moderation (reports). Suggested-people + trending
 --    are client-side queries over existing tables (no schema). See social-phase4.sql
 -- ────────────────────────────────────────────────────────────────────────────
 create table if not exists public.reports (
@@ -1200,7 +1200,7 @@ drop policy if exists "reporter can read own reports" on public.reports;
 create policy "reporter can read own reports" on public.reports for select using (auth.uid() = reporter_id);
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 10) SOCIAL LAYER · PHASE 5 — posts can attach a document/file
+-- 10) SOCIAL LAYER · PHASE 5 - posts can attach a document/file
 -- ────────────────────────────────────────────────────────────────────────────
 alter table public.posts add column if not exists file_url  text;
 alter table public.posts add column if not exists file_name text;

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Logo from '@/components/auth/Logo'
+import { Icon } from '@/components/ui/icon'
 
 export default function SelectRolePage() {
   const router = useRouter()
@@ -116,7 +117,7 @@ function RoleCard({
       }`}
     >
       <div className={`mx-auto mb-2 w-11 h-11 rounded-xl flex items-center justify-center ${selected ? 'bg-primary text-white' : 'bg-indigo-100 dark:bg-indigo-500/15 text-primary'}`}>
-        <span className="material-symbols-outlined text-2xl">{icon}</span>
+        <Icon name={icon} className="text-2xl" />
       </div>
       <p className="text-sm font-bold text-gray-900 dark:text-slate-100">{label}</p>
       <p className="text-[10px] md:text-[11px] text-gray-500 dark:text-slate-400 mt-0.5 leading-tight">{description}</p>

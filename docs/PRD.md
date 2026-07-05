@@ -1,7 +1,7 @@
-# SmartHire AI — Product Requirements Document (PRD)
+# SmartHire AI - Product Requirements Document (PRD)
 
-**Project type:** Final Year Project (FYP) — Bachelor's in Computer Science
-**Institution:** University of Karachi — **UBIT** (Department of Computer Science)
+**Project type:** Final Year Project (FYP) - Bachelor's in Computer Science
+**Institution:** University of Karachi - **UBIT** (Department of Computer Science)
 **Contributors:** Shanza Iftikhar · Zayyam Siddiqui · Sufiyan Khan
 **Repository:** https://github.com/UBIT-AI-CV-Platform/SmartHireAI
 **Document type:** Software Requirements / Product Requirements Specification
@@ -48,11 +48,11 @@
 
 ## 1. Executive Summary
 
-**SmartHire AI** is an AI-powered, full-stack recruitment platform combined with a LinkedIn-style professional network. It unifies the entire hiring lifecycle — profile building, AI-assisted CV and cover-letter generation, job discovery and applications, AI applicant screening, interview scheduling, in-browser video interviews, and real-time messaging — and layers a professional social network on top, where candidates and recruiters maintain public profiles, post to a shared feed, follow one another, and interact through likes, comments, reposts, and shares.
+**SmartHire AI** is an AI-powered, full-stack recruitment platform combined with a LinkedIn-style professional network. It unifies the entire hiring lifecycle - profile building, AI-assisted CV and cover-letter generation, job discovery and applications, AI applicant screening, interview scheduling, in-browser video interviews, and real-time messaging - and layers a professional social network on top, where candidates and recruiters maintain public profiles, post to a shared feed, follow one another, and interact through likes, comments, reposts, and shares.
 
 The platform serves **two roles** from a single product: **Candidates** (job seekers) and **Recruiters** (hiring managers / companies). It uses **Google Gemini** for all AI features and **Supabase** (PostgreSQL, Auth, Storage, Realtime, Row-Level Security) for the backend. Real-time messaging and notifications are delivered over Supabase Realtime, and video interviews run peer-to-peer over **WebRTC**.
 
-The product is built **Pakistan-first** — targeting university students, fresh graduates, and local recruiters — with an architecture designed to scale globally. This document is the single source of truth for the product's purpose, scope, complete functional and non-functional requirements, architecture, data model, and success criteria, capturing every major feature and its sub-features.
+The product is built **Pakistan-first** - targeting university students, fresh graduates, and local recruiters - with an architecture designed to scale globally. This document is the single source of truth for the product's purpose, scope, complete functional and non-functional requirements, architecture, data model, and success criteria, capturing every major feature and its sub-features.
 
 ---
 
@@ -77,9 +77,9 @@ SmartHire AI addresses these gaps by combining **AI assistance**, an **end-to-en
 A responsive web application with two role-based portals over one secure backend, providing: AI document tooling (CV / cover letter with ATS scoring), a complete ATS (jobs, applications, pipeline, interviews, offers), AI hiring tools (ranking, interview kits, copilot, outreach), in-browser WebRTC video interviews, a professional social network (profiles, feed, follows, posts, sharing, moderation), and a unified real-time inbox for messaging any user.
 
 ### 2.5 Intended Audience
-- **Development team / maintainers** — implementation reference.
-- **Examination committee** — evaluation against objectives and scope.
-- **Future contributors** — onboarding and extension.
+- **Development team / maintainers** - implementation reference.
+- **Examination committee** - evaluation against objectives and scope.
+- **Future contributors** - onboarding and extension.
 
 ---
 
@@ -137,21 +137,21 @@ External job aggregation depends on a third-party API (Jooble); without a key a 
 
 ### 5.2 Personas
 
-**Persona A — "Ayesha", Final-year CS student (Candidate)**
+**Persona A - "Ayesha", Final-year CS student (Candidate)**
 - Goals: build a strong CV, find relevant entry-level jobs, prepare for interviews, be discovered.
 - Frustrations: doesn't know what recruiters want; generic CVs; no feedback; low visibility.
 - Needs: AI CV help, ATS score, job matching, mock interviews, a discoverable public profile.
 
-**Persona B — "Bilal", Technical recruiter at a software house (Recruiter)**
+**Persona B - "Bilal", Technical recruiter at a software house (Recruiter)**
 - Goals: fill roles fast, find quality candidates, reduce screening time.
 - Frustrations: too many unstructured CVs; slow shortlisting; scattered communication.
 - Needs: AI ranking, structured interview kits, a clear pipeline, integrated scheduling and messaging.
 
-**Persona C — "Sana", Fresh graduate building a personal brand (Candidate + Social)**
+**Persona C - "Sana", Fresh graduate building a personal brand (Candidate + Social)**
 - Goals: share projects/achievements, grow a network, get noticed by recruiters.
 - Needs: a public profile, a feed to post to, follows, and recruiter visibility.
 
-**Persona D — "Hina", In-house HR at a startup (Recruiter + Brand)**
+**Persona D - "Hina", In-house HR at a startup (Recruiter + Brand)**
 - Goals: build employer brand, post company updates, attract applicants.
 - Needs: a company profile, the ability to post to the feed, and a talent pool to engage.
 
@@ -160,7 +160,7 @@ External job aggregation depends on a third-party API (Jooble); without a key a 
 ## 6. Product Overview
 
 ### 6.1 Vision
-> To be the single platform where a professional's journey — building a profile, growing a network, finding opportunities, and getting hired — happens end to end, made smarter by AI.
+> To be the single platform where a professional's journey - building a profile, growing a network, finding opportunities, and getting hired - happens end to end, made smarter by AI.
 
 ### 6.2 Value Propositions
 - **For candidates:** AI that levels the playing field (CV, ATS score, interview prep) + a public profile and feed for visibility + frictionless applications.
@@ -182,14 +182,14 @@ External job aggregation depends on a third-party API (Jooble); without a key a 
 
 | Capability | Candidate | Recruiter |
 |---|---|---|
-| Build personal profile (skills, education, projects…) | ✅ | — (uses Company Profile instead) |
-| Maintain a company profile | — | ✅ |
-| Generate AI CV / cover letter | ✅ | — |
-| Browse & apply to jobs | ✅ | — |
-| Post jobs & manage applicants | — | ✅ |
-| AI applicant screening / interview kits / copilot | — | ✅ |
-| Schedule interviews & make offers | — | ✅ |
-| Accept/decline interviews & offers | ✅ | — |
+| Build personal profile (skills, education, projects…) | ✅ | - (uses Company Profile instead) |
+| Maintain a company profile | - | ✅ |
+| Generate AI CV / cover letter | ✅ | - |
+| Browse & apply to jobs | ✅ | - |
+| Post jobs & manage applicants | - | ✅ |
+| AI applicant screening / interview kits / copilot | - | ✅ |
+| Schedule interviews & make offers | - | ✅ |
+| Accept/decline interviews & offers | ✅ | - |
 | Join WebRTC interview room | ✅ | ✅ |
 | Post to feed, like, comment, repost, share | ✅ | ✅ |
 | Follow / be followed, public profile | ✅ | ✅ |
@@ -206,100 +206,100 @@ External job aggregation depends on a third-party API (Jooble); without a key a 
 
 ### 8.1 Authentication & Account Management
 
-**8.1.1 Sign Up (Email/Password)** — *M*
+**8.1.1 Sign Up (Email/Password)** - *M*
 - Two-tab auth screen (Login / Sign up) with entrance animations.
 - Fields: full name, email, password, and a **role selector** (Candidate / Recruiter).
 - Client-side validation: email format, password strength/length, required fields.
 - On submit, the chosen role and full name are passed as user metadata.
 
-**8.1.2 Email OTP Verification** — *M*
+**8.1.2 Email OTP Verification** - *M*
 - After sign up, a **6-digit OTP** is emailed (branded "Confirm signup" template).
 - A second step renders a 6-input OTP field; the code is verified before the account is activated.
 - Resend/again handling and error feedback.
 
-**8.1.3 Login** — *M*
+**8.1.3 Login** - *M*
 - Email + password sign in.
 - Already-logged-in users hitting the auth page are redirected to their portal.
 - Friendly error messages for invalid credentials.
 
-**8.1.4 Google OAuth** — *S*
+**8.1.4 Google OAuth** - *S*
 - One-click Google sign-in (styled white/compact button).
 - First-time OAuth users land on a **role-selection page** (Candidate / Recruiter) before entering a portal.
 
-**8.1.5 Forgot / Reset Password** — *M*
+**8.1.5 Forgot / Reset Password** - *M*
 - "Forgot password" requests a reset email (branded "Reset password" template).
 - The reset link opens a set-new-password form (exchange code → update password).
 
-**8.1.6 Role Model & Portal Gating** — *M*
+**8.1.6 Role Model & Portal Gating** - *M*
 - One email = one role permanently (cannot switch without deleting the account).
 - A `role_selected` flag distinguishes email signups (role chosen) from fresh OAuth users (must choose).
 - Defense-in-depth portal gating: a server-side role check in the Next.js middleware (`proxy.ts` → `lib/supabase/middleware.ts`) evaluates the authenticated user's role on every request and redirects before the wrong portal renders; the portal layout applies an additional client-side check as a fallback. Unselected users are routed to role-selection at both layers.
 
-**8.1.7 Session & Route Protection** — *M*
+**8.1.7 Session & Route Protection** - *M*
 - Session refresh via middleware on every request.
-- Protected route prefixes: `/candidate`, `/recruiter`, `/interview`, `/u`, `/post` — signed-out users are redirected to the auth page.
+- Protected route prefixes: `/candidate`, `/recruiter`, `/interview`, `/u`, `/post` - signed-out users are redirected to the auth page.
 - Authenticated users are additionally restricted to their role-scoped portal: a server-side role check in middleware redirects cross-role access to `/candidate` or `/recruiter` to the user's correct portal. The routes `/interview`, `/u`, and `/post` remain shared across both roles.
 
-**8.1.8 Sign Out** — *M*
+**8.1.8 Sign Out** - *M*
 - Sign-out from the sidebar with a confirmation modal; clears the session and returns to landing.
 
 ---
 
-### 8.2 Candidate — Dashboard (Feed + Overview)
+### 8.2 Candidate - Dashboard (Feed + Overview)
 
 The candidate home page (`/candidate`) merges the social feed and the personal overview into one screen, split into a left feed (~60%) and a right detail rail (~40%).
 
-**8.2.1 People Search Bar** — *S*
+**8.2.1 People Search Bar** - *S*
 - Top-of-page search input with a **live results dropdown**.
 - Matches by full name, `@handle`, or company; results link to the person's profile.
 
-**8.2.2 Post Composer** — *M*
+**8.2.2 Post Composer** - *M*
 - A compact "Start a post" trigger bar (avatar + prompt + Post button) that opens a **composer popup**.
 - Popup supports: **rich text** caption with a **Bold / Italic** toolbar (wraps the selected text in markdown), **one image** attachment (≤5 MB, preview + remove), and **one document** attachment (PDF/DOC/DOCX/PPT/PPTX/XLS/XLSX/TXT/CSV, ≤15 MB, name chip + remove).
 - Validations and posting state; on publish, the new post is prepended to the feed.
 
-**8.2.3 Feed** — *M*
+**8.2.3 Feed** - *M*
 - **Tabs:** **Following** (posts from people you follow + yourself), **Discover** (the whole community), **Trending** (most-liked/commented posts from the last 30 days).
 - Cursor-based **"Load more"** pagination.
 - Live refresh of the Following feed when the follow graph changes (no manual reload).
 - Empty/loading/error states per tab.
 
-**8.2.4 Right Rail — Profile Mini-Card** — *S*
+**8.2.4 Right Rail - Profile Mini-Card** - *S*
 - Photo, time-based greeting ("Good morning/afternoon/evening, [first name]"), headline, follower/following counts.
 - **View profile** button (opens the public profile inside the portal shell) and **Edit** button.
 
-**8.2.5 Right Rail — Stat Cards** — *S*
-- Applications, Interviews, Offers, Saved jobs — each links to the relevant page.
+**8.2.5 Right Rail - Stat Cards** - *S*
+- Applications, Interviews, Offers, Saved jobs - each links to the relevant page.
 
-**8.2.6 Right Rail — Other Widgets** — *S*
+**8.2.6 Right Rail - Other Widgets** - *S*
 - **Upcoming interviews** shortcut.
 - **Profile completeness** checklist + progress bar (photo, summary, target role, skills, education, first CV).
-- **Recommended jobs** — top skill-matched open roles with match %.
-- **Quick actions** — Generate CV, Find Jobs, AI Coach, Build Profile.
-- **Who to follow** — suggested users not yet followed (with inline Follow).
+- **Recommended jobs** - top skill-matched open roles with match %.
+- **Quick actions** - Generate CV, Find Jobs, AI Coach, Build Profile.
+- **Who to follow** - suggested users not yet followed (with inline Follow).
 
 ---
 
-### 8.3 Candidate — Build Profile
+### 8.3 Candidate - Build Profile
 
 A complete, multi-section profile builder that feeds every AI feature.
 
-**8.3.1 Personal Info** — *M*
+**8.3.1 Personal Info** - *M*
 - Profile photo upload with an **in-browser square-crop modal** (PNG/JPG, ≤5 MB, remove option); photo also appears in the topbar and sidebar.
 - Fields: full name, desired role, location, date of birth, phone, email.
-- **Social links:** LinkedIn, GitHub, Discord — each with a username field and a separate verified URL field.
+- **Social links:** LinkedIn, GitHub, Discord - each with a username field and a separate verified URL field.
 
-**8.3.2 Professional Summary** — *M*
+**8.3.2 Professional Summary** - *M*
 - Free-text career bio used by the AI CV generator, the coach, and the public profile.
 
-**8.3.3 Skills** — *M*
+**8.3.3 Skills** - *M*
 - Inline chip editor: add, edit, delete; duplicate prevention; Enter-to-save; auto-focus on new entry.
 - Skills drive CV generation, job matching, and coach context.
 
-**8.3.4 Languages** — *M*
+**8.3.4 Languages** - *M*
 - Language name + proficiency (Native / Fluent / Professional / Intermediate / Elementary); duplicate prevention.
 
-**8.3.5 Card Sections (Education, Certifications, Courses, Awards, Projects)** — *M*
+**8.3.5 Card Sections (Education, Certifications, Courses, Awards, Projects)** - *M*
 - Each is a card list with **Add / Edit / Delete** per entry via a reusable config-driven component.
 - Education: degree, institute, start year, end year.
 - Certifications: name, issuer, issue date.
@@ -307,26 +307,26 @@ A complete, multi-section profile builder that feeds every AI feature.
 - Awards: name, issuer, award date.
 - Projects: name, description, optional link (opens in a new tab).
 
-**8.3.6 Custom Sections** — *S*
+**8.3.6 Custom Sections** - *S*
 - User-defined section with a heading and bullet items; flows into the CV and the public profile.
 
-**8.3.7 Validation & Save States** — *M*
+**8.3.7 Validation & Save States** - *M*
 - Email format, phone (7–20 chars, allows `+`, spaces, dashes), URLs must start with `http(s)://`, DOB not in the future.
 - Top "Save Profile" persists basic info + summary; every section item saves/updates/deletes immediately with "Saving… → Saved!" feedback.
 
 ---
 
-### 8.4 Candidate — AI CV & Cover Letter Generator
+### 8.4 Candidate - AI CV & Cover Letter Generator
 
-The flagship feature — generates a complete, professional CV from the profile using Google Gemini.
+The flagship feature - generates a complete, professional CV from the profile using Google Gemini.
 
-**8.4.1 Generation Controls** — *M*
+**8.4.1 Generation Controls** - *M*
 - Target role (defaults to the profile's desired role).
 - **Tone** selector: Professional, Concise, Detailed, Creative, Technical, Academic.
 - **Custom instructions** textarea (≤1,000 chars), e.g. "Emphasise my open-source work".
 - **Job description** textarea (≤4,000 chars) for targeted ATS matching.
 
-**8.4.2 CV Customization** — *S*
+**8.4.2 CV Customization** - *S*
 - **Templates:** Modern, Classic, Minimal.
 - **Layout:** Single column or Two column.
 - **Font:** Sans, Serif, Mono.
@@ -334,24 +334,24 @@ The flagship feature — generates a complete, professional CV from the profile 
 - **Profile photo:** include/exclude toggle.
 - **Section visibility toggles:** Summary, Experience, Education, Skills, Certifications, Courses, Awards.
 
-**8.4.3 CV Preview** — *M*
+**8.4.3 CV Preview** - *M*
 - Real-time styled preview reflecting template, layout, font, and colour.
 - Header: name, coloured title, email, phone, location, LinkedIn/GitHub/Discord.
 - Experience (derived from projects), Education, colour-coded Skill chips, and all other sections with icons.
 - Custom sections render under their user-defined headings; empty dates are hidden.
 
-**8.4.4 ATS Intelligence** — *M*
+**8.4.4 ATS Intelligence** - *M*
 - ATS score (0–100) with progress bar and tier label.
 - **Category breakdown** (e.g. Keyword Match, Impact & Metrics, Completeness, Clarity & Formatting, Role Relevance) each with a score + note.
-- **Missing keywords** — terms from the pasted JD absent from the CV (amber).
-- **Top suggestions** — numbered, personalized, self-contained improvement tips.
+- **Missing keywords** - terms from the pasted JD absent from the CV (amber).
+- **Top suggestions** - numbered, personalized, self-contained improvement tips.
 
-**8.4.5 Document Actions** — *M*
-- **Inline editing** — click any preview field to edit directly; edits persist to the saved CV.
+**8.4.5 Document Actions** - *M*
+- **Inline editing** - click any preview field to edit directly; edits persist to the saved CV.
 - **PDF export** (print-to-PDF) and **Word export** (`.docx`).
-- **AI Cover Letter** — modal with a company input; generates a tailored letter with re-draft, manual edit, copy, download, and favourite.
+- **AI Cover Letter** - modal with a company input; generates a tailored letter with re-draft, manual edit, copy, download, and favourite.
 
-**8.4.6 Documents Library ("My Documents")** — *S*
+**8.4.6 Documents Library ("My Documents")** - *S*
 - Tabs: **CVs** / **Cover Letters** (with counts) and a **Favourites** filter.
 - CV cards: target role, date, ATS score, favourite toggle, rename, delete.
 - Cover-letter cards: role · company, content preview, date, favourite, delete.
@@ -360,184 +360,184 @@ The flagship feature — generates a complete, professional CV from the profile 
 
 ---
 
-### 8.5 Candidate — Jobs & Applications
+### 8.5 Candidate - Jobs & Applications
 
 A LinkedIn/Glassdoor-style job discovery and application tracker with four tabs and a persistent sidebar.
 
-**8.5.1 Browse Jobs — Filters** — *M*
+**8.5.1 Browse Jobs - Filters** - *M*
 - Search by title, company, or skill; location text filter.
 - **Sort:** Best match, Newest, Oldest, Salary high→low, Salary low→high, Title A→Z, Title Z→A.
 - **Minimum salary** slider; **Remote only** toggle; **popular skill chips** (click to filter); clear-filters.
 
-**8.5.2 Job Cards** — *M*
+**8.5.2 Job Cards** - *M*
 - Company logo/initial, title, company, location, short description.
 - **"New" badge** (posted within 7 days), Remote badge, salary, first 4 skills (matched highlighted, missing greyed) with "+X more".
 - **Match %** (green ≥75, amber ≥40, slate below), "X/Y skills matched", save/bookmark toggle, posted time.
 - Apply button with loading state, or an Applied indicator; applied jobs are hidden from Browse.
 
-**8.5.3 Job Detail Modal** — *M*
+**8.5.3 Job Detail Modal** - *M*
 - Company, title, status (Open/Closed/New), posted time; save + share (copies a blurb).
 - Remote/location/salary pills; full skills-match bar (matched vs missing); full description.
 - Apply & choose CV, or "Already applied" state.
 
-**8.5.4 Apply Flow** — *M*
+**8.5.4 Apply Flow** - *M*
 - **CV-picker modal** listing all generated CVs (target role, date, ATS score) with a View-preview option.
 - On send, an application is created with a **CV snapshot** and a computed match score, routed through a server endpoint that also sends a **branded confirmation email** (best-effort).
 - "Need a CV first" prompt linking to the CV Generator if none exist.
 
-**8.5.5 Saved Jobs Tab** — *S*
+**8.5.5 Saved Jobs Tab** - *S*
 - All bookmarked jobs in card format with one-click apply.
 
-**8.5.6 My Applications Tab** — *M*
+**8.5.6 My Applications Tab** - *M*
 - Application cards: company, title, location, "Applied X ago", match score, status badge (Applied/Screening/Interview/Offer/Rejected), View job, Withdraw.
 
-**8.5.7 Web Jobs Tab (External)** — *C*
+**8.5.7 Web Jobs Tab (External)** - *C*
 - Aggregated listings (Jooble → Adzuna → demo fallback) tagged by source (LinkedIn/Indeed/Glassdoor).
 - Source-filter chips derived from actual results; **Load more**; Apply opens the original posting in a new tab.
 
-**8.5.8 Sidebar Widgets** — *S*
+**8.5.8 Sidebar Widgets** - *S*
 - Your Job Hunt (open/saved/applied/avg match); Top Matches (3); Skills in Demand (clickable); Boost-profile tip.
 
-**8.5.9 Pagination** — *S*
+**8.5.9 Pagination** - *S*
 - Reusable windowed pagination (15/page) across Browse, Saved, My Applications, and Web Jobs.
 
 ---
 
-### 8.6 Candidate — AI Interview Coach
+### 8.6 Candidate - AI Interview Coach
 
 A conversational AI coach for interview preparation.
 
-**8.6.1 Session Management** — *S*
+**8.6.1 Session Management** - *S*
 - New session button; history sidebar with auto-labelled titles, delete per session, click to restore.
 
-**8.6.2 Configuration** — *M*
-- **Job focus** — select an applied job (Job · Company) or type a custom role.
-- **Difficulty** — Easy / Medium / Hard.
-- **Mode** — Chat (open) or Mock (structured mock interview).
+**8.6.2 Configuration** - *M*
+- **Job focus** - select an applied job (Job · Company) or type a custom role.
+- **Difficulty** - Easy / Medium / Hard.
+- **Mode** - Chat (open) or Mock (structured mock interview).
 
-**8.6.3 Chat Experience** — *M*
+**8.6.3 Chat Experience** - *M*
 - Streaming responses with live typing animation; markdown rendering.
 - Copy and Regenerate on hover; follow-up quick buttons (Sample answer, Make it harder, Next question, Why this matters).
 - Voice input via browser speech recognition; Shift+Enter newline, Enter to send; Stop button.
 
-**8.6.4 Starter Prompts & Save** — *S*
+**8.6.4 Starter Prompts & Save** - *S*
 - Empty-state starter chips; "End session & save" persists the conversation with a generated title.
 
 ---
 
-### 8.7 Candidate — Notifications
+### 8.7 Candidate - Notifications
 - See [§8.23 Notifications System](#823-notifications-system) (shared across both portals).
 
-### 8.8 Candidate — Settings — *M*
+### 8.8 Candidate - Settings - *M*
 - Account: email (read-only), account type (read-only), editable full name with save/feedback.
 - Change password (new + confirm, min length, visibility toggle, feedback).
 - Sign out.
 
 ---
 
-### 8.9 Recruiter — Dashboard (Feed + Overview)
+### 8.9 Recruiter - Dashboard (Feed + Overview)
 
 The recruiter home page (`/recruiter`) mirrors the candidate dashboard: a left social feed (~60%) and a right hiring rail (~40%).
 
-**8.9.1 Feed (left)** — *M*
+**8.9.1 Feed (left)** - *M*
 - People search bar, post composer (company updates / hiring posts / media), and Following/Discover/Trending tabs.
 
-**8.9.2 Hiring Rail (right)** — *S*
+**8.9.2 Hiring Rail (right)** - *S*
 - **Profile mini-card** (photo, greeting, company, follower/following, View profile + Edit).
-- **Hiring stats** — Open jobs, Applicants, Interviews.
-- **Recent applicants** — latest candidates with the job they applied to.
-- **Quick actions** — Post a job, Applicants, AI tools, Analytics.
+- **Hiring stats** - Open jobs, Applicants, Interviews.
+- **Recent applicants** - latest candidates with the job they applied to.
+- **Quick actions** - Post a job, Applicants, AI tools, Analytics.
 - **Who to follow**.
 - Deeper hiring tools live on the dedicated Jobs, Applicants, and Analytics pages.
 
 ---
 
-### 8.10 Recruiter — Jobs Management
+### 8.10 Recruiter - Jobs Management
 
-**8.10.1 Posting a Job** — *M*
+**8.10.1 Posting a Job** - *M*
 - Fields: title (required), company (required), location, salary (free text), required skills (comma-separated), deadline date, description.
 - **"Write with AI"** drafts a professional description from title/company/skills.
 
-**8.10.2 Job List** — *M*
+**8.10.2 Job List** - *M*
 - Tabs: **Active** (open + closed but not expired) and **Old / Expired** (past-deadline).
 - Job cards: company avatar, title, status badges (Open/Closed, Expired, "Closes in Nd"), company/location/salary, first 6 skills, applicant count.
 
-**8.10.3 Job Actions** — *S*
+**8.10.3 Job Actions** - *S*
 - Close/Reopen toggle, Edit, Delete (with confirmation), **Repost** (reactivate expired with a new deadline).
 - Click-title detail modal (salary pill, applicant count, skills, full description).
 
-**8.10.4 Sidebar Widgets** — *S*
+**8.10.4 Sidebar Widgets** - *S*
 - At-a-glance (active/expired/applicants), AI Screening CTA, posting tips.
 
 ---
 
-### 8.11 Recruiter — Applicants & Pipeline
+### 8.11 Recruiter - Applicants & Pipeline
 
-**8.11.1 Views** — *M*
+**8.11.1 Views** - *M*
 - **List view** (detailed cards) and **Board view (Kanban)** with drag-and-drop columns: Applied, Screening, Interview, Offer, Rejected.
 
-**8.11.2 Filters & Sort (List)** — *S*
+**8.11.2 Filters & Sort (List)** - *S*
 - Search (name/email/job), filter by job, filter by status, sort (Newest / Oldest / Best Match / Top Rated).
 
-**8.11.3 Applicant Cards** — *M*
+**8.11.3 Applicant Cards** - *M*
 - Avatar, name, email, applied job, time ago, match score.
 - **5-star rating**, **status pipeline** buttons (Applied → Screening → Interview → Offer → Rejected).
 - **View CV** (exact submitted snapshot), **Draft Email** (AI outreach), **Notes** (inline expandable, save/cancel).
 
-**8.11.4 Kanban Board** — *M*
+**8.11.4 Kanban Board** - *M*
 - 5 columns with per-column counts; drag-and-drop to update status; cards show avatar/name/job/match + View CV; drop zones highlight.
 
-**8.11.5 AI Outreach Email Modal** — *S*
+**8.11.5 AI Outreach Email Modal** - *S*
 - Candidate name/email; email type (Interview Invite / Rejection / Offer); **Draft with AI**; editable body; copy; send; feedback.
 
-**8.11.6 Sidebar** — *S*
+**8.11.6 Sidebar** - *S*
 - Total applicants, top-rated count, average match score; pipeline breakdown with clickable status filters.
 
 ---
 
-### 8.12 Recruiter — AI Screening (AI Tools)
+### 8.12 Recruiter - AI Screening (AI Tools)
 
 Two tabs: **Screening** and **Copilot**, with a job selector.
 
-**8.12.1 Rank Applicants** — *M*
+**8.12.1 Rank Applicants** - *M*
 - Sends all applicant CV snapshots + the job to Gemini for simultaneous analysis.
 - **Overall summary** of the applicant pool.
 - **Ranked cards** (best→worst): rank, avatar, name; **recommendation** (Shortlist/Maybe/Pass); one-line verdict; **fit score 0–100** with bar; **strengths** (green); **concerns** (amber); View CV.
 
-**8.12.2 Interview Kit** — *S*
+**8.12.2 Interview Kit** - *S*
 - Categorized questions (Technical / Behavioural / Cultural Fit…), each with **"look for"** guidance; **red flags**; **closing tip**; **Copy Kit**.
 
-**8.12.3 Recruiter Copilot** — *S*
+**8.12.3 Recruiter Copilot** - *S*
 - Embedded conversational assistant (streaming, markdown) with starter prompts (write a JD, draft an interview-invite email, give questions, what to look for).
 
 ---
 
-### 8.13 Recruiter — Analytics — *S*
+### 8.13 Recruiter - Analytics - *S*
 - **Stat cards:** active jobs, total applicants, average match score, offer/hire rate.
-- **Applications over time** — 14-day bar chart.
-- **Hiring funnel** — Applied → Screening → Interview → Offer with conversion %.
-- **Match-quality distribution** — buckets 0–40 / 40–60 / 60–75 / 75–100.
-- **Top jobs by applicants** — horizontal bar chart (up to 6).
+- **Applications over time** - 14-day bar chart.
+- **Hiring funnel** - Applied → Screening → Interview → Offer with conversion %.
+- **Match-quality distribution** - buckets 0–40 / 40–60 / 60–75 / 75–100.
+- **Top jobs by applicants** - horizontal bar chart (up to 6).
 
 ---
 
-### 8.14 Recruiter — Company Profile — *M*
+### 8.14 Recruiter - Company Profile - *M*
 - **Logo upload** with crop modal (≤5 MB) stored in Supabase Storage.
 - Fields: company name (required), recruiter name, website (valid URL), industry, location, company size (1–10 / 11–50 / 51–200 / 201–500 / 500+), about.
 - **Live candidate-view preview** card showing how the company appears to job seekers.
 - Company details surface as the **Company card** on the recruiter's public profile.
 
-### 8.15 Recruiter — Settings — *M*
+### 8.15 Recruiter - Settings - *M*
 - Same as candidate settings: editable name, change password, sign out; email/role read-only.
 
 ---
 
 ### 8.16 Interviews & Lifecycle
 
-**8.16.1 Scheduling** — *M*
+**8.16.1 Scheduling** - *M*
 - From a candidate's chat thread, **Schedule interview** opens a modal: date + time (required), duration (15/30/45/60 min), optional meeting link, optional notes. Reschedule reuses the same modal.
 
-**8.16.2 Status Pipeline** — *M*
+**8.16.2 Status Pipeline** - *M*
 
 | Stage | Meaning / Available Action |
 |---|---|
@@ -551,145 +551,145 @@ Two tabs: **Screening** and **Copilot**, with a job selector.
 | Rejected | Not selected after interview |
 | Cancelled | Cancelled by recruiter |
 
-**8.16.3 Candidate Actions** — *M*
+**8.16.3 Candidate Actions** - *M*
 - Accept / decline an interview; Join Room (internal) or Join Meeting (external link); accept/decline an offer.
 
-**8.16.4 Sync & Reminders** — *M*
+**8.16.4 Sync & Reminders** - *M*
 - Interview stage changes sync the application status and notify the other party.
 - One-time "upcoming interview" reminders to both parties for accepted interviews within 24 hours.
 
-**8.16.5 Interviews in the Inbox** — *S*
+**8.16.5 Interviews in the Inbox** - *S*
 - Interviews are surfaced as an **Interviews tab** inside the Inbox; selecting one opens the backing chat thread where a live interview card carries the actions. The old standalone interview pages redirect here.
 
 ---
 
-### 8.17 WebRTC Video Interview Room — *M*
+### 8.17 WebRTC Video Interview Room - *M*
 - Full-screen, dark-themed room with remote + local video tiles.
 - **Live media** via `getUserMedia`; **RTCPeerConnection** with Google STUN; **Supabase Realtime broadcast** signalling (no separate server).
-- **Connection status bar** — "Connected · MM:SS" timer, "Connecting…", or "Waiting for [name]…".
-- **Tiles** — participant name, role tag (You / Interviewer / Candidate), colour avatar when camera is off, mic-muted indicator.
-- **Controls** — microphone toggle, camera toggle, Leave call.
-- **Error handling** — graceful banner if camera/mic is denied; audio-only still works; self-view mirrored.
+- **Connection status bar** - "Connected · MM:SS" timer, "Connecting…", or "Waiting for [name]…".
+- **Tiles** - participant name, role tag (You / Interviewer / Candidate), colour avatar when camera is off, mic-muted indicator.
+- **Controls** - microphone toggle, camera toggle, Leave call.
+- **Error handling** - graceful banner if camera/mic is denied; audio-only still works; self-view mirrored.
 
 ---
 
 ### 8.18 Unified Inbox & Messaging
 
-One real-time inbox for **all** conversations — hiring threads and social DMs.
+One real-time inbox for **all** conversations - hiring threads and social DMs.
 
-**8.18.1 Conversation List & Tabs** — *M*
+**8.18.1 Conversation List & Tabs** - *M*
 - **Messages** and **Interviews** tabs.
 - List rows: other person's **photo + name** (avatar links to their profile), last-message preview, unread badge, relative time.
 
-**8.18.2 Message Anyone** — *M*
+**8.18.2 Message Anyone** - *M*
 - **New message** search finds any user; start a DM from a profile's **Message** button or by sharing a post.
-- Conversations are unified — a social DM and a hiring thread for the same pair map to one conversation.
+- Conversations are unified - a social DM and a hiring thread for the same pair map to one conversation.
 
-**8.18.3 Thread View** — *M*
+**8.18.3 Thread View** - *M*
 - Sent/received bubbles, timestamps, auto-scroll; the header avatar/name link to the other person's profile.
 - **Shared-post cards** render inline and link to the post.
 
-**8.18.4 Hiring Actions (recruiter↔candidate threads only)** — *M*
+**8.18.4 Hiring Actions (recruiter↔candidate threads only)** - *M*
 - Quick-actions: Schedule interview / Send offer / Reject; live **interview cards** with stage-aware buttons; concise system lines on each transition. Social DMs stay clean.
 
-**8.18.5 Real-time & Deep-linking** — *M*
+**8.18.5 Real-time & Deep-linking** - *M*
 - Instant delivery + read sync via Supabase Realtime; deep-links `?c=<conversationId>` and `?tab=interviews`.
 
-**8.18.6 Email Notifications** — *C*
+**8.18.6 Email Notifications** - *C*
 - Best-effort branded emails for new message / interview / offer / rejection events.
 
 ---
 
-### 8.19 Social — Public Profiles
+### 8.19 Social - Public Profiles
 
 Every user has an auto-generated `@username` and a public profile at `/u/<handle>`, rendered **inside the portal shell** (sidebar + topbar); a standalone shareable version also exists.
 
-**8.19.1 Profile Header** — *M*
+**8.19.1 Profile Header** - *M*
 - Clean header (no cover image): photo, name, role badge, headline, `@handle`, location, company (recruiters), **follower/following** counts (open list modals), and a bio.
 - Action buttons: **Follow / Unfollow**, **Message**, **Copy link**, **Report** (and **Edit profile** on your own).
 
-**8.19.2 60/40 Layout** — *M*
+**8.19.2 60/40 Layout** - *M*
 - Left (~60%): the user's **posts**.
-- Right (~40%): **details** — candidates show profile sections (skills, languages, projects, education, certifications, courses, awards, custom sections); **recruiters show a Company card** (name, industry, size, website, about), since recruiters manage company info rather than personal sections.
+- Right (~40%): **details** - candidates show profile sections (skills, languages, projects, education, certifications, courses, awards, custom sections); **recruiters show a Company card** (name, industry, size, website, about), since recruiters manage company info rather than personal sections.
 
-**8.19.3 Edit In Place (own profile)** — *S*
+**8.19.3 Edit In Place (own profile)** - *S*
 - Modal to edit name, headline, location, bio, and photo without leaving the page.
 
-**8.19.4 Reachability** — *S*
+**8.19.4 Reachability** - *S*
 - Profiles are reachable from search, the feed, "Who to follow", post authors, inbox avatars, and the sidebar user card.
 
 ---
 
-### 8.20 Social — Feed & Posts
+### 8.20 Social - Feed & Posts
 
-**8.20.1 Create Post** — *M*
+**8.20.1 Create Post** - *M*
 - Caption with **bold/italic** (markdown), one image, and/or one document; see [§8.2.2](#82-candidate--dashboard-feed--overview).
 
-**8.20.2 Post Rendering** — *M*
+**8.20.2 Post Rendering** - *M*
 - Markdown caption (bold/italic/links/lists); image; **document chip** (download/open); reposts embed the original inline; relative timestamps; role badge.
 
-**8.20.3 Like** — *M*
+**8.20.3 Like** - *M*
 - Optimistic toggle with a maroon-red gradient heart; like count.
 
-**8.20.4 Comment** — *M*
+**8.20.4 Comment** - *M*
 - Expandable thread; add comments (Enter to send); delete own comments (post author may delete any comment on their post); comment count.
 
-**8.20.5 Repost** — *S*
+**8.20.5 Repost** - *S*
 - Repost with an optional quote; reposting a repost targets the original; the original author is notified.
 
-**8.20.6 Share** — *S*
+**8.20.6 Share** - *S*
 - Share menu: **Copy link** (permalink `/post/<id>`) or **Send in a message** (search a recipient → lands as a shared-post card in their inbox, with an optional note).
 
-**8.20.7 Manage Own Post** — *M*
+**8.20.7 Manage Own Post** - *M*
 - **Edit** (bold/italic toolbar) and **Delete** via the post's ⋯ menu.
 
-**8.20.8 Permalink Page** — *S*
+**8.20.8 Permalink Page** - *S*
 - A standalone single-post page (`/post/<id>`) for sharing, with the post and its comments expanded.
 
 ---
 
-### 8.21 Social — Follow Graph & Discovery
+### 8.21 Social - Follow Graph & Discovery
 
-**8.21.1 Follow / Unfollow** — *M*
+**8.21.1 Follow / Unfollow** - *M*
 - Follow any user; followers/following are public and open in a list modal; a **new-follower** notification is sent.
 
-**8.21.2 People Search** — *S*
+**8.21.2 People Search** - *S*
 - Search by name / handle / company from the dashboard with a live dropdown.
 
-**8.21.3 Who to Follow** — *S*
+**8.21.3 Who to Follow** - *S*
 - Suggested users (excludes those already followed), shown on the dashboard.
 
-**8.21.4 Trending** — *S*
+**8.21.4 Trending** - *S*
 - A feed tab surfacing the most-engaged posts (likes + comments) of the last 30 days.
 
 ---
 
-### 8.22 Social — Moderation
+### 8.22 Social - Moderation
 
-**8.22.1 Report** — *S*
+**8.22.1 Report** - *S*
 - Report a **post**, **comment**, or **profile** with a reason (Spam / Harassment / Inappropriate / Misinformation / Scam / Other) and optional details.
 - One report per target per user (re-reporting is a friendly no-op); reports are stored for service-role review.
 
-**8.22.2 Hide Post** — *C*
+**8.22.2 Hide Post** - *C*
 - Locally hide a post from your own feed.
 
-**8.22.3 Visibility Model** — *M*
+**8.22.3 Visibility Model** - *M*
 - Logged-in-only visibility; logged-out visitors are redirected to sign in. Private fields (email/phone/DOB) are never exposed.
 
 ---
 
 ### 8.23 Notifications System
 
-**8.23.1 Types** — *M*
-- applied, status update, interview, offer, **message**, **new follower**, **like**, **comment**, **repost** — each with a distinct icon/colour.
+**8.23.1 Types** - *M*
+- applied, status update, interview, offer, **message**, **new follower**, **like**, **comment**, **repost** - each with a distinct icon/colour.
 
-**8.23.2 Generation** — *M*
+**8.23.2 Generation** - *M*
 - Created by database triggers on the relevant events (apply, status change, interview lifecycle, new chat message, follow, like, comment, repost); de-duplicated where multiple triggers could overlap.
 
-**8.23.3 Bell & Page** — *M*
+**8.23.3 Bell & Page** - *M*
 - Topbar **bell** with a real-time unread badge; a full notifications page with All/Unread/Read filters, mark-one/mark-all read, delete, and click-to-navigate.
 
-### 8.24 Transactional Emails — *C*
+### 8.24 Transactional Emails - *C*
 - Branded emails for: signup OTP, password reset, application confirmation, and inbox events (new message / interview / offer / rejection). All inbox/application emails are best-effort and never block the in-app action.
 
 ---
@@ -707,7 +707,7 @@ Every user has an auto-generated `@username` and a public profile at `/u/<handle
 - **US-9:** *As any user,* I want to share a post or job with my network via link or DM.
 - **US-10:** *As any user,* I want to report inappropriate content so the platform stays professional.
 
-**Sample use case — Apply to a job**
+**Sample use case - Apply to a job**
 1. Candidate opens Browse Jobs and filters by skill/location. 2. Opens a job's detail modal and reviews the match. 3. Clicks Apply, picks a CV in the picker, sends. 4. The system snapshots the CV, computes a match score, records the application, emails a confirmation, and notifies the recruiter. 5. The candidate sees the application under My Applications with status "Applied".
 
 ---
@@ -765,7 +765,7 @@ SmartHire AI is a **single Next.js (App Router) application** with role-based ro
 |---|---|
 | Frontend | Next.js 16 (App Router, Turbopack), React 19, TypeScript 5.7 |
 | Styling | Tailwind CSS v4, Material Symbols, Inter + Sora fonts |
-| Backend / DB | Supabase — PostgreSQL, Row-Level Security, Auth, Storage, Realtime |
+| Backend / DB | Supabase - PostgreSQL, Row-Level Security, Auth, Storage, Realtime |
 | AI | Google Gemini (`gemini-2.5-flash`, structured JSON output, streaming) |
 | Video | WebRTC (browser-native P2P) + Supabase Realtime signalling + Google STUN |
 | Email | Nodemailer over SMTP |
@@ -815,15 +815,15 @@ SmartHire AI is a **single Next.js (App Router) application** with role-based ro
 - Privileged cross-user operations use **SECURITY DEFINER** functions (conversation creation, follow/notification triggers, count maintenance).
 
 ### 12.4 Storage Buckets
-- **avatars** — profile + company photos (public read, owner write).
-- **post-media** — feed images + documents (public read, owner write).
+- **avatars** - profile + company photos (public read, owner write).
+- **post-media** - feed images + documents (public read, owner write).
 
 ---
 
 ## 13. AI Integration
 
 - **Providers:** Google Gemini (free tier) is the primary AI provider for document and screening features, invoked only from server-side route handlers. The conversational recruiter copilot is served via the Anthropic SDK (Claude), also server-side only.
-- **Use cases:** CV generation (structured JSON: content, ATS score, breakdown, suggestions, missing keywords), cover letters, interview coach (streaming), applicant ranking (structured), interview kits (structured), job-description drafting, outreach email drafting — all via Gemini. Recruiter copilot (multi-turn streaming chat) — via Anthropic SDK.
+- **Use cases:** CV generation (structured JSON: content, ATS score, breakdown, suggestions, missing keywords), cover letters, interview coach (streaming), applicant ranking (structured), interview kits (structured), job-description drafting, outreach email drafting - all via Gemini. Recruiter copilot (multi-turn streaming chat) - via Anthropic SDK.
 - **Structured output:** JSON-schema-constrained responses for deterministic parsing.
 - **Resilience:** multiple API keys with automatic rotation/fallback on quota (HTTP 429) and model fallback.
 - **Privacy:** prompts are built only from the requesting user's authorized data; keys never reach the client.
@@ -835,7 +835,7 @@ SmartHire AI is a **single Next.js (App Router) application** with role-based ro
 | Service | Purpose | Notes |
 |---|---|---|
 | Supabase | DB, Auth, Storage, Realtime | Core backend |
-| Google Gemini | Primary AI provider — documents, screening, structured output | Server-side only |
+| Google Gemini | Primary AI provider - documents, screening, structured output | Server-side only |
 | Anthropic (Claude) | Recruiter copilot (conversational) | Server-side only |
 | Google OAuth | Social sign-in | Optional |
 | SMTP (e.g. Gmail) | Transactional emails | Best-effort; app works without it |
@@ -963,7 +963,7 @@ The application is deployed via Vercel's native Next.js build pipeline, with the
 
 ### 21.6 Quality Assurance Methodology
 
-A claimed-versus-actual verification practice is applied throughout development: Must-have requirements are audited against the live codebase — confirming implementation at the file level, verifying zero TypeScript compiler errors (`npx tsc --noEmit`), and performing manual end-to-end checks — rather than assumed from documentation. This keeps the specification continuously aligned with the implemented system.
+A claimed-versus-actual verification practice is applied throughout development: Must-have requirements are audited against the live codebase - confirming implementation at the file level, verifying zero TypeScript compiler errors (`npx tsc --noEmit`), and performing manual end-to-end checks - rather than assumed from documentation. This keeps the specification continuously aligned with the implemented system.
 
 ### 21.7 Linting
 
@@ -990,11 +990,11 @@ An ESLint lint stage is wired into the CI pipeline. Full ESLint rule integration
 ### 23.1 Team
 | Contributor | Project |
 |---|---|
-| **Shanza Iftikhar** | SmartHire AI — Final Year Project |
-| **Zayyam Siddiqui** | SmartHire AI — Final Year Project |
-| **Sufiyan Khan** | SmartHire AI — Final Year Project |
+| **Shanza Iftikhar** | SmartHire AI - Final Year Project |
+| **Zayyam Siddiqui** | SmartHire AI - Final Year Project |
+| **Sufiyan Khan** | SmartHire AI - Final Year Project |
 
-**Institution:** University of Karachi — **UBIT** (Department of Computer Science).
+**Institution:** University of Karachi - **UBIT** (Department of Computer Science).
 
 ### 23.2 Development Methodology
 The project followed an **iterative, incremental** approach: requirements and design first, then feature modules delivered and integrated in phases, each verified by type-checking and a successful production build before moving on.
@@ -1005,7 +1005,7 @@ The project followed an **iterative, incremental** approach: requirements and de
 | 2 | Authentication, candidate profile builder, AI CV + cover-letter generator |
 | 3 | Jobs, applications, and the recruiter portal (jobs, applicants, AI screening, analytics, company profile) |
 | 4 | Interview lifecycle, WebRTC video room, and the messaging inbox |
-| 5 | Social layer — public profiles, feed, follows, posts, likes/comments/reposts/shares, and moderation |
+| 5 | Social layer - public profiles, feed, follows, posts, likes/comments/reposts/shares, and moderation |
 | 6 | Merged dashboards, profile redesign, unified inbox, polish, testing, deployment, and documentation |
 
 ---
@@ -1052,4 +1052,4 @@ The project followed an **iterative, incremental** approach: requirements and de
 
 ---
 
-*End of document — SmartHire AI PRD v1.0.*
+*End of document - SmartHire AI PRD v1.0.*

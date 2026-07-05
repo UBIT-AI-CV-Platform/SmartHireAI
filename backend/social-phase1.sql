@@ -1,5 +1,5 @@
 -- ============================================================================
---  SmartHireAI — SOCIAL LAYER · PHASE 1
+--  SmartHireAI - SOCIAL LAYER · PHASE 1
 --  Public profiles · usernames · headline · follow / followers
 --
 --  How to apply:
@@ -42,7 +42,7 @@ begin
 end; $$;
 
 -- Backfill handles for every existing profile that doesn't have one yet. Looped
--- row-by-row so each gen_username call sees handles assigned by earlier rows — a
+-- row-by-row so each gen_username call sees handles assigned by earlier rows - a
 -- single bulk UPDATE would let two identical names collide on the unique index.
 do $$
 declare r record;
@@ -74,7 +74,7 @@ begin
 end; $$;
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 2) FOLLOWS — directional follower graph
+-- 2) FOLLOWS - directional follower graph
 -- ────────────────────────────────────────────────────────────────────────────
 create table if not exists public.follows (
   follower_id  uuid not null references public.profiles(id) on delete cascade,
@@ -138,11 +138,11 @@ begin
 end $$;
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 4) public_profiles VIEW — the SAFE public face of a profile
+-- 4) public_profiles VIEW - the SAFE public face of a profile
 --   profiles stays owner-only (email / phone / dob never leak). This view
 --   bypasses that RLS (security_invoker = off) but exposes ONLY safe columns,
 --   and is granted to signed-in users only (revoked from anon).
---   NOTE: Supabase's advisor will flag this as a "security definer view" — that
+--   NOTE: Supabase's advisor will flag this as a "security definer view" - that
 --   is intentional here; it is how we expose column-limited public data.
 -- ────────────────────────────────────────────────────────────────────────────
 drop view if exists public.public_profiles;

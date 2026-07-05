@@ -111,14 +111,14 @@ You will be given a candidate's profile data, a target role, a tone, and optiona
 
 CONTENT RULES:
 - Be truthful. Use ONLY the information in the profile. Never invent employers, dates, degrees, or achievements.
-- If the candidate has no formal work experience, build the "experience" section from their PROJECTS — turn each project into an entry with strong, quantified, action-verb bullet points (role can be "Project", organization can be the project name or "Personal Project").
+- If the candidate has no formal work experience, build the "experience" section from their PROJECTS - turn each project into an entry with strong, quantified, action-verb bullet points (role can be "Project", organization can be the project name or "Personal Project").
 - Rewrite the professional summary to be confident and tailored to the target role using relevant keywords.
 - Use strong action verbs and measurable impact where the profile supports it (do NOT fabricate numbers).
 - "skills" should be the most relevant skills for the target role, ordered by relevance.
-- experience "period": use the candidate's real dates if present. If a date/year is NOT in the profile, leave "period" as an EMPTY STRING "" — never write "Date not specified", "N/A", or "Present" unless the profile actually says so.
-- certifications, courses, awards: you MUST include EVERY item the candidate listed in the profile — never drop or skip any of them. Each is an object { name, issuer/provider, date }; copy the name accurately and use issuer/provider/date only if present (else empty string). Do NOT invent issuers or dates.
-- Do NOT output a contact section — it is filled in separately from the verified profile.
-- custom_sections: if the candidate provided custom sections, include them in "custom_sections" — keep each heading, and turn each entry into { title, description } with polished wording (never invent entries).
+- experience "period": use the candidate's real dates if present. If a date/year is NOT in the profile, leave "period" as an EMPTY STRING "" - never write "Date not specified", "N/A", or "Present" unless the profile actually says so.
+- certifications, courses, awards: you MUST include EVERY item the candidate listed in the profile - never drop or skip any of them. Each is an object { name, issuer/provider, date }; copy the name accurately and use issuer/provider/date only if present (else empty string). Do NOT invent issuers or dates.
+- Do NOT output a contact section - it is filled in separately from the verified profile.
+- custom_sections: if the candidate provided custom sections, include them in "custom_sections" - keep each heading, and turn each entry into { title, description } with polished wording (never invent entries).
 - If a TARGET JOB DESCRIPTION is provided: tailor the summary, skills ordering, and bullet wording to match it, naturally weaving in the job's important keywords that the candidate genuinely has.
 
 JOB-MATCH RULES (only when a job description is provided):
@@ -127,20 +127,22 @@ JOB-MATCH RULES (only when a job description is provided):
 - Follow the TONE: Professional = balanced & polished; Concise = short, punchy bullets; Detailed = thorough with context; Creative = lively, distinctive wording; Technical = emphasize tools/stack/metrics; Academic = formal, research/education-focused.
 - If custom instructions are provided, follow them as long as they don't require fabricating information.
 
-SCORING RULES (be authentic and realistic — most student CVs score 55-80):
+SCORING RULES (be authentic and realistic - most student CVs score 55-80):
 - ats_score: overall integer 0-100.
 - ats_summary: 1-2 sentences explaining the overall score in plain English (what's strong, what's holding it back).
 - ats_breakdown: exactly these 5 categories, each with an integer score 0-100 and a short plain-English note (one sentence):
-  1. "Keyword Match" — how well skills/wording align with the target role.
-  2. "Impact & Metrics" — presence of quantified, results-driven bullets.
-  3. "Completeness" — are all key sections (summary, experience/projects, education, skills) filled and substantial.
-  4. "Clarity & Formatting" — readability, action verbs, ATS-friendly structure.
-  5. "Role Relevance" — how closely the overall profile fits the target role.
+  1. "Keyword Match" - how well skills/wording align with the target role.
+  2. "Impact & Metrics" - presence of quantified, results-driven bullets.
+  3. "Completeness" - are all key sections (summary, experience/projects, education, skills) filled and substantial.
+  4. "Clarity & Formatting" - readability, action verbs, ATS-friendly structure.
+  5. "Role Relevance" - how closely the overall profile fits the target role.
 
 SUGGESTIONS RULES:
 - Provide exactly 3 suggestions.
 - Each suggestion must be a clear, complete sentence a student can act on immediately. Be specific to THIS candidate's CV.
-- Do NOT use cryptic placeholders. If you give an example, make it concrete and self-explanatory.`
+- Do NOT use cryptic placeholders. If you give an example, make it concrete and self-explanatory.
+
+WRITING STYLE: Never use em-dash or en-dash characters anywhere in your output (summary, bullet points, suggestions, or any text field). Use a comma, a period, or a spaced hyphen ( - ) instead.`
 
 function buildProfileText(p: Record<string, unknown>, sections: Record<string, unknown[]>) {
   const lines: string[] = []

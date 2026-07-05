@@ -1,5 +1,8 @@
 'use client';
 
+import { Icon } from '@/components/ui/icon';
+import BrandLogo from '@/components/shared/BrandLogo';
+
 export default function BrandingSide() {
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center p-6 md:p-8 lg:p-12 text-center overflow-hidden bg-gradient-to-br from-blue-50 via-purple-50 to-blue-50 dark:from-[#1c1c1e] dark:via-[#241d36] dark:to-[#1c1c1e]">
@@ -12,21 +15,8 @@ export default function BrandingSide() {
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center max-w-xs md:max-w-sm lg:max-w-md">
         {/* Logo */}
-        <div className="mb-6 flex items-center gap-2 auth-pop">
-          <div className="w-12 h-12 bg-gradient-to-br from-[#4f46e5] to-[#3525cd] rounded-2xl flex items-center justify-center text-white shadow-lg">
-            <span
-              className="material-symbols-outlined text-3xl"
-              style={{ fontVariationSettings: '"FILL" 1' }}
-            >
-              auto_awesome
-            </span>
-          </div>
-          <div className="flex flex-col gap-0.5 text-left">
-            <div className="text-2xl font-bold tracking-tight">
-              <span className="text-slate-900 dark:text-slate-100">SmartHire</span>
-              <span className="text-primary ml-1">AI</span>
-            </div>
-          </div>
+        <div className="mb-6 auth-pop">
+          <BrandLogo size={44} />
         </div>
 
         {/* Heading */}
@@ -65,7 +55,7 @@ function FeatureBox({ icon, title, description, bgColor, iconColor, delay }: Fea
       style={{ animationDelay: delay }}
       className={`auth-pop flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl ${bgColor} border border-indigo-200/40 dark:border-white/10 transition-all duration-300 hover:shadow-md hover:-translate-y-1 group cursor-pointer`}
     >
-      <span className={`material-symbols-outlined text-2xl md:text-3xl ${iconColor} transition-transform duration-300 group-hover:scale-125`}>{icon}</span>
+      <Icon name={icon} className={`text-2xl md:text-3xl ${iconColor} transition-transform duration-300 group-hover:scale-125`} />
       <p className="text-xs md:text-sm font-bold text-slate-900 dark:text-slate-100 text-center">{title}</p>
       <p className="text-[10px] md:text-xs text-slate-600 dark:text-slate-300 text-center">{description}</p>
     </div>

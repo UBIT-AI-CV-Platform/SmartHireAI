@@ -12,17 +12,20 @@ export default function SiteLoader() {
   const [leaving, setLeaving] = useState(false)
 
   useEffect(() => {
-    // Already greeted this session → don't show again (hide before paint settles).
+    const reveal = () => document.documentElement.classList.add('splash-done')
+    // Already greeted this session → don't show again; let entrances play at once.
     if (sessionStorage.getItem('shai_splash') === '1') {
       setShow(false)
+      reveal()
       return
     }
     const dismiss = () => {
       setLeaving(true)
+      reveal() // start the page's on-load animations as the splash fades away
       sessionStorage.setItem('shai_splash', '1')
       window.setTimeout(() => setShow(false), 650)
     }
-    const t = window.setTimeout(dismiss, 1900)
+    const t = window.setTimeout(dismiss, 5000)
     return () => window.clearTimeout(t)
   }, [])
 
@@ -31,36 +34,25 @@ export default function SiteLoader() {
   const skip = () => {
     if (leaving) return
     setLeaving(true)
+    document.documentElement.classList.add('splash-done')
     sessionStorage.setItem('shai_splash', '1')
     window.setTimeout(() => setShow(false), 650)
   }
 
   return (
     <div className={`site-loader ${leaving ? 'site-loader--leaving' : ''}`} onClick={skip} role="status" aria-label="Loading SmartHire AI">
-      <div className="site-loader__bg" />
-
-      <div className="relative flex flex-col items-center gap-7">
-        {/* Logo mark with glow + orbiting dots */}
-        <div className="relative w-28 h-28 flex items-center justify-center">
-          <span className="loader-glow" />
-          <span className="loader-ring" />
-          <span className="loader-orbit">
-            <span className="loader-dot" />
-            <span className="loader-dot loader-dot--2" />
-            <span className="loader-dot loader-dot--3" />
-          </span>
-          <div className="relative w-16 h-16 rounded-2xl premium-gradient flex items-center justify-center text-white shadow-2xl loader-badge">
-            <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+      <div className="flex flex-col items-center gap-6">
+        {/* Logo badge inside a rotating gradient ring */}
+        <div className="loader-mark">
+          <span className="loader-spinner" />
+          <div className="loader-logo">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-icon.png" alt="" aria-hidden="true" draggable={false} className="w-7 h-7 select-none" style={{ filter: 'brightness(0) invert(1)' }} />
           </div>
         </div>
 
-        {/* Wordmark with shimmer sweep */}
-        <div className="loader-wordmark text-2xl md:text-3xl font-black tracking-tight">SmartHire AI</div>
-
-        {/* Indeterminate progress */}
-        <div className="loader-track"><span className="loader-fill" /></div>
-
-        <p className="text-[11px] font-medium tracking-wide text-white/40">Preparing your workspace…</p>
+        {/* Wordmark */}
+        <div className="loader-wordmark text-lg md:text-xl">SmartHire AI</div>
       </div>
     </div>
   )

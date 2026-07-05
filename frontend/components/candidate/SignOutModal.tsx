@@ -1,5 +1,7 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
+
 interface SignOutModalProps {
   open: boolean
   onCancel: () => void
@@ -21,7 +23,7 @@ export default function SignOutModal({ open, onCancel, onConfirm, loading }: Sig
       {/* Card */}
       <div className="relative z-10 w-full max-w-sm bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl p-6 text-center auth-pop">
         <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center">
-          <span className="material-symbols-outlined text-red-500 text-3xl">logout</span>
+          <Icon name="logout" className="text-red-500 text-3xl" />
         </div>
         <h3 className="text-lg font-bold text-on-surface mb-1">Sign out?</h3>
         <p className="text-sm text-on-surface-variant mb-6">

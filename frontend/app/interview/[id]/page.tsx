@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import ThemeToggle from '@/components/shared/ThemeToggle'
+import { Icon } from '@/components/ui/icon'
 
 type Interview = {
   id: string; job_title: string | null; candidate_name: string | null
@@ -103,14 +104,14 @@ export default function InterviewRoomPage() {
     }
 
     const setup = async () => {
-      // 1) local media (best-effort — room still works audio/placeholder if denied)
+      // 1) local media (best-effort - room still works audio/placeholder if denied)
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
         if (cancelled) { stream.getTracks().forEach((t) => t.stop()); return }
         localStreamRef.current = stream
         if (localVideoRef.current) localVideoRef.current.srcObject = stream
       } catch {
-        setMediaError('We couldn’t access your camera/mic. Check browser permissions — you can still see the other participant.')
+        setMediaError('We couldn’t access your camera/mic. Check browser permissions - you can still see the other participant.')
       }
       if (cancelled) return
 
@@ -191,9 +192,9 @@ export default function InterviewRoomPage() {
   if (denied || !iv) {
     return (
       <div className="min-h-screen bg-[#0d0d12] flex flex-col items-center justify-center text-center p-6">
-        <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center text-white mb-5"><span className="material-symbols-outlined text-3xl">lock</span></div>
+        <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center text-white mb-5"><Icon name="lock" className="text-3xl" /></div>
         <h1 className="text-xl font-bold text-white mb-2">Room not available</h1>
-        <p className="text-white/60 text-sm max-w-sm mb-5">This interview room doesn’t exist or you don’t have access to it.</p>
+        <p className="text-white/60 text-sm max-w-sm mb-5">This interview room doesn't exist or you don't have access to it.</p>
         <Link href="/" className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm">Go home</Link>
       </div>
     )
@@ -204,7 +205,7 @@ export default function InterviewRoomPage() {
       {/* Top bar */}
       <header className="flex items-center justify-between px-4 md:px-6 h-16 border-b border-white/10 flex-shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 premium-gradient rounded-lg flex items-center justify-center text-white flex-shrink-0"><span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>videocam</span></div>
+          <div className="w-9 h-9 premium-gradient rounded-lg flex items-center justify-center text-white flex-shrink-0"><Icon name="videocam" className="text-base" solid /></div>
           <div className="min-w-0">
             <p className="text-sm font-bold text-white truncate">{iv.job_title || 'Interview'}</p>
             <p className="text-[11px] text-white/50">{fmtWhen(iv.scheduled_at)} · {iv.duration_min} min</p>
@@ -213,13 +214,13 @@ export default function InterviewRoomPage() {
         <div className="flex items-center gap-2">
           <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 text-white/80 text-xs font-bold"><span className={`w-2 h-2 rounded-full ${connState === 'connected' ? 'bg-green-400' : 'bg-amber-400 animate-pulse'}`} />{statusText}</span>
           <ThemeToggle className="h-9 w-9 rounded-full flex items-center justify-center bg-white/10 text-white hover:bg-white/20 transition-colors" />
-          <Link href={backHref} className="px-3 py-2 rounded-xl bg-white/10 text-white font-bold text-xs hover:bg-white/20 transition-colors flex items-center gap-1.5"><span className="material-symbols-outlined text-base">close</span>Leave</Link>
+          <Link href={backHref} className="px-3 py-2 rounded-xl bg-white/10 text-white font-bold text-xs hover:bg-white/20 transition-colors flex items-center gap-1.5"><Icon name="close" className="text-base" />Leave</Link>
         </div>
       </header>
 
       {mediaError && (
         <div className="px-4 md:px-6 pt-3 flex-shrink-0">
-          <div className="max-w-3xl mx-auto flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-200 text-xs"><span className="material-symbols-outlined text-base">videocam_off</span>{mediaError}</div>
+          <div className="max-w-3xl mx-auto flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-200 text-xs"><Icon name="videocam_off" className="text-base" />{mediaError}</div>
         </div>
       )}
 
@@ -240,7 +241,7 @@ export default function InterviewRoomPage() {
         <div className="flex items-center justify-center gap-3">
           <Ctrl on={micOn} onClick={toggleMic} onIcon="mic" offIcon="mic_off" />
           <Ctrl on={camOn} onClick={toggleCam} onIcon="videocam" offIcon="videocam_off" />
-          <Link href={backHref} className="w-14 h-12 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors" title="Leave"><span className="material-symbols-outlined">call_end</span></Link>
+          <Link href={backHref} className="w-14 h-12 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors" title="Leave"><Icon name="call_end" /></Link>
         </div>
       </footer>
     </div>
@@ -255,13 +256,13 @@ function Tile({ name, tag, muted, camOff, waiting, waitLabel, children }: { name
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
           <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white text-4xl font-black">{initial(name)}</div>
           {waiting && <p className="text-white/50 text-xs font-semibold">{waitLabel}</p>}
-          {camOff && !waiting && <span className="material-symbols-outlined text-white/40 text-2xl">videocam_off</span>}
+          {camOff && !waiting && <Icon name="videocam_off" className="text-white/40 text-2xl" />}
         </div>
       )}
       <div className="absolute bottom-3 left-3 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 backdrop-blur">
         <span className="text-sm font-bold text-white">{name}</span>
         <span className="text-[10px] font-bold text-white/60 uppercase tracking-wide">{tag}</span>
-        {muted && <span className="material-symbols-outlined text-red-400 text-base">mic_off</span>}
+        {muted && <Icon name="mic_off" className="text-red-400 text-base" />}
       </div>
     </div>
   )
@@ -270,7 +271,7 @@ function Tile({ name, tag, muted, camOff, waiting, waitLabel, children }: { name
 function Ctrl({ on, onClick, onIcon, offIcon }: { on: boolean; onClick: () => void; onIcon: string; offIcon: string }) {
   return (
     <button onClick={onClick} className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${on ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-red-500 text-white hover:bg-red-600'}`}>
-      <span className="material-symbols-outlined">{on ? onIcon : offIcon}</span>
+      <Icon name={on ? onIcon : offIcon} />
     </button>
   )
 }

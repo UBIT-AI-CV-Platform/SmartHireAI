@@ -1,5 +1,5 @@
 -- ============================================================================
---  SmartHireAI — SOCIAL SEED (dummy posts / jobs / profile details)
+--  SmartHireAI - SOCIAL SEED (dummy posts / jobs / profile details)
 --  Fills a lively feed for WHOEVER is already registered in your DB.
 --
 --  How to apply: Supabase → SQL Editor → New query → paste → Run.
@@ -11,7 +11,7 @@
 -- ============================================================================
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 1) PROFILE DETAILS — headline / location / summary (only where empty)
+-- 1) PROFILE DETAILS - headline / location / summary (only where empty)
 -- ────────────────────────────────────────────────────────────────────────────
 update public.profiles p set
   location = coalesce(nullif(trim(p.location), ''),
@@ -27,7 +27,7 @@ where p.headline is null or trim(p.headline) = '';
 update public.profiles p set
   summary = coalesce(nullif(trim(p.summary), ''),
     case when p.role = 'recruiter'
-      then 'Helping great people find great teams. I hire across engineering, product and design — always happy to connect with talent building cool things.'
+      then 'Helping great people find great teams. I hire across engineering, product and design - always happy to connect with talent building cool things.'
       else (array[
         'Passionate developer who loves turning ideas into clean, reliable products. Always learning, always shipping.',
         'Software engineer focused on building delightful user experiences and writing maintainable code.',
@@ -45,7 +45,7 @@ update public.profiles p set
 where p.role = 'recruiter' and (p.company_name is null or trim(p.company_name) = '');
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 2) CANDIDATE SECTIONS — skills / education / projects (only if they have none)
+-- 2) CANDIDATE SECTIONS - skills / education / projects (only if they have none)
 -- ────────────────────────────────────────────────────────────────────────────
 insert into public.skills (profile_id, name)
 select p.id, x.name
@@ -75,12 +75,12 @@ cross join (values
 ) as x(name, descr, link)
 where p.role = 'candidate' and not exists (select 1 from public.projects pr where pr.profile_id = p.id);
 
--- NOTE: recruiters do NOT get skills/education/projects/etc. — they have no UI to
+-- NOTE: recruiters do NOT get skills/education/projects/etc. - they have no UI to
 -- manage those. A recruiter's public profile shows their Company details instead
 -- (set above + on the Company Profile page).
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 3) DUMMY JOBS — a few per recruiter (only recruiters with < 2 jobs)
+-- 3) DUMMY JOBS - a few per recruiter (only recruiters with < 2 jobs)
 -- ────────────────────────────────────────────────────────────────────────────
 insert into public.jobs (recruiter_id, title, company, location, description, salary, skills, is_open, expires_at, created_at)
 select r.id, j.title,
@@ -99,7 +99,7 @@ cross join (values
 where r.role = 'recruiter' and (select count(*) from public.jobs jb where jb.recruiter_id = r.id) < 2;
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 4) DUMMY POSTS — varied (thoughts / image / CV / document), past timings.
+-- 4) DUMMY POSTS - varied (thoughts / image / CV / document), past timings.
 --    Only seed users who currently have NO posts, so your real test posts stay.
 --    image_url uses picsum.photos (seeded per row); file_url uses public sample PDFs.
 -- ────────────────────────────────────────────────────────────────────────────
@@ -117,7 +117,7 @@ from public.profiles p
 cross join (values
   (1, 'text',  E'Excited to share that I just shipped a side project this weekend! 🚀\n\nLearned a ton about performance and clean architecture along the way. **Always be building.**'),
   (2, 'text',  E'Open to new opportunities! 👀\n\nIf your team is hiring frontend or full-stack engineers, I''d love to connect. *Remote or on-site both work for me.*'),
-  (3, 'cv',    'Just refreshed my CV — feedback welcome, and feel free to share with anyone hiring. 📄'),
+  (3, 'cv',    'Just refreshed my CV - feedback welcome, and feel free to share with anyone hiring. 📄'),
   (4, 'image', 'Late-night coding sessions hit different ☕💻'),
   (5, 'text',  E'3 things that made me a better engineer this year:\n\n1. Reading other people''s code\n2. Writing tests *first*\n3. Asking "why" before "how"'),
   (6, 'doc',   'Put together a small portfolio doc of my recent work. Take a look! 👇'),
@@ -137,9 +137,9 @@ from public.profiles p
 cross join (values
   (1, 'text',  E'We''re hiring! 🚀\n\nLooking for **frontend and backend engineers** to join our growing team. DM me or check the jobs tab if you''re interested.'),
   (2, 'text',  E'A quick tip for candidates: tailor your CV to the role. A focused, relevant CV beats a long generic one *every single time.*'),
-  (3, 'image', 'Great energy at the office today — proud of this team 💜'),
+  (3, 'image', 'Great energy at the office today - proud of this team 💜'),
   (4, 'doc',   'Sharing our hiring guide so candidates know exactly what to expect in our process. Transparency matters. 📄'),
-  (5, 'text',  E'What we look for isn''t just skills — it''s curiosity, ownership, and the willingness to learn. Skills can be taught. Attitude is everything.')
+  (5, 'text',  E'What we look for isn''t just skills - it''s curiosity, ownership, and the willingness to learn. Skills can be taught. Attitude is everything.')
 ) as t(ord, kind, content)
 where p.role = 'recruiter' and not exists (select 1 from public.posts po where po.author_id = p.id);
 

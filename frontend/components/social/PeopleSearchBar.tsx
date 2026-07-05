@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useProfileLink } from '@/lib/useProfileLink'
 import { initials, type PublicProfile } from '@/lib/social'
+import { Icon } from '@/components/ui/icon'
 
 /** Top-of-dashboard people search with a live results dropdown. */
 export default function PeopleSearchBar() {
@@ -36,7 +37,7 @@ export default function PeopleSearchBar() {
 
   return (
     <div className="relative">
-      <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+      <Icon name="search" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]" />
       <input
         value={q}
         onChange={(e) => search(e.target.value)}

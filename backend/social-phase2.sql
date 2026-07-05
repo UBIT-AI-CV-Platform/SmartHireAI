@@ -1,5 +1,5 @@
 -- ============================================================================
---  SmartHireAI — SOCIAL LAYER · PHASE 2
+--  SmartHireAI - SOCIAL LAYER · PHASE 2
 --  Feed · posts (text + image) · likes · comments
 --
 --  How to apply: Supabase → SQL Editor → New query → paste → Run.
@@ -8,7 +8,7 @@
 -- ============================================================================
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 1) POSTS — author fields are denormalised (same pattern as cv_snapshot /
+-- 1) POSTS - author fields are denormalised (same pattern as cv_snapshot /
 --    conversations) so the feed renders without reading owner-only profiles.
 -- ────────────────────────────────────────────────────────────────────────────
 create table if not exists public.posts (
@@ -148,7 +148,7 @@ drop trigger if exists post_comments_del on public.post_comments;
 create trigger post_comments_del after delete on public.post_comments for each row execute function public.handle_post_comment_del();
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 4) STORAGE — post-media bucket (feed images). Public read, owner-only write.
+-- 4) STORAGE - post-media bucket (feed images). Public read, owner-only write.
 -- ────────────────────────────────────────────────────────────────────────────
 insert into storage.buckets (id, name, public)
 values ('post-media', 'post-media', true)

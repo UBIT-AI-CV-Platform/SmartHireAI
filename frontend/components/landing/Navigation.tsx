@@ -3,11 +3,14 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import ThemeToggle from '@/components/shared/ThemeToggle'
+import { Icon } from '@/components/ui/icon'
+import BrandLogo from '@/components/shared/BrandLogo'
 
 export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
   const [dashboardHref, setDashboardHref] = useState('/auth')
+  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -23,6 +26,14 @@ export default function Navigation() {
     })
   }, [])
 
+  // Glassmorphism kicks in once the user scrolls away from the hero.
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   const toggleMobileMenu = () => {
     if (mobileMenuOpen) {
       setIsClosing(true)
@@ -35,123 +46,97 @@ export default function Navigation() {
     }
   }
 
+  const scrollToId = (id: string) => (e: React.MouseEvent) => {
+    e.preventDefault()
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    setMobileMenuOpen(false)
+  }
+
+  const links: { label: string; href?: string; onClick?: (e: React.MouseEvent) => void }[] = [
+    { label: 'Dashboard', href: dashboardHref },
+    { label: 'Features', href: '#features', onClick: scrollToId('features') },
+    { label: 'How It Works', href: '#how-it-works', onClick: scrollToId('how-it-works') },
+    { label: 'For Candidates', href: dashboardHref },
+    { label: 'For Recruiters', href: dashboardHref },
+    { label: 'FAQ', href: '#faq', onClick: scrollToId('faq') },
+  ]
+
   return (
-    <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-white dark:bg-[#1c1c1e] border border-slate-200 dark:border-white/10 transition-all duration-300 rounded-2xl shadow-lg w-11/12 max-w-6xl">
-      <div className="flex justify-between items-center px-3 sm:px-4 md:px-8 py-3.5 w-full">
-        {/* Logo */}
-        <div className="text-xl font-bold tracking-tight shrink-0">
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="w-8 h-8 md:w-10 md:h-10 premium-gradient rounded-lg md:rounded-xl flex items-center justify-center text-white shadow-lg">
-              <span className="material-symbols-outlined text-sm md:text-base" style={{ fontVariationSettings: '"FILL" 1' }}>
-                auto_awesome
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="text-base md:text-lg font-black text-slate-900 dark:text-slate-100 leading-tight">SmartHire</span>
-              <span className="text-base md:text-lg font-black text-primary leading-tight">AI</span>
-            </div>
+    <nav
+      className={`nav-enter fixed top-0 inset-x-0 z-50 w-full transition-all duration-300 ${
+        scrolled
+          ? 'bg-white/70 dark:bg-[#1c1c1e]/70 backdrop-blur-xl border-b border-black/5 dark:border-white/10 shadow-lg shadow-black/5'
+          : 'bg-transparent border-b border-transparent'
+      }`}
+    >
+      <div className="relative w-full px-4 sm:px-6 lg:px-10">
+        <div className="flex items-center justify-between h-16 md:h-17">
+          {/* Left: logo */}
+          <a href="/" className="shrink-0" aria-label="SmartHire AI home">
+            <BrandLogo size={30} />
+          </a>
+
+          {/* Center: nav options */}
+          <div className="hidden lg:flex items-center gap-7 xl:gap-9 absolute left-1/2 -translate-x-1/2 text-sm font-medium tracking-tight">
+            {links.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                onClick={link.onClick}
+                className="text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300"
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
-        </div>
 
-        {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center gap-6 xl:gap-8 ml-auto mr-8 font-sans antialiased text-sm font-medium tracking-tight">
-          <a className="nav-link text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300" href={dashboardHref}>
-            Dashboard
-          </a>
-          <a className="nav-link text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300" href="#features" onClick={(e) => {
-            e.preventDefault();
-            document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
-          }}>
-            Features
-          </a>
-          <a className="nav-link text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300" href="#how-it-works" onClick={(e) => {
-            e.preventDefault();
-            document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
-          }}>
-            How It Works
-          </a>
-          <a className="nav-link text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300" href={dashboardHref}>
-            For Candidates
-          </a>
-          <a className="nav-link text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300" href={dashboardHref}>
-            For Recruiters
-          </a>
-          <a className="nav-link text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300" href="#faq" onClick={(e) => {
-            e.preventDefault();
-            document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' });
-          }}>
-            FAQ
-          </a>
-        </div>
-
-        {/* Desktop & Tablet CTA */}
-        <div className="flex items-center gap-2 sm:gap-4 lg:ml-0 ml-auto">
-          <ThemeToggle />
-          <div className="hidden sm:flex items-center gap-4 mr-2 sm:mr-0">
-            <a 
+          {/* Right: buttons */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <ThemeToggle />
+            <a
               href={dashboardHref}
-              className="premium-gradient text-white border-2 border-transparent px-5 md:px-6 py-2 rounded-full text-sm font-semibold transition-all hover:bg-none hover:bg-[#6366f1] hover:border-[#6366f1] shadow-lg shadow-primary/20 inline-block">
+              className="hidden sm:inline-block premium-gradient text-white px-5 md:px-6 py-2 rounded-full text-sm font-semibold shadow-lg shadow-primary/20 border-2 border-transparent transition-all hover:bg-none hover:bg-[#6366f1] hover:border-[#6366f1]"
+            >
               Sign Up
             </a>
-          </div>
 
-          {/* Mobile Toggle */}
-          <button
-            onClick={toggleMobileMenu}
-            aria-label="Toggle Menu"
-            className="lg:hidden p-2 text-slate-900 dark:text-slate-100 focus:outline-none"
-          >
-            <span className="material-symbols-outlined text-2xl">
-              {mobileMenuOpen ? 'close' : 'menu'}
-            </span>
-          </button>
+            {/* Mobile toggle */}
+            <button
+              onClick={toggleMobileMenu}
+              aria-label="Toggle Menu"
+              className="lg:hidden p-2 text-slate-900 dark:text-slate-100 focus:outline-none"
+            >
+              <Icon name={mobileMenuOpen ? 'close' : 'menu'} className="text-2xl" />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className={`absolute top-full left-0 right-0 mt-3 bg-white dark:bg-[#1c1c1e] border border-slate-200 dark:border-white/10 rounded-2xl lg:hidden shadow-2xl overflow-hidden ${
-          isClosing 
-            ? 'animate-out slide-out-to-top-4 duration-300' 
-            : 'animate-in slide-in-from-top-4 duration-500'
-        }`}>
+        <div
+          className={`lg:hidden bg-white/90 dark:bg-[#1c1c1e]/90 backdrop-blur-xl border-b border-black/5 dark:border-white/10 shadow-2xl overflow-hidden ${
+            isClosing ? 'animate-out slide-out-to-top-4 duration-300' : 'animate-in slide-in-from-top-4 duration-500'
+          }`}
+        >
           <div className="flex flex-col items-center justify-center py-6 px-4 w-full text-center gap-4">
-            <a className="nav-link text-slate-800 dark:text-slate-200 font-semibold text-base hover:text-primary transition-colors" href={dashboardHref}>
-              Dashboard
-            </a>
-            <a className="nav-link text-slate-800 dark:text-slate-200 font-semibold text-base hover:text-primary transition-colors" href="#features" onClick={(e) => {
-              e.preventDefault();
-              document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
-              setMobileMenuOpen(false);
-            }}>
-              Features
-            </a>
-            <a className="nav-link text-slate-800 dark:text-slate-200 font-semibold text-base hover:text-primary transition-colors" href="#how-it-works" onClick={(e) => {
-              e.preventDefault();
-              document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
-              setMobileMenuOpen(false);
-            }}>
-              How It Works
-            </a>
-            <a className="nav-link text-slate-800 dark:text-slate-200 font-semibold text-base hover:text-primary transition-colors" href={dashboardHref}>
-              For Candidates
-            </a>
-            <a className="nav-link text-slate-800 dark:text-slate-200 font-semibold text-base hover:text-primary transition-colors" href={dashboardHref}>
-              For Recruiters
-            </a>
-            <a className="nav-link text-slate-800 dark:text-slate-200 font-semibold text-base hover:text-primary transition-colors" href="#faq" onClick={(e) => {
-              e.preventDefault();
-              document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' });
-              setMobileMenuOpen(false);
-            }}>
-              FAQ
-            </a>
-            <div className="w-full h-px bg-slate-100 dark:bg-white/10 my-2"></div>
-            <div className="flex flex-col gap-2 w-full max-w-xs sm:hidden">
-              <a href={dashboardHref} className="w-full premium-gradient text-white py-2.5 rounded-lg font-semibold shadow-lg shadow-primary/20 transition-all border-2 border-transparent hover:bg-none hover:bg-[#6366f1] hover:border-[#6366f1] block text-center text-sm">
-                Sign Up
+            {links.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                onClick={link.onClick ?? (() => setMobileMenuOpen(false))}
+                className="text-slate-800 dark:text-slate-200 font-semibold text-base hover:text-primary transition-colors"
+              >
+                {link.label}
               </a>
-            </div>
+            ))}
+            <div className="w-full h-px bg-slate-100 dark:bg-white/10 my-2" />
+            <a
+              href={dashboardHref}
+              className="w-full max-w-xs premium-gradient text-white py-2.5 rounded-full font-semibold shadow-lg shadow-primary/20 transition-all border-2 border-transparent hover:bg-none hover:bg-[#6366f1] hover:border-[#6366f1] text-center text-sm"
+            >
+              Sign Up
+            </a>
           </div>
         </div>
       )}

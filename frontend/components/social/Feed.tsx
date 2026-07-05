@@ -7,6 +7,7 @@ import CreatePost, { type MeSnapshot } from './CreatePost'
 import PostCard from './PostCard'
 import WhoToFollow from './WhoToFollow'
 import type { Post } from '@/lib/social'
+import { Icon } from '@/components/ui/icon'
 
 const PAGE = 20
 
@@ -165,14 +166,14 @@ export default function Feed({ networkHref, embedded = false }: { networkHref: s
         </div>
       ) : posts.length === 0 ? (
         <div className="text-center py-16">
-          <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600">{tab === 'following' ? 'group' : tab === 'trending' ? 'trending_up' : 'dynamic_feed'}</span>
+          <Icon name={tab === 'following' ? 'group' : tab === 'trending' ? 'trending_up' : 'dynamic_feed'} className="text-5xl text-slate-300 dark:text-slate-600" />
           <p className="text-sm font-semibold text-slate-600 dark:text-slate-300 mt-3">{tab === 'following' ? 'Your following feed is quiet' : tab === 'trending' ? 'Nothing trending yet' : 'No posts yet'}</p>
           <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
             {tab === 'following' ? 'Follow people to see their updates here, or check the Discover tab.' : tab === 'trending' ? 'Posts with the most likes and comments will show up here.' : 'Be the first to share something with the community.'}
           </p>
           {tab === 'following' && (
             <Link href={networkHref} className="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-full text-sm font-semibold text-white premium-gradient">
-              <span className="material-symbols-outlined text-[18px]">person_add</span> Find people to follow
+              <Icon name="person_add" className="text-[18px]" /> Find people to follow
             </Link>
           )}
         </div>

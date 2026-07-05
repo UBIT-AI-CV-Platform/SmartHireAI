@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
             {
               text:
                 'Transcribe the spoken words in this audio to plain text. ' +
-                'Return ONLY the transcript — no quotes, labels, timestamps, or commentary. ' +
+                'Return ONLY the transcript - no quotes, labels, timestamps, or commentary. ' +
                 'If there is no clear speech, return an empty string.',
             },
           ],

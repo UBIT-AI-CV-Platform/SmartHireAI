@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { createClient } from '@/lib/supabase/client'
 import { useVoiceInput } from '@/lib/useVoiceInput'
+import { Icon } from '@/components/ui/icon'
 
 type ChatMsg = { role: 'user' | 'assistant'; content: string }
 type SessionRow = { id: string; title: string | null; role: string | null; job_id: string | null; messages: ChatMsg[]; updated_at: string }
@@ -21,7 +22,7 @@ const STARTERS = [
 const QUICK_ACTIONS = [
   { label: 'Sample answer', prompt: 'Give me a strong sample answer to that, written in my voice using my real background.' },
   { label: 'Make it harder', prompt: 'Ask me a harder, more senior-level version of that question.' },
-  { label: 'Next question', prompt: 'Great — ask me the next question.' },
+  { label: 'Next question', prompt: 'Great - ask me the next question.' },
   { label: 'Why this matters', prompt: 'Why do interviewers ask this, and what exactly are they looking for?' },
 ]
 
@@ -51,7 +52,7 @@ export default function AICoachPage() {
   const abortRef = useRef<AbortController | null>(null)
   const taRef = useRef<HTMLTextAreaElement>(null)
 
-  // voice input (Web Speech API + Gemini fallback) — see lib/useVoiceInput
+  // voice input (Web Speech API + Gemini fallback) - see lib/useVoiceInput
   const voiceBaseRef = useRef('')
   const voice = useVoiceInput({
     onTranscript: (text) => {
@@ -222,7 +223,7 @@ export default function AICoachPage() {
       <aside className={`fixed md:static z-40 inset-y-16 md:inset-y-0 left-0 w-72 bg-white dark:bg-[#1c1c1e] border-r border-surface-container flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         <div className="p-3">
           <button onClick={newSession} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
-            <span className="material-symbols-outlined text-lg">add</span>New Session
+            <Icon name="add" className="text-lg" />New Session
           </button>
         </div>
         <div className="px-3 pb-1 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">History</div>
@@ -232,9 +233,9 @@ export default function AICoachPage() {
           ) : (
             sessions.map((s) => (
               <button key={s.id} onClick={() => loadSession(s)} className={`group w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-left transition-colors ${currentId === s.id ? 'bg-primary/10' : 'hover:bg-surface-container-low'}`}>
-                <span className={`material-symbols-outlined text-base flex-shrink-0 ${currentId === s.id ? 'text-primary' : 'text-on-surface-variant'}`}>forum</span>
+                <Icon name="forum" className={`text-base flex-shrink-0 ${currentId === s.id ? 'text-primary' : 'text-on-surface-variant'}`} />
                 <span className={`flex-1 min-w-0 truncate text-sm font-semibold ${currentId === s.id ? 'text-primary' : 'text-on-surface'}`}>{s.title || 'Untitled'}</span>
-                <span onClick={(e) => deleteSession(e, s.id)} className="material-symbols-outlined text-base text-on-surface-variant hover:text-red-500 opacity-0 group-hover:opacity-100 transition flex-shrink-0">delete</span>
+                <Icon name="delete" onClick={(e: React.MouseEvent) => deleteSession(e, s.id)} className="text-base text-on-surface-variant hover:text-red-500 opacity-0 group-hover:opacity-100 transition flex-shrink-0" />
               </button>
             ))
           )}
@@ -247,11 +248,11 @@ export default function AICoachPage() {
         {/* Header / focus controls */}
         <div className="border-b border-surface-container bg-white/80 dark:bg-[#1c1c1e]/80 backdrop-blur-md px-3 md:px-5 py-3 flex items-center gap-2 flex-wrap">
           <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 -ml-1 text-on-surface-variant hover:bg-surface-container-low rounded-lg">
-            <span className="material-symbols-outlined">menu</span>
+            <Icon name="menu" />
           </button>
           <div className="flex items-center gap-2 mr-auto">
             <div className="w-8 h-8 rounded-lg premium-gradient flex items-center justify-center text-white flex-shrink-0">
-              <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+              <Icon name="psychology" className="text-lg" solid />
             </div>
             <div className="leading-tight">
               <p className="text-sm font-black text-on-surface">Interview Coach</p>
@@ -261,7 +262,7 @@ export default function AICoachPage() {
 
           {messages.length > 0 && (
             <button onClick={() => send('End the session and give me my full interview scorecard.')} disabled={streaming} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-container-low text-on-surface font-bold text-xs hover:bg-surface-container transition-colors disabled:opacity-50">
-              <span className="material-symbols-outlined text-base">assessment</span><span className="hidden sm:inline">End &amp; feedback</span>
+              <Icon name="assessment" className="text-base" /><span className="hidden sm:inline">End &amp; feedback</span>
             </button>
           )}
 
@@ -271,7 +272,7 @@ export default function AICoachPage() {
               <option value="">General / type a role</option>
               {appliedJobs.map((j) => <option key={j.id} value={j.id}>{j.title} · {j.company}</option>)}
             </select>
-            <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-base">expand_more</span>
+            <Icon name="expand_more" className="absolute right-2 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-base" />
           </div>
           {!focusJobId && (
             <input value={customRole} onChange={(e) => setCustomRole(e.target.value)} placeholder="Role e.g. Frontend Dev" className="px-3 py-2 bg-surface-container-low rounded-xl text-xs font-medium text-on-surface placeholder:text-outline-variant outline-none focus:ring-2 focus:ring-primary/40 w-36" />
@@ -306,22 +307,22 @@ export default function AICoachPage() {
               </div>
             ) : bootError ? (
               <div className="flex flex-col items-center text-center pt-16">
-                <div className="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-4"><span className="material-symbols-outlined text-2xl">cloud_off</span></div>
-                <h3 className="text-lg font-bold text-on-surface mb-1">Couldn’t load the coach</h3>
+                <div className="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-4"><Icon name="cloud_off" className="text-2xl" /></div>
+                <h3 className="text-lg font-bold text-on-surface mb-1">Couldn't load the coach</h3>
                 <p className="text-sm text-on-surface-variant max-w-sm mb-4">Something went wrong. Please check your connection and try again.</p>
-                <button onClick={loadInit} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>
+                <button onClick={loadInit} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><Icon name="refresh" className="text-base" />Retry</button>
               </div>
             ) : messages.length === 0 ? (
               <div className="flex flex-col items-center text-center pt-8 md:pt-16">
                 <div className="w-16 h-16 rounded-3xl premium-gradient flex items-center justify-center text-white shadow-xl shadow-primary/20 mb-5">
-                  <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+                  <Icon name="psychology" className="text-3xl" solid />
                 </div>
                 <h2 className="text-xl md:text-2xl font-bold text-on-surface mb-1">Let&apos;s ace your interview</h2>
                 <p className="text-sm text-on-surface-variant max-w-md mb-6">Pick a job or type a role, set the difficulty, choose <b>Chat</b> or <b>Mock</b>, and start practicing. I know your profile and CV, so I&apos;ll tailor everything to you.</p>
                 <div className="grid sm:grid-cols-2 gap-3 w-full max-w-xl">
                   {STARTERS.map((s) => (
                     <button key={s.label} onClick={() => send(s.label)} className="flex items-center gap-3 p-4 rounded-2xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-left hover:border-primary/40 hover:shadow-lg transition-all">
-                      <span className="material-symbols-outlined text-primary">{s.icon}</span>
+                      <Icon name={s.icon} className="text-primary" />
                       <span className="text-sm font-semibold text-on-surface">{s.label}</span>
                     </button>
                   ))}
@@ -332,7 +333,7 @@ export default function AICoachPage() {
                 <div key={i} className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   {m.role === 'assistant' && (
                     <div className="w-8 h-8 rounded-lg premium-gradient flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                      <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+                      <Icon name="psychology" className="text-base" solid />
                     </div>
                   )}
                   <div className={`group max-w-[85%] ${m.role === 'user' ? '' : 'min-w-0'}`}>
@@ -355,11 +356,11 @@ export default function AICoachPage() {
                     {m.role === 'assistant' && m.content !== '' && !(streaming && i === messages.length - 1) && (
                       <div className="flex items-center gap-1 mt-1 ml-1 opacity-0 group-hover:opacity-100 transition">
                         <button onClick={() => copyMsg(i, m.content)} className="text-xs text-on-surface-variant hover:text-primary flex items-center gap-1 px-1.5 py-1 rounded-lg hover:bg-surface-container-low">
-                          <span className="material-symbols-outlined text-sm">{copiedIdx === i ? 'check' : 'content_copy'}</span>{copiedIdx === i ? 'Copied' : 'Copy'}
+                          <Icon name={copiedIdx === i ? 'check' : 'content_copy'} className="text-sm" />{copiedIdx === i ? 'Copied' : 'Copy'}
                         </button>
                         {i === messages.length - 1 && (
                           <button onClick={regenerate} className="text-xs text-on-surface-variant hover:text-primary flex items-center gap-1 px-1.5 py-1 rounded-lg hover:bg-surface-container-low">
-                            <span className="material-symbols-outlined text-sm">refresh</span>Regenerate
+                            <Icon name="refresh" className="text-sm" />Regenerate
                           </button>
                         )}
                       </div>
@@ -383,7 +384,7 @@ export default function AICoachPage() {
 
           {showScrollDown && (
             <button onClick={scrollToBottom} className="sticky bottom-2 left-full ml-auto mr-3 w-9 h-9 rounded-full bg-white dark:bg-[#2c2c2e] border border-surface-container shadow-lg flex items-center justify-center text-on-surface-variant hover:text-primary">
-              <span className="material-symbols-outlined">arrow_downward</span>
+              <Icon name="arrow_downward" />
             </button>
           )}
         </div>
@@ -393,9 +394,9 @@ export default function AICoachPage() {
           <div className="max-w-3xl mx-auto">
             {voice.error && (
               <div className="mb-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs">
-                <span className="material-symbols-outlined text-sm flex-shrink-0">info</span>
+                <Icon name="info" className="text-sm flex-shrink-0" />
                 <span className="flex-1">{voice.error}</span>
-                <button onClick={voice.clearError} aria-label="Dismiss" className="material-symbols-outlined text-sm hover:opacity-70 flex-shrink-0">close</button>
+                <button onClick={voice.clearError} aria-label="Dismiss" className="text-sm hover:opacity-70 flex-shrink-0"><Icon name="close" /></button>
               </div>
             )}
             <div className="flex items-end gap-2 bg-surface-container-low rounded-2xl p-2 focus-within:ring-2 focus-within:ring-primary/40 transition">
@@ -405,7 +406,7 @@ export default function AICoachPage() {
                 title={voice.listening ? 'Stop' : voice.busy ? 'Transcribing…' : 'Speak your answer'}
                 className={`h-10 w-10 flex items-center justify-center rounded-xl transition-colors flex-shrink-0 ${voice.listening ? 'bg-red-500 text-white animate-pulse' : voice.busy ? 'text-primary' : 'text-on-surface-variant hover:bg-surface-container'}`}
               >
-                <span className={`material-symbols-outlined ${voice.busy ? 'animate-spin' : ''}`}>{voice.listening ? 'mic' : voice.busy ? 'progress_activity' : 'mic_none'}</span>
+                <Icon name={voice.listening ? 'mic' : voice.busy ? 'progress_activity' : 'mic_none'} className={voice.busy ? 'animate-spin' : ''} />
               </button>
               <textarea
                 ref={taRef}
@@ -418,15 +419,15 @@ export default function AICoachPage() {
               />
               {streaming ? (
                 <button onClick={stop} className="h-10 w-10 flex items-center justify-center rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors flex-shrink-0" title="Stop">
-                  <span className="material-symbols-outlined">stop</span>
+                  <Icon name="stop" />
                 </button>
               ) : (
                 <button onClick={() => send(input)} disabled={!input.trim()} className="h-10 w-10 flex items-center justify-center rounded-xl premium-gradient text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:hover:scale-100 flex-shrink-0" title="Send">
-                  <span className="material-symbols-outlined">send</span>
+                  <Icon name="send" />
                 </button>
               )}
             </div>
-            <p className="text-[10px] text-outline text-center mt-2">AI can make mistakes — always prepare with your own judgment too.</p>
+            <p className="text-[10px] text-outline text-center mt-2">AI can make mistakes - always prepare with your own judgment too.</p>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useState } from 'react'
+import { Icon } from '@/components/ui/icon'
 
 type Kind = 'privacy' | 'terms'
 
@@ -52,7 +53,7 @@ const CONTENT: Record<Kind, { title: string; intro: string; sections: Section[] 
       },
       {
         heading: '2. Acceptable Use',
-        body: 'You agree not to misuse the platform — no unlawful, misleading, abusive, or infringing content, no scraping or attempts to disrupt the service, and no impersonation of others.',
+        body: 'You agree not to misuse the platform - no unlawful, misleading, abusive, or infringing content, no scraping or attempts to disrupt the service, and no impersonation of others.',
       },
       {
         heading: '3. Your Content',
@@ -103,9 +104,7 @@ function LegalModal({ kind, onClose }: { kind: Kind; onClose: () => void }) {
         {/* Header */}
         <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-200 dark:border-white/10">
           <div className="w-9 h-9 rounded-xl premium-gradient flex items-center justify-center text-white flex-shrink-0">
-            <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
-              {kind === 'privacy' ? 'shield' : 'gavel'}
-            </span>
+            <Icon name={kind === 'privacy' ? 'shield' : 'gavel'} className="text-lg" solid />
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 leading-tight">{data.title}</h2>
@@ -116,7 +115,7 @@ function LegalModal({ kind, onClose }: { kind: Kind; onClose: () => void }) {
             aria-label="Close"
             className="h-8 w-8 flex items-center justify-center rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors flex-shrink-0"
           >
-            <span className="material-symbols-outlined text-lg">close</span>
+            <Icon name="close" className="text-lg" />
           </button>
         </div>
 

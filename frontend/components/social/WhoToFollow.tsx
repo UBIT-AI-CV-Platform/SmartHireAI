@@ -9,7 +9,7 @@ import { displayName, initials, tagline, type PublicProfile } from '@/lib/social
 
 const COLS = 'id, username, full_name, headline, desired_role, role, photo_url, company_name, followers_count'
 
-/** Compact "Who to follow" card — suggests people you don't follow yet. */
+/** Compact "Who to follow" card - suggests people you don't follow yet. */
 export default function WhoToFollow({ seeAllHref, limit = 4 }: { seeAllHref?: string; limit?: number }) {
   const [viewerId, setViewerId] = useState<string | null>(null)
   const [people, setPeople] = useState<PublicProfile[]>([])

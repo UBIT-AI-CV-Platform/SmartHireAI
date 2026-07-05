@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import FancySelect from '@/components/shared/FancySelect'
 import { useProfileLink } from '@/lib/useProfileLink'
+import { Icon } from '@/components/ui/icon'
 
 type Role = 'recruiter' | 'candidate'
 
@@ -87,7 +88,7 @@ export default function Inbox({ role }: { role: Role }) {
   // Slot-aware: a conversation has two participants in the recruiter_id/candidate_id
   // slots. "Who am I / who is the other" is decided per-conversation, so the SAME
   // inbox works for hiring threads AND any-to-any social DMs.
-  // NOTE: use uidRef.current (not the uid state) — openConv runs from the bootstrap
+  // NOTE: use uidRef.current (not the uid state) - openConv runs from the bootstrap
   // effect before the uid state has committed, so the state would still be ''.
   const iAmRecruiterSlot = (c: Conv) => c.recruiter_id === uidRef.current
   const otherId = (c: Conv) => (iAmRecruiterSlot(c) ? c.candidate_id : c.recruiter_id)
@@ -95,7 +96,7 @@ export default function Inbox({ role }: { role: Role }) {
   const unreadOf = (c: Conv) => (iAmRecruiterSlot(c) ? c.recruiter_unread : c.candidate_unread)
   const myUnreadPatch = (c: Conv) => (iAmRecruiterSlot(c) ? { recruiter_unread: 0 } : { candidate_unread: 0 })
   // Hiring quick-actions (schedule/offer/reject) show only when I'm the recruiter
-  // on a hiring thread — never on a plain social DM.
+  // on a hiring thread - never on a plain social DM.
   const canHire = (c: Conv | null) => !!c && isRecruiter && c.recruiter_id === uidRef.current && c.is_hiring
 
   // ── data loaders ───────────────────────────────────────────────────────────
@@ -374,7 +375,7 @@ export default function Inbox({ role }: { role: Role }) {
   const offerLocked = dealIvs.some((v) => ['offer', 'offer_accepted', 'rejected'].includes(v.stage))
   const rejectLocked = dealIvs.some((v) => ['offer', 'offer_accepted', 'rejected'].includes(v.stage))
   const offerHint = hired ? 'Candidate is already hired' : offerLocked ? 'An offer or decision already exists' : 'Send a job offer'
-  const rejectHint = hired ? 'Candidate is already hired — you can’t reject them' : rejectLocked ? 'A decision was already made for this candidate' : 'Reject this candidate'
+  const rejectHint = hired ? 'Candidate is already hired - you can’t reject them' : rejectLocked ? 'A decision was already made for this candidate' : 'Reject this candidate'
 
   if (loading) return <Loader />
   if (loadError) return <ErrorBox />
@@ -384,8 +385,8 @@ export default function Inbox({ role }: { role: Role }) {
       {/* Conversation list */}
       <aside className={`${active ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col border-r border-surface-container bg-white dark:bg-[#1c1c1e] flex-shrink-0`}>
         <div className="p-4 border-b border-surface-container flex items-center justify-between">
-          <h1 className="text-lg font-bold text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">forum</span>Inbox</h1>
-          {view === 'messages' && <button onClick={openNew} className="h-9 px-3 rounded-xl premium-gradient text-white text-xs font-bold flex items-center gap-1 hover:scale-105 transition-transform"><span className="material-symbols-outlined text-base">edit_square</span>New</button>}
+          <h1 className="text-lg font-bold text-on-surface flex items-center gap-2"><Icon name="forum" className="text-primary" />Inbox</h1>
+          {view === 'messages' && <button onClick={openNew} className="h-9 px-3 rounded-xl premium-gradient text-white text-xs font-bold flex items-center gap-1 hover:scale-105 transition-transform"><Icon name="edit_square" className="text-base" />New</button>}
         </div>
         {/* Tabs: Messages | Interviews */}
         <div className="flex items-center gap-1 px-3 py-2 border-b border-surface-container">
@@ -428,7 +429,7 @@ export default function Inbox({ role }: { role: Role }) {
               const sm = STAGE_META[iv.stage] || STAGE_META.proposed
               return (
                 <button key={iv.id} onClick={() => openFromInterview(iv)} className="w-full text-left flex items-start gap-3 px-4 py-3 border-b border-surface-container/60 hover:bg-surface-container-low transition-colors">
-                  <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/10 text-primary"><span className="material-symbols-outlined">{sm.icon}</span></div>
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/10 text-primary"><Icon name={sm.icon} /></div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-on-surface truncate">{iv.job_title || 'Interview'}</p>
                     <p className="text-xs text-on-surface-variant truncate">with {who}</p>
@@ -437,7 +438,7 @@ export default function Inbox({ role }: { role: Role }) {
                       {iv.scheduled_at && <span className="text-[10px] text-outline">{fmtWhen(iv.scheduled_at)}</span>}
                     </div>
                   </div>
-                  <span className="material-symbols-outlined text-outline flex-shrink-0">chevron_right</span>
+                  <Icon name="chevron_right" className="text-outline flex-shrink-0" />
                 </button>
               )
             })
@@ -449,7 +450,7 @@ export default function Inbox({ role }: { role: Role }) {
       <section className={`${active ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-surface-container-low min-w-0`}>
         {!active ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-4"><span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>forum</span></div>
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-4"><Icon name="forum" className="text-3xl" solid /></div>
             <h2 className="text-lg font-bold text-on-surface mb-1">Your messages</h2>
             <p className="text-sm text-on-surface-variant max-w-xs">Select a conversation, or start a new one to {isRecruiter ? 'reach out to a candidate' : 'message a recruiter'}.</p>
           </div>
@@ -457,7 +458,7 @@ export default function Inbox({ role }: { role: Role }) {
           <>
             {/* Thread header */}
             <header className="h-16 px-3 md:px-5 flex items-center gap-3 border-b border-surface-container bg-white dark:bg-[#1c1c1e] flex-shrink-0">
-              <button onClick={() => { setActive(null); activeRef.current = null; activeConvRef.current = null }} className="md:hidden p-1.5 -ml-1 rounded-lg hover:bg-surface-container text-on-surface-variant"><span className="material-symbols-outlined">arrow_back</span></button>
+              <button onClick={() => { setActive(null); activeRef.current = null; activeConvRef.current = null }} className="md:hidden p-1.5 -ml-1 rounded-lg hover:bg-surface-container text-on-surface-variant"><Icon name="arrow_back" /></button>
               {(() => {
                 const oi = otherInfo[otherId(active)]
                 const avatar = (
@@ -498,7 +499,7 @@ export default function Inbox({ role }: { role: Role }) {
                         <Link href={meta.post_id ? `/post/${meta.post_id}` : '#'} className="block w-full bg-white dark:bg-white/10 border border-surface-container rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
                           {meta.image_url && <img src={meta.image_url} alt="shared post" className="w-full max-h-44 object-cover" />}
                           <div className="p-3">
-                            <p className="text-[10px] font-bold uppercase tracking-wide text-primary flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">dynamic_feed</span>Shared post</p>
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-primary flex items-center gap-1"><Icon name="dynamic_feed" className="text-[13px]" />Shared post</p>
                             <p className="text-xs font-semibold text-on-surface mt-1">{meta.author_name || 'A post'}</p>
                             {meta.content && <p className="text-xs text-on-surface-variant line-clamp-3 mt-0.5">{meta.content}</p>}
                           </div>
@@ -522,16 +523,16 @@ export default function Inbox({ role }: { role: Role }) {
             {/* Recruiter quick actions (hiring threads only) */}
             {canHire(active) && (
               <div className="px-3 md:px-5 pt-2 flex flex-wrap gap-2 bg-white dark:bg-[#1c1c1e] border-t border-surface-container">
-                <button onClick={() => openSchedule()} disabled={busy} title="Schedule an interview" className="px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300 text-xs font-bold flex items-center gap-1.5 hover:bg-sky-100 dark:hover:bg-sky-500/25 transition-colors disabled:opacity-50"><span className="material-symbols-outlined text-base">videocam</span>Schedule interview</button>
-                <button onClick={sendOfferFromMenu} disabled={busy || offerLocked} title={offerHint} className="px-3 py-1.5 rounded-xl bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300 text-xs font-bold flex items-center gap-1.5 hover:bg-green-100 dark:hover:bg-green-500/25 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-green-50 dark:disabled:hover:bg-green-500/15"><span className="material-symbols-outlined text-base">{hired ? 'verified' : 'workspace_premium'}</span>{hired ? 'Hired' : 'Send offer'}</button>
-                <button onClick={rejectFromMenu} disabled={busy || rejectLocked} title={rejectHint} className="px-3 py-1.5 rounded-xl bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-300 text-xs font-bold flex items-center gap-1.5 hover:bg-red-100 dark:hover:bg-red-500/25 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-red-50 dark:disabled:hover:bg-red-500/15"><span className="material-symbols-outlined text-base">do_not_disturb_on</span>Reject</button>
+                <button onClick={() => openSchedule()} disabled={busy} title="Schedule an interview" className="px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300 text-xs font-bold flex items-center gap-1.5 hover:bg-sky-100 dark:hover:bg-sky-500/25 transition-colors disabled:opacity-50"><Icon name="videocam" className="text-base" />Schedule interview</button>
+                <button onClick={sendOfferFromMenu} disabled={busy || offerLocked} title={offerHint} className="px-3 py-1.5 rounded-xl bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300 text-xs font-bold flex items-center gap-1.5 hover:bg-green-100 dark:hover:bg-green-500/25 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-green-50 dark:disabled:hover:bg-green-500/15"><Icon name={hired ? 'verified' : 'workspace_premium'} className="text-base" />{hired ? 'Hired' : 'Send offer'}</button>
+                <button onClick={rejectFromMenu} disabled={busy || rejectLocked} title={rejectHint} className="px-3 py-1.5 rounded-xl bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-300 text-xs font-bold flex items-center gap-1.5 hover:bg-red-100 dark:hover:bg-red-500/25 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-red-50 dark:disabled:hover:bg-red-500/15"><Icon name="do_not_disturb_on" className="text-base" />Reject</button>
               </div>
             )}
 
             {/* Composer */}
             <div className="p-3 md:p-4 bg-white dark:bg-[#1c1c1e] border-t border-surface-container flex items-end gap-2 flex-shrink-0">
               <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText() } }} rows={1} placeholder="Write a message…" className="flex-1 resize-none max-h-32 px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all text-on-surface text-sm outline-none" />
-              <button onClick={sendText} disabled={!input.trim()} className="w-11 h-11 rounded-2xl premium-gradient text-white flex items-center justify-center flex-shrink-0 disabled:opacity-40 hover:scale-105 transition-transform"><span className="material-symbols-outlined">send</span></button>
+              <button onClick={sendText} disabled={!input.trim()} className="w-11 h-11 rounded-2xl premium-gradient text-white flex items-center justify-center flex-shrink-0 disabled:opacity-40 hover:scale-105 transition-transform"><Icon name="send" /></button>
             </div>
           </>
         )}
@@ -542,7 +543,7 @@ export default function Inbox({ role }: { role: Role }) {
         <Modal title="New message" onClose={closeNew}>
           {/* Search anyone */}
           <div className="relative mb-3">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+            <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]" />
             <input
               value={peopleQ}
               onChange={(e) => searchPeople(e.target.value)}
@@ -562,7 +563,7 @@ export default function Inbox({ role }: { role: Role }) {
                   <button key={p.id} onClick={() => startDm(p.id)} className="w-full text-left flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-surface-container-low transition-colors">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black ${avatarColor(label)}`}>{initial(label)}</div>
                     <div className="min-w-0"><p className="text-sm font-bold text-on-surface truncate">{label}</p><p className="text-xs text-on-surface-variant truncate">{sub}</p></div>
-                    <span className="material-symbols-outlined text-outline ml-auto">chat</span>
+                    <Icon name="chat" className="text-outline ml-auto" />
                   </button>
                 )
               })
@@ -570,12 +571,12 @@ export default function Inbox({ role }: { role: Role }) {
               <>
                 <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest px-2 mb-1">{isRecruiter ? 'Your applicants' : 'Companies you applied to'}</p>
                 {newItems.length === 0 ? (
-                  <p className="text-sm text-on-surface-variant text-center py-6">{isRecruiter ? 'No applicants yet — search above to message anyone.' : 'Search above to message anyone on SmartHire.'}</p>
+                  <p className="text-sm text-on-surface-variant text-center py-6">{isRecruiter ? 'No applicants yet - search above to message anyone.' : 'Search above to message anyone on SmartHire.'}</p>
                 ) : newItems.map((it) => (
                   <button key={it.otherId} onClick={() => startConv(it)} className="w-full text-left flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-surface-container-low transition-colors">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black ${avatarColor(it.name)}`}>{initial(it.name)}</div>
                     <div className="min-w-0"><p className="text-sm font-bold text-on-surface truncate">{it.name}</p><p className="text-xs text-on-surface-variant truncate">{it.sub}</p></div>
-                    <span className="material-symbols-outlined text-outline ml-auto">chat</span>
+                    <Icon name="chat" className="text-outline ml-auto" />
                   </button>
                 ))}
               </>
@@ -601,8 +602,8 @@ export default function Inbox({ role }: { role: Role }) {
               <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2 ml-1">Note (optional)</label>
               <textarea value={sched.notes} onChange={(e) => setSched((s) => ({ ...s, notes: e.target.value }))} rows={2} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all text-on-surface text-sm outline-none resize-none" placeholder="Anything the candidate should know…" />
             </div>
-            {schedErr && <div className="flex items-start gap-2 rounded-xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/30 px-4 py-3"><span className="material-symbols-outlined text-red-500 dark:text-red-300">error</span><p className="text-sm text-red-700 dark:text-red-300 font-medium">{schedErr}</p></div>}
-            <button onClick={submitSchedule} disabled={busy} className="w-full py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"><span className="material-symbols-outlined text-lg">{busy ? 'hourglass_top' : 'check'}</span>{busy ? 'Saving…' : sched.ivId ? 'Reschedule & notify' : 'Schedule & notify'}</button>
+            {schedErr && <div className="flex items-start gap-2 rounded-xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/30 px-4 py-3"><Icon name="error" className="text-red-500 dark:text-red-300" /><p className="text-sm text-red-700 dark:text-red-300 font-medium">{schedErr}</p></div>}
+            <button onClick={submitSchedule} disabled={busy} className="w-full py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"><Icon name={busy ? 'hourglass_top' : 'check'} className="text-lg" />{busy ? 'Saving…' : sched.ivId ? 'Reschedule & notify' : 'Schedule & notify'}</button>
           </div>
         </Modal>
       )}
@@ -616,30 +617,30 @@ function InterviewCard({ iv, role, busy, onAction }: { iv: Iv; role: Role; busy:
   const joinHref = iv.meeting_link || `/interview/${iv.id}`
   const external = !!iv.meeting_link
   const Btn = ({ icon, label, onClick, cls = '' }: { icon: string; label: string; onClick: () => void; cls?: string }) => (
-    <button onClick={onClick} disabled={busy} className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50 ${cls || 'bg-surface-container-low text-on-surface hover:bg-surface-container'}`}><span className="material-symbols-outlined text-base">{icon}</span>{label}</button>
+    <button onClick={onClick} disabled={busy} className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50 ${cls || 'bg-surface-container-low text-on-surface hover:bg-surface-container'}`}><Icon name={icon} className="text-base" />{label}</button>
   )
   const Join = () => external
-    ? <a href={joinHref} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-xl premium-gradient text-white text-xs font-bold flex items-center gap-1.5 hover:scale-105 transition-transform"><span className="material-symbols-outlined text-base">open_in_new</span>Join</a>
-    : <Link href={joinHref} className="px-3 py-1.5 rounded-xl premium-gradient text-white text-xs font-bold flex items-center gap-1.5 hover:scale-105 transition-transform"><span className="material-symbols-outlined text-base">videocam</span>Join room</Link>
+    ? <a href={joinHref} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-xl premium-gradient text-white text-xs font-bold flex items-center gap-1.5 hover:scale-105 transition-transform"><Icon name="open_in_new" className="text-base" />Join</a>
+    : <Link href={joinHref} className="px-3 py-1.5 rounded-xl premium-gradient text-white text-xs font-bold flex items-center gap-1.5 hover:scale-105 transition-transform"><Icon name="videocam" className="text-base" />Join room</Link>
 
   return (
     <div className="w-full max-w-sm bg-white dark:bg-[#2c2c2e] rounded-2xl border border-surface-container shadow-sm overflow-hidden">
       <div className="px-4 py-3 premium-gradient text-white flex items-center gap-2">
-        <span className="material-symbols-outlined text-lg">event</span>
+        <Icon name="event" className="text-lg" />
         <div className="min-w-0"><p className="text-sm font-bold truncate">{iv.job_title || 'Interview'}</p><p className="text-[11px] text-white/80">{fmtWhen(iv.scheduled_at)} · {iv.duration_min} min</p></div>
       </div>
       <div className="p-3">
-        <span className={`inline-flex px-2.5 py-1 rounded-full text-[11px] font-bold items-center gap-1 ${m.cls}`}><span className="material-symbols-outlined text-sm">{m.icon}</span>{m.label}</span>
+        <span className={`inline-flex px-2.5 py-1 rounded-full text-[11px] font-bold items-center gap-1 ${m.cls}`}><Icon name={m.icon} className="text-sm" />{m.label}</span>
         {iv.notes && <p className="text-xs text-on-surface-variant mt-2 bg-surface-container-low rounded-lg px-2.5 py-1.5">{iv.notes}</p>}
         <div className="flex flex-wrap gap-2 mt-3">
           {!isRecruiter && iv.stage === 'proposed' && <><Btn icon="check" label="Accept" onClick={() => onAction('accept')} cls="premium-gradient text-white" /><Btn icon="close" label="Decline" onClick={() => onAction('decline')} /></>}
           {!isRecruiter && iv.stage === 'accepted' && <Join />}
-          {!isRecruiter && iv.stage === 'completed' && <span className="text-xs text-on-surface-variant flex items-center gap-1"><span className="material-symbols-outlined text-base text-purple-500">hourglass_top</span>Awaiting the result…</span>}
+          {!isRecruiter && iv.stage === 'completed' && <span className="text-xs text-on-surface-variant flex items-center gap-1"><Icon name="hourglass_top" className="text-base text-purple-500" />Awaiting the result…</span>}
           {!isRecruiter && iv.stage === 'offer' && <><Btn icon="celebration" label="Accept offer" onClick={() => onAction('offer_accept')} cls="bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-500/25" /><Btn icon="close" label="Decline" onClick={() => onAction('offer_decline')} /></>}
 
           {isRecruiter && (iv.stage === 'proposed' || iv.stage === 'accepted') && <><Join />{iv.stage === 'accepted' && <Btn icon="task_alt" label="Completed" onClick={() => onAction('complete')} />}<Btn icon="edit_calendar" label="Reschedule" onClick={() => onAction('reschedule')} /><Btn icon="event_busy" label="Cancel" onClick={() => onAction('cancel')} /></>}
           {isRecruiter && iv.stage === 'completed' && <><Btn icon="workspace_premium" label="Make offer" onClick={() => onAction('offer')} cls="bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-500/25" /><Btn icon="do_not_disturb_on" label="Reject" onClick={() => onAction('reject')} cls="bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-500/25" /></>}
-          {isRecruiter && iv.stage === 'offer' && <span className="text-xs text-on-surface-variant flex items-center gap-1"><span className="material-symbols-outlined text-base text-indigo-500">hourglass_top</span>Awaiting the candidate&apos;s response…</span>}
+          {isRecruiter && iv.stage === 'offer' && <span className="text-xs text-on-surface-variant flex items-center gap-1"><Icon name="hourglass_top" className="text-base text-indigo-500" />Awaiting the candidate&apos;s response…</span>}
         </div>
       </div>
     </div>
@@ -653,7 +654,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
       <div className="relative z-10 w-full max-w-md bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop">
         <div className="p-4 border-b border-surface-container flex items-center justify-between">
           <h3 className="text-base font-bold text-on-surface">{title}</h3>
-          <button onClick={onClose} className="text-on-surface-variant hover:text-on-surface p-1"><span className="material-symbols-outlined">close</span></button>
+          <button onClick={onClose} className="text-on-surface-variant hover:text-on-surface p-1"><Icon name="close" /></button>
         </div>
         <div className="p-4">{children}</div>
       </div>
@@ -672,5 +673,5 @@ function Loader() {
   return <div className="flex flex-col items-center justify-center gap-3 py-32"><div className="flex gap-1.5"><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce"></div><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></div><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></div></div><p className="text-xs font-black text-primary tracking-widest uppercase">Loading inbox...</p></div>
 }
 function ErrorBox() {
-  return <div className="p-8 max-w-3xl mx-auto"><div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] border border-surface-container p-12 flex flex-col items-center text-center"><div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 dark:text-red-300 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div><h2 className="text-lg font-bold text-on-surface mb-2">Couldn’t load your inbox</h2><p className="text-sm text-on-surface-variant">Please refresh the page.</p></div></div>
+  return <div className="p-8 max-w-3xl mx-auto"><div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] border border-surface-container p-12 flex flex-col items-center text-center"><div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 dark:text-red-300 mb-5"><Icon name="cloud_off" className="text-3xl" /></div><h2 className="text-lg font-bold text-on-surface mb-2">Couldn’t load your inbox</h2><p className="text-sm text-on-surface-variant">Please refresh the page.</p></div></div>
 }

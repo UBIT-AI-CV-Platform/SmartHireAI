@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import PersonCard from './PersonCard'
 import type { PublicProfile } from '@/lib/social'
+import { Icon } from '@/components/ui/icon'
 
 const SAFE_COLS = 'id, username, full_name, headline, desired_role, role, location, photo_url, company_name, company_industry, followers_count, following_count'
 
@@ -51,7 +52,7 @@ export default function FollowListModal({ open, onClose, profileId, mode, viewer
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200/70 dark:border-white/10">
           <h3 className="font-bold text-slate-900 dark:text-slate-100 capitalize">{mode}</h3>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400">
-            <span className="material-symbols-outlined">close</span>
+            <Icon name="close" />
           </button>
         </div>
         <div className="p-4 overflow-y-auto space-y-2.5">

@@ -11,7 +11,7 @@ export default function CTASection() {
             Ready to transform your hiring workflow?
           </h2>
           <p className="text-xs sm:text-sm md:text-base mb-4 sm:mb-5 md:mb-6 text-indigo-800/80 dark:text-slate-300 font-medium">
-            Build smarter CVs, match with the right roles, and hire with confidence — all in one AI-powered platform.
+            Build smarter CVs, match with the right roles, and hire with confidence - all in one AI-powered platform.
           </p>
           <div className="flex justify-center">
             <a href="/auth" className="px-6 sm:px-8 md:px-10 py-2.5 sm:py-3 md:py-3.5 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm md:text-base shadow-xl shadow-primary/20 transition-transform hover:scale-105 active:scale-95 premium-gradient text-white inline-block whitespace-nowrap">

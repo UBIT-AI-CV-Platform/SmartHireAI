@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import type { Database } from './database.types'
 
-const SESSION_MAX_AGE = 60 * 60 * 24 * 10 // 10 days — matches client.ts
+const SESSION_MAX_AGE = 60 * 60 * 24 * 10 // 10 days - matches client.ts
 
 /**
  * Refreshes the Supabase auth session on every request and keeps the
@@ -41,7 +41,7 @@ export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname
 
   // ── Redirect already-logged-in users away from /auth ─────────────
-  // Only the exact /auth page — not /auth/callback, /auth/reset-password, etc.
+  // Only the exact /auth page - not /auth/callback, /auth/reset-password, etc.
   if (user && path === '/auth') {
     const { data: profile } = await supabase
       .from('profiles')

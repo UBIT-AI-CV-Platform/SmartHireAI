@@ -1,5 +1,5 @@
 -- ============================================================================
---  SmartHireAI — SOCIAL LAYER · PHASE 4
+--  SmartHireAI - SOCIAL LAYER · PHASE 4
 --  Moderation (reports) · (suggested-people + trending are query-only, no schema)
 --
 --  How to apply: Supabase → SQL Editor → New query → paste → Run.
@@ -8,8 +8,8 @@
 -- ============================================================================
 
 -- ────────────────────────────────────────────────────────────────────────────
--- REPORTS — users flag a post / comment / profile. Polymorphic target_id (a
--- post/comment/profile uuid). One report per (reporter, target) — re-reporting
+-- REPORTS - users flag a post / comment / profile. Polymorphic target_id (a
+-- post/comment/profile uuid). One report per (reporter, target) - re-reporting
 -- is a no-op. A reporter can read their own reports; review/resolution is done
 -- by an admin via the service role (no public update/delete).
 -- ────────────────────────────────────────────────────────────────────────────
@@ -35,5 +35,5 @@ create policy "reporter can read own reports" on public.reports for select using
 
 -- ============================================================================
 --  Done. Phase 4: reports/moderation table (suggested-people + trending are
---  implemented client-side over existing tables — no schema needed).
+--  implemented client-side over existing tables - no schema needed).
 -- ============================================================================

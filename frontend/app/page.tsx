@@ -6,6 +6,7 @@ import RoleSelector from '@/components/landing/RoleSelector'
 import FeaturesSection from '@/components/landing/FeaturesSection'
 import Separator from '@/components/landing/Separator'
 import HowItWorks from '@/components/landing/HowItWorks'
+import AboutSection from '@/components/landing/AboutSection'
 import FAQSection from '@/components/landing/FAQSection'
 import CTASection from '@/components/landing/CTASection'
 import Footer from '@/components/landing/Footer'
@@ -24,6 +25,7 @@ export default function Home() {
         <section id="how-it-works" className="-mt-8">
           <HowItWorks />
         </section>
+        <AboutSection />
         <section id="faq" className="-mt-6">
           <FAQSection />
         </section>

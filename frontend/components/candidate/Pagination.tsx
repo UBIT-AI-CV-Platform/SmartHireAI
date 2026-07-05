@@ -1,5 +1,7 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
+
 export default function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
   if (totalPages <= 1) return null
 
@@ -17,7 +19,7 @@ export default function Pagination({ page, totalPages, onChange }: { page: numbe
   return (
     <div className="flex items-center justify-center gap-1.5 mt-6">
       <button onClick={() => go(page - 1)} disabled={page === 1} className="h-9 w-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-on-surface hover:bg-surface-container-low transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-        <span className="material-symbols-outlined text-lg">chevron_left</span>
+        <Icon name="chevron_left" className="text-lg" />
       </button>
       {pages.map((p, i) =>
         p === '…' ? (
@@ -27,7 +29,7 @@ export default function Pagination({ page, totalPages, onChange }: { page: numbe
         )
       )}
       <button onClick={() => go(page + 1)} disabled={page === totalPages} className="h-9 w-9 flex items-center justify-center rounded-xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-on-surface hover:bg-surface-container-low transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-        <span className="material-symbols-outlined text-lg">chevron_right</span>
+        <Icon name="chevron_right" className="text-lg" />
       </button>
     </div>
   )

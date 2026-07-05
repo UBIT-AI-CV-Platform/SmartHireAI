@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import PostCard from './PostCard'
 import ThemeToggle from '@/components/shared/ThemeToggle'
+import { Icon } from '@/components/ui/icon'
+import BrandLogo from '@/components/shared/BrandLogo'
 import type { MeSnapshot } from './CreatePost'
 import type { Post } from '@/lib/social'
 
@@ -46,14 +48,11 @@ export default function SinglePostView({ postId }: { postId: string }) {
     <div className="min-h-screen bg-slate-50 dark:bg-[#0e0e10] text-slate-900 dark:text-slate-100">
       <header className="sticky top-0 z-40 flex items-center justify-between px-4 md:px-8 h-14 bg-white/80 dark:bg-[#1c1c1e]/80 backdrop-blur-md border-b border-slate-200/70 dark:border-white/10">
         <button onClick={() => router.back()} className="flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
-          <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+          <Icon name="arrow_back" className="text-[20px]" />
           <span className="hidden sm:inline">Back</span>
         </button>
-        <Link href={homeHref} className="flex items-center gap-2">
-          <div className="w-8 h-8 premium-gradient rounded-lg flex items-center justify-center text-white shadow">
-            <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-          </div>
-          <span className="font-black tracking-tight hidden sm:inline">SmartHire AI</span>
+        <Link href={homeHref}>
+          <BrandLogo size={28} />
         </Link>
         <ThemeToggle />
       </header>
@@ -67,7 +66,7 @@ export default function SinglePostView({ postId }: { postId: string }) {
           </div>
         ) : notFound || !post ? (
           <div className="text-center py-28">
-            <span className="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600">feed</span>
+            <Icon name="feed" className="text-6xl text-slate-300 dark:text-slate-600" />
             <h2 className="text-xl font-bold mt-4">Post not found</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">It may have been deleted.</p>
             <Link href={homeHref} className="inline-block mt-5 px-5 py-2.5 rounded-full text-sm font-semibold text-white premium-gradient">Go to dashboard</Link>

@@ -6,12 +6,12 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  * Cross-browser voice-to-text hook.
  *
  * Two engines, picked automatically:
- *   1. Web Speech API (Chrome / Edge / Safari) — live interim transcription, no key.
+ *   1. Web Speech API (Chrome / Edge / Safari) - live interim transcription, no key.
  *   2. MediaRecorder → /api/transcribe (Gemini) fallback (Firefox + anything without
  *      Web Speech). Records audio, sends it to our server route which transcribes it
  *      with the free Gemini key. Final text only (no live interim).
  *
- * Both engines need a SECURE CONTEXT (https or localhost) — opening the app over a
+ * Both engines need a SECURE CONTEXT (https or localhost) - opening the app over a
  * plain-http LAN IP disables microphone access in every browser, so we surface a
  * clear message instead of failing silently.
  *
@@ -45,7 +45,7 @@ function mapSpeechError(code?: string): string {
     case 'service-not-allowed':
       return 'Microphone access is blocked. Allow it in your browser’s site settings, then try again.'
     case 'no-speech':
-      return 'Didn’t catch that — please try speaking again.'
+      return 'Didn’t catch that - please try speaking again.'
     case 'audio-capture':
       return 'No microphone found. Plug one in and try again.'
     case 'network':
@@ -163,7 +163,7 @@ export function useVoiceInput({ onTranscript }: Options) {
           const data = await res.json().catch(() => ({}))
           if (!res.ok) throw new Error(data.error || 'Transcription failed.')
           if (data.text) cbRef.current(String(data.text).trim(), true)
-          else setError('Didn’t catch that — please try speaking again.')
+          else setError('Didn’t catch that - please try speaking again.')
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Transcription failed.')
         } finally {

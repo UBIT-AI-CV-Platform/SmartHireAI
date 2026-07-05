@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Icon } from '@/components/ui/icon'
 
 type Notif = { id: string; type: string; title: string; body: string | null; link: string | null; is_read: boolean; created_at: string }
 
@@ -103,7 +104,7 @@ export default function RecruiterNotificationsPage() {
         </div>
         {unreadCount > 0 && (
           <button onClick={markAllRead} className="px-4 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-bold text-xs hover:bg-surface-container transition-colors flex items-center gap-1.5 flex-shrink-0">
-            <span className="material-symbols-outlined text-base">done_all</span><span className="hidden sm:inline">Mark all read</span>
+            <Icon name="done_all" className="text-base" /><span className="hidden sm:inline">Mark all read</span>
           </button>
         )}
       </header>
@@ -127,14 +128,14 @@ export default function RecruiterNotificationsPage() {
         </div>
       ) : loadError ? (
         <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
-          <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn’t load notifications</h2>
+          <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-5"><Icon name="cloud_off" className="text-3xl" /></div>
+          <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn't load notifications</h2>
           <p className="text-sm text-on-surface-variant max-w-md mb-4">Something went wrong. Please try again.</p>
-          <button onClick={load} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>
+          <button onClick={load} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><Icon name="refresh" className="text-base" />Retry</button>
         </div>
       ) : shown.length === 0 ? (
         <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-5"><span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>notifications</span></div>
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-5"><Icon name="notifications" className="text-3xl" solid /></div>
           <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">{filter === 'unread' ? 'No unread notifications' : filter === 'read' ? 'No read notifications' : 'No notifications yet'}</h2>
           <p className="text-sm text-on-surface-variant max-w-md">You&apos;ll get an alert here whenever a candidate applies to one of your jobs.</p>
         </div>
@@ -144,7 +145,7 @@ export default function RecruiterNotificationsPage() {
             const m = meta(n.type)
             return (
               <div key={n.id} className={`group flex items-start gap-3 p-4 rounded-2xl border transition-colors ${n.is_read ? 'bg-white dark:bg-[#2c2c2e] border-surface-container' : 'bg-primary/5 border-primary/20'}`}>
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${m.cls}`}><span className="material-symbols-outlined">{m.icon}</span></div>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${m.cls}`}><Icon name={m.icon} /></div>
                 <button onClick={() => openNotif(n)} className="flex-1 min-w-0 text-left">
                   <p className="text-sm font-bold text-on-surface">{n.title}</p>
                   {n.body && <p className="text-sm text-on-surface-variant mt-0.5">{n.body}</p>}
@@ -152,8 +153,8 @@ export default function RecruiterNotificationsPage() {
                 </button>
                 {!n.is_read && <span className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0 mt-1" />}
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <button onClick={() => toggleRead(n)} title={n.is_read ? 'Mark unread' : 'Mark read'} className="text-on-surface-variant hover:text-primary p-1.5 rounded-lg hover:bg-primary/5 opacity-0 group-hover:opacity-100 transition"><span className="material-symbols-outlined text-base">{n.is_read ? 'mark_email_unread' : 'mark_email_read'}</span></button>
-                  <button onClick={() => remove(n)} title="Delete" className="text-on-surface-variant hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15 opacity-0 group-hover:opacity-100 transition"><span className="material-symbols-outlined text-base">delete</span></button>
+                  <button onClick={() => toggleRead(n)} title={n.is_read ? 'Mark unread' : 'Mark read'} className="text-on-surface-variant hover:text-primary p-1.5 rounded-lg hover:bg-primary/5 opacity-0 group-hover:opacity-100 transition"><Icon name={n.is_read ? 'mark_email_unread' : 'mark_email_read'} className="text-base" /></button>
+                  <button onClick={() => remove(n)} title="Delete" className="text-on-surface-variant hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15 opacity-0 group-hover:opacity-100 transition"><Icon name="delete" className="text-base" /></button>
                 </div>
               </div>
             )

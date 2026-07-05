@@ -7,7 +7,7 @@ export const runtime = 'nodejs'
 export const maxDuration = 30
 
 // Send a branded email best-effort. Returns false (never throws to the caller)
-// when SMTP isn't configured — inbox actions must keep working without email.
+// when SMTP isn't configured - inbox actions must keep working without email.
 async function sendMail(to: string, subject: string, html: string, fromName: string) {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com'
   const port = Number(process.env.SMTP_PORT || 465)
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     } else {
       return NextResponse.json({ error: 'Unknown event.' }, { status: 400 })
     }
-    if (!emailed) console.warn(`[inbox] ${event} email skipped — SMTP not configured or no recipient email`)
+    if (!emailed) console.warn(`[inbox] ${event} email skipped - SMTP not configured or no recipient email`)
     return NextResponse.json({ emailed })
   } catch (e) {
     console.error('[inbox] email failed:', e instanceof Error ? e.message : e)

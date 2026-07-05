@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { initials, relativeTime, type Post } from '@/lib/social'
+import { Icon } from '@/components/ui/icon'
 import type { MeSnapshot } from './CreatePost'
 
 type Snapshot = { post_id: string; author_name: string | null; author_username: string | null; author_photo: string | null; content: string | null; image_url: string | null; created_at: string | null }
@@ -45,7 +46,7 @@ export default function RepostModal({ post, me, onClose, onReposted }: { post: P
       <div className="relative w-full max-w-lg bg-white dark:bg-[#1c1c1e] rounded-3xl shadow-2xl border border-slate-200/70 dark:border-white/10 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200/70 dark:border-white/10">
           <h3 className="font-bold text-slate-900 dark:text-slate-100">Repost</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400"><span className="material-symbols-outlined">close</span></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400"><Icon name="close" /></button>
         </div>
         <div className="p-4">
           <div className="flex gap-3">

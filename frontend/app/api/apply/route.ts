@@ -87,9 +87,9 @@ export async function POST(request: Request) {
       location: job.location,
       matchScore: score,
     })
-    if (!emailed) console.warn('[apply] confirmation email skipped — SMTP env vars not set, or no candidate email')
+    if (!emailed) console.warn('[apply] confirmation email skipped - SMTP env vars not set, or no candidate email')
   } catch (e) {
-    // email is best-effort — never fail the application because of it
+    // email is best-effort - never fail the application because of it
     console.error('[apply] confirmation email failed:', e instanceof Error ? e.message : e)
     emailed = false
   }

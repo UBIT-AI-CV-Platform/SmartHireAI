@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { Icon } from '@/components/ui/icon'
 
 type Job = { id: string; title: string; company: string; location: string | null; description: string | null; salary: string | null; skills: string[]; is_open: boolean; expires_at: string | null; created_at: string }
 type Form = { title: string; company: string; location: string; salary: string; skills: string; description: string; expires_at: string }
@@ -149,7 +150,7 @@ export default function RecruiterJobsPage() {
           <p className="text-on-surface-variant text-xs sm:text-sm md:text-base mt-1 sm:mt-2">{jobs.length} post{jobs.length === 1 ? '' : 's'} · {totalApplicants} applicant{totalApplicants === 1 ? '' : 's'}</p>
         </div>
         <button onClick={openNew} className="px-5 py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
-          <span className="material-symbols-outlined">add</span>Post a Job
+          <Icon name="add" />Post a Job
         </button>
       </header>
 
@@ -163,9 +164,9 @@ export default function RecruiterJobsPage() {
 
       {shown.length === 0 ? (
         <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 rounded-2xl premium-gradient flex items-center justify-center text-white shadow-lg mb-4"><span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>{tab === 'active' ? 'post_add' : 'history'}</span></div>
+          <div className="w-16 h-16 rounded-2xl premium-gradient flex items-center justify-center text-white shadow-lg mb-4"><Icon name={tab === 'active' ? 'post_add' : 'history'} className="text-3xl" solid /></div>
           <h3 className="text-lg md:text-xl font-bold text-on-surface mb-2">{tab === 'active' ? 'No active jobs' : 'No expired jobs'}</h3>
-          <p className="text-sm text-on-surface-variant max-w-md mb-5">{tab === 'active' ? 'Post a role — it appears instantly for candidates to apply to.' : 'Jobs past their deadline land here. You can repost them anytime.'}</p>
+          <p className="text-sm text-on-surface-variant max-w-md mb-5">{tab === 'active' ? 'Post a role - it appears instantly for candidates to apply to.' : 'Jobs past their deadline land here. You can repost them anytime.'}</p>
           {tab === 'active' && <button onClick={openNew} className="px-5 py-3 rounded-2xl premium-gradient text-white font-bold text-sm">Post a Job</button>}
         </div>
       ) : (
@@ -192,15 +193,15 @@ export default function RecruiterJobsPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-surface-container">
-                  <span className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 text-primary font-bold text-sm"><span className="material-symbols-outlined text-base">group</span>{counts[job.id] || 0} Applicant{(counts[job.id] || 0) === 1 ? '' : 's'}</span>
+                  <span className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 text-primary font-bold text-sm"><Icon name="group" className="text-base" />{counts[job.id] || 0} Applicant{(counts[job.id] || 0) === 1 ? '' : 's'}</span>
                   <div className="flex items-center gap-1">
                     {expired ? (
-                      <button onClick={() => openEdit(job, true)} className="px-3 py-2 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-1.5 hover:scale-[1.03] transition-all"><span className="material-symbols-outlined text-base">restart_alt</span>Repost</button>
+                      <button onClick={() => openEdit(job, true)} className="px-3 py-2 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-1.5 hover:scale-[1.03] transition-all"><Icon name="restart_alt" className="text-base" />Repost</button>
                     ) : (
-                      <button onClick={() => toggleOpen(job)} title={job.is_open ? 'Close' : 'Reopen'} className="px-3 py-2 rounded-xl text-on-surface-variant font-bold text-sm hover:bg-surface-container-low transition-colors flex items-center gap-1.5"><span className="material-symbols-outlined text-base">{job.is_open ? 'lock' : 'lock_open'}</span><span className="hidden sm:inline">{job.is_open ? 'Close' : 'Reopen'}</span></button>
+                      <button onClick={() => toggleOpen(job)} title={job.is_open ? 'Close' : 'Reopen'} className="px-3 py-2 rounded-xl text-on-surface-variant font-bold text-sm hover:bg-surface-container-low transition-colors flex items-center gap-1.5"><Icon name={job.is_open ? 'lock' : 'lock_open'} className="text-base" /><span className="hidden sm:inline">{job.is_open ? 'Close' : 'Reopen'}</span></button>
                     )}
-                    <button onClick={() => openEdit(job)} title="Edit" className="px-3 py-2 rounded-xl text-on-surface-variant font-bold text-sm hover:bg-surface-container-low transition-colors flex items-center gap-1.5"><span className="material-symbols-outlined text-base">edit</span><span className="hidden sm:inline">Edit</span></button>
-                    <button onClick={() => deleteJob(job)} title="Delete" className="p-2 rounded-xl text-on-surface-variant hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"><span className="material-symbols-outlined text-base">delete</span></button>
+                    <button onClick={() => openEdit(job)} title="Edit" className="px-3 py-2 rounded-xl text-on-surface-variant font-bold text-sm hover:bg-surface-container-low transition-colors flex items-center gap-1.5"><Icon name="edit" className="text-base" /><span className="hidden sm:inline">Edit</span></button>
+                    <button onClick={() => deleteJob(job)} title="Delete" className="p-2 rounded-xl text-on-surface-variant hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"><Icon name="delete" className="text-base" /></button>
                   </div>
                 </div>
               </div>
@@ -221,15 +222,15 @@ export default function RecruiterJobsPage() {
             </div>
           </div>
           <a href="/recruiter/ai-screening" className="block p-5 rounded-[1.5rem] bg-[#2c1f4a] text-white shadow-xl hover:-translate-y-0.5 transition-all">
-            <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center mb-3"><span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span></div>
+            <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center mb-3"><Icon name="auto_awesome" solid /></div>
             <h3 className="text-base font-bold mb-1">AI Screening</h3>
             <p className="text-indigo-200/80 text-xs">Rank applicants & build interview kits with AI.</p>
           </a>
           <div className="p-5 rounded-[1.5rem] bg-pink-200/50 dark:bg-pink-500/15 border border-pink-300/30 dark:border-pink-500/20">
-            <div className="flex items-center gap-2 mb-2"><span className="material-symbols-outlined text-pink-700 dark:text-pink-300" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span><h3 className="text-sm font-black text-pink-950 dark:text-pink-200">Posting tips</h3></div>
+            <div className="flex items-center gap-2 mb-2"><Icon name="lightbulb" className="text-pink-700 dark:text-pink-300" solid /><h3 className="text-sm font-black text-pink-950 dark:text-pink-200">Posting tips</h3></div>
             <ul className="text-xs text-pink-900/80 dark:text-pink-200/80 leading-relaxed space-y-1.5 list-disc list-inside">
               <li>Set a clear deadline so the post auto-archives.</li>
-              <li>List exact skills — it powers candidate match scores.</li>
+              <li>List exact skills - it powers candidate match scores.</li>
               <li>Use <b>Write with AI</b> for a polished description.</li>
             </ul>
           </div>
@@ -254,12 +255,12 @@ export default function RecruiterJobsPage() {
                   <p className="text-on-surface-variant text-sm">{viewJob.company}{viewJob.location ? ` • ${viewJob.location}` : ''}</p>
                   {dl && <p className={`text-xs font-bold mt-1 inline-block px-2 py-0.5 rounded ${dl.cls}`}>{dl.text}</p>}
                 </div>
-                <button onClick={() => setViewJob(null)} className="text-on-surface-variant hover:text-on-surface p-1 flex-shrink-0"><span className="material-symbols-outlined">close</span></button>
+                <button onClick={() => setViewJob(null)} className="text-on-surface-variant hover:text-on-surface p-1 flex-shrink-0"><Icon name="close" /></button>
               </div>
               <div className="p-5 overflow-y-auto flex-1 space-y-4">
                 <div className="flex flex-wrap gap-2">
-                  {viewJob.salary && <span className="px-3 py-1.5 bg-green-50 text-green-700 dark:bg-green-500/15 dark:text-green-300 text-xs font-bold rounded-lg flex items-center gap-1.5"><span className="material-symbols-outlined text-sm">payments</span>{viewJob.salary}</span>}
-                  <span className="px-3 py-1.5 bg-primary/10 text-primary text-xs font-bold rounded-lg flex items-center gap-1.5"><span className="material-symbols-outlined text-sm">group</span>{counts[viewJob.id] || 0} applicant{(counts[viewJob.id] || 0) === 1 ? '' : 's'}</span>
+                  {viewJob.salary && <span className="px-3 py-1.5 bg-green-50 text-green-700 dark:bg-green-500/15 dark:text-green-300 text-xs font-bold rounded-lg flex items-center gap-1.5"><Icon name="payments" className="text-sm" />{viewJob.salary}</span>}
+                  <span className="px-3 py-1.5 bg-primary/10 text-primary text-xs font-bold rounded-lg flex items-center gap-1.5"><Icon name="group" className="text-sm" />{counts[viewJob.id] || 0} applicant{(counts[viewJob.id] || 0) === 1 ? '' : 's'}</span>
                 </div>
                 {viewJob.skills.length > 0 && (
                   <div>
@@ -274,7 +275,7 @@ export default function RecruiterJobsPage() {
               </div>
               <div className="p-4 border-t border-surface-container flex gap-3">
                 <button onClick={() => setViewJob(null)} className="px-5 py-3 rounded-2xl bg-surface-container-low text-on-surface font-bold text-sm hover:bg-surface-container transition-colors">Close</button>
-                <button onClick={() => { const j = viewJob; setViewJob(null); openEdit(j) }} className="flex-1 py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 hover:scale-[1.02] transition-all"><span className="material-symbols-outlined text-lg">edit</span>Edit job</button>
+                <button onClick={() => { const j = viewJob; setViewJob(null); openEdit(j) }} className="flex-1 py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 hover:scale-[1.02] transition-all"><Icon name="edit" className="text-lg" />Edit job</button>
               </div>
             </div>
           </div>
@@ -287,8 +288,8 @@ export default function RecruiterJobsPage() {
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowForm(false)} />
           <div className="relative z-10 w-full max-w-xl bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
             <div className="p-5 border-b border-surface-container flex items-center justify-between">
-              <h3 className="text-lg font-bold text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">{reposting ? 'restart_alt' : editId ? 'edit' : 'post_add'}</span>{reposting ? 'Repost Job' : editId ? 'Edit Job' : 'Post a Job'}</h3>
-              <button onClick={() => setShowForm(false)} className="text-on-surface-variant hover:text-on-surface p-1"><span className="material-symbols-outlined">close</span></button>
+              <h3 className="text-lg font-bold text-on-surface flex items-center gap-2"><Icon name={reposting ? 'restart_alt' : editId ? 'edit' : 'post_add'} className="text-primary" />{reposting ? 'Repost Job' : editId ? 'Edit Job' : 'Post a Job'}</h3>
+              <button onClick={() => setShowForm(false)} className="text-on-surface-variant hover:text-on-surface p-1"><Icon name="close" /></button>
             </div>
             <div className="p-5 overflow-y-auto space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -306,17 +307,17 @@ export default function RecruiterJobsPage() {
                 <div className="flex items-center justify-between mb-2 ml-1">
                   <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Description</label>
                   <button type="button" onClick={writeJD} disabled={jdLoading} className="flex items-center gap-1 text-xs font-bold text-primary hover:underline disabled:opacity-60">
-                    <span className="material-symbols-outlined text-sm">{jdLoading ? 'hourglass_top' : 'auto_awesome'}</span>{jdLoading ? 'Writing…' : 'Write with AI'}
+                    <Icon name={jdLoading ? 'hourglass_top' : 'auto_awesome'} className="text-sm" />{jdLoading ? 'Writing…' : 'Write with AI'}
                   </button>
                 </div>
-                <textarea value={form.description} onChange={(e) => set('description', e.target.value)} rows={5} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#2c2c2e] transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none resize-none" placeholder="Describe the role, responsibilities, and requirements — or let AI write it." />
+                <textarea value={form.description} onChange={(e) => set('description', e.target.value)} rows={5} className="w-full px-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#2c2c2e] transition-all text-on-surface text-sm font-medium placeholder:text-outline-variant outline-none resize-none" placeholder="Describe the role, responsibilities, and requirements - or let AI write it." />
               </div>
-              {formError && <div className="flex items-start gap-2 rounded-xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 px-4 py-3"><span className="material-symbols-outlined text-red-500">error</span><p className="text-sm text-red-700 dark:text-red-300 font-medium">{formError}</p></div>}
+              {formError && <div className="flex items-start gap-2 rounded-xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 px-4 py-3"><Icon name="error" className="text-red-500" /><p className="text-sm text-red-700 dark:text-red-300 font-medium">{formError}</p></div>}
             </div>
             <div className="p-4 border-t border-surface-container flex gap-3">
               <button onClick={() => setShowForm(false)} className="flex-1 py-3 rounded-2xl bg-surface-container-low text-on-surface font-bold text-sm hover:bg-surface-container transition-colors">Cancel</button>
               <button onClick={submit} disabled={saving} className="flex-1 py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 hover:scale-[1.02] transition-all disabled:opacity-60">
-                <span className="material-symbols-outlined text-lg">{saving ? 'hourglass_top' : 'check'}</span>{saving ? 'Saving...' : reposting ? 'Repost Job' : editId ? 'Save changes' : 'Post Job'}
+                <Icon name={saving ? 'hourglass_top' : 'check'} className="text-lg" />{saving ? 'Saving...' : reposting ? 'Repost Job' : editId ? 'Save changes' : 'Post Job'}
               </button>
             </div>
           </div>
@@ -352,10 +353,10 @@ function ErrorBox({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="p-4 md:p-8 lg:p-10 max-w-5xl mx-auto">
       <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-        <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
-        <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn’t load jobs</h2>
+        <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-5"><Icon name="cloud_off" className="text-3xl" /></div>
+        <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn't load jobs</h2>
         <p className="text-sm text-on-surface-variant max-w-md mb-4">Something went wrong. Please try again.</p>
-        <button onClick={onRetry} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>
+        <button onClick={onRetry} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><Icon name="refresh" className="text-base" />Retry</button>
       </div>
     </div>
   )

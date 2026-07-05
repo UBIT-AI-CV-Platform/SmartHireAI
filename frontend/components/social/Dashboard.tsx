@@ -7,6 +7,7 @@ import Feed from './Feed'
 import WhoToFollow from './WhoToFollow'
 import PeopleSearchBar from './PeopleSearchBar'
 import { initials } from '@/lib/social'
+import { Icon } from '@/components/ui/icon'
 
 type Role = 'candidate' | 'recruiter'
 
@@ -21,13 +22,13 @@ export default function Dashboard({ role }: { role: Role }) {
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-5 md:py-7">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-        {/* LEFT ~60% — search + feed */}
+        {/* LEFT ~60% - search + feed */}
         <div className="lg:col-span-3 space-y-4">
           <PeopleSearchBar />
           <Feed networkHref={base} embedded />
         </div>
 
-        {/* RIGHT ~40% — profile + details (top-aligned with the search) */}
+        {/* RIGHT ~40% - profile + details (top-aligned with the search) */}
         <div className="lg:col-span-2 space-y-4">
           <ProfileMiniCard base={base} />
           {role === 'candidate' ? <CandidateRail /> : <RecruiterRail />}
@@ -81,7 +82,7 @@ function RailCard({ title, icon, href, hrefLabel, children }: { title: string; i
   return (
     <div className="bg-white dark:bg-[#1c1c1e] rounded-3xl border border-slate-200/70 dark:border-white/10 p-5 shadow-sm">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-1.5"><span className="material-symbols-outlined text-[18px] text-primary">{icon}</span>{title}</h3>
+        <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-1.5"><Icon name={icon} className="text-[18px] text-primary" />{title}</h3>
         {href && <Link href={href} className="text-xs font-semibold text-primary hover:underline">{hrefLabel || 'View all'}</Link>}
       </div>
       {children}
@@ -155,7 +156,7 @@ function CandidateRail() {
       <div className="grid grid-cols-2 gap-3">
         {statItems.map((s) => (
           <Link key={s.label} href={s.href} className="bg-white dark:bg-[#1c1c1e] rounded-2xl border border-slate-200/70 dark:border-white/10 p-3.5 shadow-sm hover:-translate-y-0.5 transition-transform">
-            <span className="material-symbols-outlined text-primary text-[20px]">{s.icon}</span>
+            <Icon name={s.icon} className="text-primary text-[20px]" />
             <p className="text-2xl font-black text-slate-900 dark:text-slate-100 mt-1">{s.value}</p>
             <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{s.label}</p>
           </Link>
@@ -181,7 +182,7 @@ function CandidateRail() {
           <div className="space-y-1.5">
             {items.filter((i) => !i.done).slice(0, 4).map((i) => (
               <div key={i.label} className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                <span className="material-symbols-outlined text-[18px] text-slate-300 dark:text-slate-600">radio_button_unchecked</span>{i.label}
+                <Icon name="radio_button_unchecked" className="text-[18px] text-slate-300 dark:text-slate-600" />{i.label}
               </div>
             ))}
           </div>
@@ -208,7 +209,7 @@ function CandidateRail() {
         <div className="grid grid-cols-2 gap-2">
           {quickActions.map((a) => (
             <Link key={a.label} href={a.href} className="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200/70 dark:border-white/10 hover:border-primary/40 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-              <span className="material-symbols-outlined text-primary text-[18px]">{a.icon}</span>
+              <Icon name={a.icon} className="text-primary text-[18px]" />
               <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{a.label}</span>
             </Link>
           ))}
@@ -282,7 +283,7 @@ function RecruiterRail() {
             { label: 'Analytics', icon: 'monitoring', href: '/recruiter/analytics' },
           ].map((a) => (
             <Link key={a.label} href={a.href} className="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200/70 dark:border-white/10 hover:border-primary/40 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-              <span className="material-symbols-outlined text-primary text-[18px]">{a.icon}</span>
+              <Icon name={a.icon} className="text-primary text-[18px]" />
               <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{a.label}</span>
             </Link>
           ))}
