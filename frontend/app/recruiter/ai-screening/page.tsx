@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import CVPreview, { type CVContent } from '@/components/candidate/CVPreview'
 import Copilot from '@/components/recruiter/Copilot'
+import { Icon } from '@/components/ui/icon'
 
 type Job = { id: string; title: string; company: string }
 type Ranked = { application_id: string; name: string; score: number; verdict: string; strengths: string[]; concerns: string[]; recommendation: 'Shortlist' | 'Maybe' | 'Pass' }
@@ -87,14 +88,14 @@ export default function AIScreeningPage() {
     <div className="p-4 md:p-8 lg:p-10 max-w-5xl mx-auto">
       <header className="mb-5">
         <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-[2.25rem] font-bold tracking-tight text-on-surface leading-tight flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>AI Tools
+          <Icon name="auto_awesome" className="text-primary text-3xl" solid />AI Tools
         </h1>
         <p className="text-on-surface-variant text-xs sm:text-sm md:text-base mt-1 sm:mt-2">Rank applicants, build interview kits, and chat with your recruiting copilot.</p>
       </header>
 
       <div className="flex bg-surface-container-low rounded-2xl p-1 mb-5 w-fit">
         <button onClick={() => setTab('screen')} className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === 'screen' ? 'bg-white dark:bg-[#2c2c2e] shadow text-primary' : 'text-on-surface-variant'}`}>Screening</button>
-        <button onClick={() => setTab('copilot')} className={`px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-1.5 transition-all ${tab === 'copilot' ? 'bg-white dark:bg-[#2c2c2e] shadow text-primary' : 'text-on-surface-variant'}`}><span className="material-symbols-outlined text-base">smart_toy</span>Copilot</button>
+        <button onClick={() => setTab('copilot')} className={`px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-1.5 transition-all ${tab === 'copilot' ? 'bg-white dark:bg-[#2c2c2e] shadow text-primary' : 'text-on-surface-variant'}`}><Icon name="smart_toy" className="text-base" />Copilot</button>
       </div>
 
       {tab === 'copilot' ? <Copilot /> : (
@@ -102,25 +103,25 @@ export default function AIScreeningPage() {
       {/* Controls */}
       <div className="bg-white dark:bg-[#2c2c2e] p-3 md:p-4 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container mb-5 flex flex-col sm:flex-row gap-3 sm:items-center">
         <div className="relative flex-1">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none">work</span>
+          <Icon name="work" className="absolute left-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none" />
           <select value={jobId} onChange={(e) => setJobId(e.target.value)} className="w-full appearance-none pl-12 pr-10 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#2c2c2e] transition-all text-on-surface font-medium outline-none cursor-pointer" disabled={jobs.length === 0}>
             {jobs.length === 0 ? <option>No jobs yet</option> : jobs.map((j) => <option key={j.id} value={j.id}>{j.title} · {j.company}</option>)}
           </select>
-          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+          <Icon name="expand_more" className="absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none" />
         </div>
         <div className="flex bg-surface-container-low rounded-2xl p-1">
           <button onClick={() => setMode('rank')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${mode === 'rank' ? 'bg-white dark:bg-[#2c2c2e] shadow text-primary' : 'text-on-surface-variant'}`}>Rank Applicants</button>
           <button onClick={() => setMode('kit')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${mode === 'kit' ? 'bg-white dark:bg-[#2c2c2e] shadow text-primary' : 'text-on-surface-variant'}`}>Interview Kit</button>
         </div>
         <button onClick={run} disabled={loading || !jobId} className="px-6 py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 disabled:hover:scale-100">
-          <span className="material-symbols-outlined">{loading ? 'hourglass_top' : 'magic_button'}</span>
+          <Icon name={loading ? 'hourglass_top' : 'magic_button'} />
           {loading ? 'Thinking...' : mode === 'rank' ? 'Analyze' : 'Generate kit'}
         </button>
       </div>
 
       {error && (
         <div className="mb-5 flex items-start gap-2 rounded-2xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/30 px-4 py-3">
-          <span className="material-symbols-outlined text-red-500">error</span>
+          <Icon name="error" className="text-red-500" />
           <p className="text-sm text-red-700 dark:text-red-300 font-medium">{error}</p>
         </div>
       )}
@@ -142,7 +143,7 @@ export default function AIScreeningPage() {
         ) : (
           <div className="space-y-3">
             <div className="p-5 rounded-[1.5rem] bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-xl">
-              <h3 className="text-sm font-bold mb-1 flex items-center gap-2"><span className="material-symbols-outlined text-base">summarize</span>AI Summary</h3>
+              <h3 className="text-sm font-bold mb-1 flex items-center gap-2"><Icon name="summarize" className="text-base" />AI Summary</h3>
               <p className="text-sm text-indigo-50 leading-relaxed">{screen.overall_summary}</p>
             </div>
             {screen.ranked.map((r, i) => {
@@ -168,18 +169,18 @@ export default function AIScreeningPage() {
                         {r.strengths.length > 0 && (
                           <div>
                             <p className="text-[10px] font-black text-green-700 dark:text-green-300 uppercase tracking-widest mb-1">Strengths</p>
-                            <ul className="space-y-1">{r.strengths.map((s, j) => <li key={j} className="text-xs text-on-surface flex items-start gap-1"><span className="material-symbols-outlined text-green-500 text-sm">add</span>{s}</li>)}</ul>
+                            <ul className="space-y-1">{r.strengths.map((s, j) => <li key={j} className="text-xs text-on-surface flex items-start gap-1"><Icon name="add" className="text-green-500 text-sm" />{s}</li>)}</ul>
                           </div>
                         )}
                         {r.concerns.length > 0 && (
                           <div>
                             <p className="text-[10px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-widest mb-1">Concerns</p>
-                            <ul className="space-y-1">{r.concerns.map((s, j) => <li key={j} className="text-xs text-on-surface flex items-start gap-1"><span className="material-symbols-outlined text-amber-500 text-sm">remove</span>{s}</li>)}</ul>
+                            <ul className="space-y-1">{r.concerns.map((s, j) => <li key={j} className="text-xs text-on-surface flex items-start gap-1"><Icon name="remove" className="text-amber-500 text-sm" />{s}</li>)}</ul>
                           </div>
                         )}
                       </div>
                       {cv && (
-                        <button onClick={() => setViewCv(cv)} className="mt-3 text-xs font-bold text-primary hover:underline flex items-center gap-1"><span className="material-symbols-outlined text-sm">description</span>View CV</button>
+                        <button onClick={() => setViewCv(cv)} className="mt-3 text-xs font-bold text-primary hover:underline flex items-center gap-1"><Icon name="description" className="text-sm" />View CV</button>
                       )}
                     </div>
                   </div>
@@ -195,11 +196,11 @@ export default function AIScreeningPage() {
           <div className="space-y-4">
             <div className="p-5 rounded-[1.5rem] bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-xl flex items-start justify-between gap-3">
               <p className="text-sm text-indigo-50 leading-relaxed">{kit.intro}</p>
-              <button onClick={() => navigator.clipboard.writeText(kitText)} title="Copy kit" className="flex-shrink-0 px-3 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs flex items-center gap-1.5 transition-colors"><span className="material-symbols-outlined text-base">content_copy</span>Copy</button>
+              <button onClick={() => navigator.clipboard.writeText(kitText)} title="Copy kit" className="flex-shrink-0 px-3 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs flex items-center gap-1.5 transition-colors"><Icon name="content_copy" className="text-base" />Copy</button>
             </div>
             {kit.categories.map((c, i) => (
               <div key={i} className="bg-white dark:bg-[#2c2c2e] p-5 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
-                <h3 className="text-sm font-black text-on-surface uppercase tracking-wide mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-primary text-lg">label</span>{c.name}</h3>
+                <h3 className="text-sm font-black text-on-surface uppercase tracking-wide mb-3 flex items-center gap-2"><Icon name="label" className="text-primary text-lg" />{c.name}</h3>
                 <div className="space-y-3">
                   {c.questions.map((q, j) => (
                     <div key={j} className="pl-3 border-l-2 border-primary/30">
@@ -212,11 +213,11 @@ export default function AIScreeningPage() {
             ))}
             {kit.red_flags.length > 0 && (
               <div className="bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 p-5 rounded-[1.5rem]">
-                <h3 className="text-sm font-black text-amber-900 dark:text-amber-300 mb-2 flex items-center gap-2"><span className="material-symbols-outlined text-amber-600 text-lg">flag</span>Red Flags</h3>
-                <ul className="space-y-1">{kit.red_flags.map((r, i) => <li key={i} className="text-sm text-amber-900 dark:text-amber-300 flex items-start gap-1.5"><span className="material-symbols-outlined text-amber-500 text-sm mt-0.5">warning</span>{r}</li>)}</ul>
+                <h3 className="text-sm font-black text-amber-900 dark:text-amber-300 mb-2 flex items-center gap-2"><Icon name="flag" className="text-amber-600 text-lg" />Red Flags</h3>
+                <ul className="space-y-1">{kit.red_flags.map((r, i) => <li key={i} className="text-sm text-amber-900 dark:text-amber-300 flex items-start gap-1.5"><Icon name="warning" className="text-amber-500 text-sm mt-0.5" />{r}</li>)}</ul>
               </div>
             )}
-            <div className="bg-white dark:bg-[#2c2c2e] p-4 rounded-[1.5rem] border border-surface-container flex items-start gap-2"><span className="material-symbols-outlined text-primary">lightbulb</span><p className="text-sm text-on-surface"><span className="font-bold">Tip:</span> {kit.closing_tip}</p></div>
+            <div className="bg-white dark:bg-[#2c2c2e] p-4 rounded-[1.5rem] border border-surface-container flex items-start gap-2"><Icon name="lightbulb" className="text-primary" /><p className="text-sm text-on-surface"><span className="font-bold">Tip:</span> {kit.closing_tip}</p></div>
           </div>
         )
       )}
@@ -228,8 +229,8 @@ export default function AIScreeningPage() {
           <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-md" onClick={() => setViewCv(null)} />
           <div className="relative z-10 w-full max-w-2xl bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
             <div className="p-5 border-b border-surface-container flex items-center justify-between">
-              <h3 className="text-base font-bold text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">description</span>Candidate CV</h3>
-              <button onClick={() => setViewCv(null)} className="text-on-surface-variant hover:text-on-surface p-1"><span className="material-symbols-outlined">close</span></button>
+              <h3 className="text-base font-bold text-on-surface flex items-center gap-2"><Icon name="description" className="text-primary" />Candidate CV</h3>
+              <button onClick={() => setViewCv(null)} className="text-on-surface-variant hover:text-on-surface p-1"><Icon name="close" /></button>
             </div>
             <div className="overflow-y-auto p-6 flex-1 bg-surface-container-low/40"><CVPreview cv={viewCv} /></div>
           </div>
@@ -242,7 +243,7 @@ export default function AIScreeningPage() {
 function Empty({ icon, title, text, action }: { icon: string; title: string; text: string; action?: React.ReactNode }) {
   return (
     <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-      <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-5"><span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span></div>
+      <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-5"><Icon name={icon} className="text-3xl" solid /></div>
       <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">{title}</h2>
       <p className="text-sm text-on-surface-variant max-w-md">{text}</p>
       {action}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { Icon } from '@/components/ui/icon'
 
 interface FollowButtonProps {
   targetId: string
@@ -68,7 +69,7 @@ export default function FollowButton({ targetId, initialFollowing, onChange, siz
             : 'border-slate-200 dark:border-white/15 text-slate-600 dark:text-slate-300 bg-white dark:bg-white/5'
         } ${className}`}
       >
-        <span className="material-symbols-outlined text-[16px]">{hover ? 'person_remove' : 'check'}</span>
+        <Icon name={hover ? 'person_remove' : 'check'} className="text-[16px]" />
         {hover ? 'Unfollow' : 'Following'}
       </button>
     )
@@ -80,7 +81,7 @@ export default function FollowButton({ targetId, initialFollowing, onChange, siz
       disabled={loading}
       className={`inline-flex items-center justify-center gap-1.5 rounded-full font-semibold text-white premium-gradient shadow-sm shadow-primary/25 hover:opacity-95 transition-all disabled:opacity-60 ${pad} ${className}`}
     >
-      <span className="material-symbols-outlined text-[16px]">person_add</span>
+      <Icon name="person_add" className="text-[16px]" />
       Follow
     </button>
   )

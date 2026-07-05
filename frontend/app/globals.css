@@ -35,6 +35,26 @@ html {
   font-family: var(--font-display);
 }
 
+/* ===== Zefani - display font for headings =====
+   Drop the font file at frontend/public/fonts/ (any one format is enough;
+   the browser picks whichever exists). Falls back to Sora until then. */
+@font-face {
+  font-family: 'Zefani';
+  src:
+    url('/fonts/Zefani.woff2') format('woff2'),
+    url('/fonts/Zefani.woff') format('woff'),
+    url('/fonts/Zefani.ttf') format('truetype'),
+    url('/fonts/Zefani.otf') format('opentype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Apply to any heading we opt-in with this class (hero first, site-wide later). */
+.font-heading {
+  font-family: 'Zefani', var(--font-display);
+}
+
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
@@ -155,7 +175,7 @@ html {
   background: linear-gradient(135deg, rgba(238, 242, 255, 1) 0%, rgba(224, 231, 255, 1) 35%, rgba(245, 243, 255, 1) 70%, rgba(250, 245, 255, 1) 100%);
 }
 
-/* Landing hero background — class form so the dark theme can override it
+/* Landing hero background - class form so the dark theme can override it
    (inline styles can't be re-themed by the .dark selector). */
 .hero-gradient {
   background:
@@ -167,7 +187,7 @@ html {
     radial-gradient(ellipse at 75% 60%, rgba(79, 70, 229, 0.1) 0%, transparent 50%);
 }
 
-/* Dark hero = a clearly-visible animated "aurora" — bold indigo/violet glowing
+/* Dark hero = a clearly-visible animated "aurora" - bold indigo/violet glowing
    orbs that drift across a charcoal base. Decent, but unmistakably alive. */
 .dark .hero-gradient {
   background:
@@ -313,7 +333,7 @@ html {
   --color-outline: #8a8a8f;
   --color-outline-variant: #3a3a3c;
 
-  /* Inverse pair (used by tooltips / snackbars) — swapped for dark */
+  /* Inverse pair (used by tooltips / snackbars) - swapped for dark */
   --color-inverse-surface: #ececec;
   --color-inverse-on-surface: #1c1c1e;
   --color-inverse-primary: #c3c0ff;
@@ -441,7 +461,7 @@ html {
   box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.5);
 }
 
-/* ===== Site preloader / entry splash ===== */
+/* ===== Site preloader / entry splash (minimal, on white) ===== */
 .site-loader {
   position: fixed;
   inset: 0;
@@ -449,127 +469,66 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0d0b14;
+  background: #ffffff;
   overflow: hidden;
   cursor: pointer;
   opacity: 1;
-  transition: opacity 0.6s ease, visibility 0.6s ease;
+  transform: translateY(0);
+  transition: transform 0.65s cubic-bezier(0.7, 0, 0.2, 1), opacity 0.65s ease, visibility 0.65s ease;
 }
+.dark .site-loader { background: #1c1c1e; }
 .site-loader--leaving {
+  transform: translateY(-100%);
   opacity: 0;
   visibility: hidden;
 }
 
-/* Drifting aurora behind the mark */
-.site-loader__bg {
+/* logo badge wrapped in a rotating gradient ring */
+.loader-mark {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.loader-spinner {
   position: absolute;
-  inset: -25%;
-  background:
-    radial-gradient(circle at 30% 32%, rgba(124, 92, 255, 0.40) 0%, transparent 45%),
-    radial-gradient(circle at 72% 66%, rgba(167, 92, 255, 0.34) 0%, transparent 45%),
-    radial-gradient(circle at 55% 90%, rgba(99, 102, 241, 0.30) 0%, transparent 50%);
-  background-size: 180% 180%, 200% 200%, 200% 200%;
-  filter: blur(30px);
-  animation: loaderAurora 14s ease-in-out infinite;
-}
-@keyframes loaderAurora {
-  0%   { background-position: 0% 0%,   100% 0%,   50% 100%; }
-  50%  { background-position: 100% 80%, 0% 100%,  30% 40%; }
-  100% { background-position: 0% 0%,   100% 0%,   50% 100%; }
-}
-
-/* Pulsing badge + glow */
-.loader-badge { animation: loaderBadge 1.7s ease-in-out infinite; }
-@keyframes loaderBadge {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.08); }
-}
-.loader-glow {
-  position: absolute;
-  width: 120px;
-  height: 120px;
+  inset: 0;
   border-radius: 9999px;
-  background: radial-gradient(circle, rgba(124, 92, 255, 0.55) 0%, transparent 65%);
-  filter: blur(16px);
-  animation: loaderGlow 1.7s ease-in-out infinite;
-}
-@keyframes loaderGlow {
-  0%, 100% { opacity: 0.45; transform: scale(0.9); }
-  50% { opacity: 1; transform: scale(1.18); }
-}
-
-/* Faint static ring + orbiting dots */
-.loader-ring {
-  position: absolute;
-  width: 104px;
-  height: 104px;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-.loader-orbit {
-  position: absolute;
-  width: 104px;
-  height: 104px;
-  animation: loaderSpin 3.2s linear infinite;
+  background: conic-gradient(from 90deg, #3525cd, #712ae2, rgba(113, 42, 226, 0));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+  animation: loaderSpin 0.9s linear infinite;
 }
 @keyframes loaderSpin { to { transform: rotate(360deg); } }
-.loader-dot {
-  position: absolute;
-  width: 9px;
-  height: 9px;
-  border-radius: 9999px;
-  background: #c4b5fd;
-  top: -4.5px;
-  left: 50%;
-  margin-left: -4.5px;
-  box-shadow: 0 0 12px rgba(167, 139, 250, 0.9);
+.loader-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #3525cd, #712ae2);
+  box-shadow: 0 10px 30px -8px rgba(53, 37, 205, 0.5);
+  animation: loaderBadge 1.6s ease-in-out infinite;
 }
-.loader-dot--2 { top: auto; bottom: -4.5px; left: 50%; background: #a78bfa; }
-.loader-dot--3 { top: 50%; left: -4.5px; margin-top: -4.5px; background: #818cf8; }
+@keyframes loaderBadge {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
 
-/* Shimmering wordmark */
+/* wordmark */
 .loader-wordmark {
   font-family: var(--font-display);
-  background: linear-gradient(90deg, #c7d2fe 0%, #a78bfa 25%, #ffffff 50%, #a78bfa 75%, #c7d2fe 100%);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: loaderShimmer 2.6s linear infinite;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #191c1e;
 }
-@keyframes loaderShimmer { to { background-position: 200% center; } }
-
-/* Indeterminate progress bar */
-.loader-track {
-  position: relative;
-  width: 190px;
-  height: 4px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.10);
-  overflow: hidden;
-}
-.loader-fill {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 40%;
-  border-radius: 9999px;
-  background: linear-gradient(90deg, #6d5cff, #a78bfa);
-  animation: loaderBar 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-@keyframes loaderBar {
-  0% { transform: translateX(-120%); }
-  100% { transform: translateX(360%); }
-}
+.dark .loader-wordmark { color: #ececec; }
 
 @media (prefers-reduced-motion: reduce) {
-  .site-loader__bg,
-  .loader-badge,
-  .loader-glow,
-  .loader-orbit,
-  .loader-wordmark,
-  .loader-fill { animation: none; }
+  .loader-spinner, .loader-logo { animation: none; }
 }
 
 /* ===== CV layout (works on screen AND in the printed PDF) ===== */
@@ -599,4 +558,102 @@ html {
     break-inside: avoid;
     page-break-inside: avoid;
   }
+}
+
+/* ===== About section animated app mockup ===== */
+@keyframes aboutFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+@keyframes aboutFloatAlt {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(7px) translateX(-4px); }
+}
+@keyframes aboutBar {
+  0%, 100% { width: 18%; }
+  50% { width: 92%; }
+}
+@keyframes aboutBarAlt {
+  0%, 100% { width: 34%; }
+  50% { width: 72%; }
+}
+@keyframes aboutPing {
+  0% { transform: scale(0.85); opacity: 0.55; }
+  70%, 100% { transform: scale(1.9); opacity: 0; }
+}
+@keyframes aboutSweep {
+  0% { transform: translateX(-140%); }
+  60%, 100% { transform: translateX(320%); }
+}
+.about-float { animation: aboutFloat 4.2s ease-in-out infinite; }
+.about-float-alt { animation: aboutFloatAlt 5.4s ease-in-out infinite; }
+.about-bar { animation: aboutBar 4s ease-in-out infinite; }
+.about-bar-alt { animation: aboutBarAlt 4.8s ease-in-out infinite; }
+.about-ping { animation: aboutPing 2.4s ease-out infinite; }
+.about-sweep { animation: aboutSweep 3.6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .about-float, .about-float-alt, .about-bar, .about-bar-alt,
+  .about-ping, .about-sweep { animation: none; }
+}
+
+/* ===== How It Works interactive stepper ===== */
+@keyframes hiwReveal {
+  0% { opacity: 0; transform: translateY(14px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes hiwFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes hiwGrow {
+  0% { width: 0; }
+  100% { width: var(--hiw-w, 90%); }
+}
+.hiw-reveal { animation: hiwReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.hiw-float { animation: hiwFloat 3.6s ease-in-out infinite; }
+.hiw-grow { animation: hiwGrow 1s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hiw-reveal, .hiw-float, .hiw-grow { animation: none; }
+}
+
+/* ===== Hero orbit ring ===== */
+.hero-orbit { animation: loaderSpin 26s linear infinite; }
+.hero-orbit-rev { animation: loaderSpin 26s linear infinite reverse; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-orbit, .hero-orbit-rev { animation: none; }
+}
+
+/* ===== Hero + navbar on-load entrances ===== */
+@keyframes heroEnterRight {
+  from { opacity: 0; transform: translateX(60px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes navEnter {
+  from { opacity: 0; transform: translateY(-100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero-enter-right { animation: heroEnterRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.nav-enter { animation: navEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-enter-right, .nav-enter { animation: none; }
+}
+
+/* ===== Hold on-load entrances behind the splash =====
+   Keep every "on page load" entrance paused (frozen at its hidden start state)
+   until SiteLoader adds `.splash-done` on <html> - so the animation is actually
+   seen when the landing page is revealed, instead of finishing behind the loader.
+   Scroll-triggered reveals (IntersectionObserver) are unaffected. */
+.auth-fade-up,
+.auth-pop,
+.hero-enter-right,
+.nav-enter {
+  animation-play-state: paused;
+}
+.splash-done .auth-fade-up,
+.splash-done .auth-pop,
+.splash-done .hero-enter-right,
+.splash-done .nav-enter {
+  animation-play-state: running;
 }

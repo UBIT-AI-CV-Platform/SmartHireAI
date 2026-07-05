@@ -1,5 +1,5 @@
 -- ============================================================================
---  SmartHireAI — SOCIAL LAYER · FOLLOW-UP FIXES (run once)
+--  SmartHireAI - SOCIAL LAYER · FOLLOW-UP FIXES (run once)
 --  Apply if you already ran social-phase1..4 (or schema.sql). Safe + idempotent.
 --  These are also folded into the canonical schema.sql / social-phase1 / phase3.
 --

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import FormInput from '@/components/auth/FormInput';
 import Logo from '@/components/auth/Logo';
+import { Icon } from '@/components/ui/icon';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -38,7 +39,7 @@ export default function ForgotPasswordPage() {
         className="absolute top-4 left-4 md:top-6 md:left-6 z-50 flex items-center justify-center w-10 h-10 rounded-full bg-white/60 dark:bg-white/10 backdrop-blur-md border border-white/70 dark:border-white/10 text-gray-700 dark:text-slate-300 hover:bg-white dark:hover:bg-white/20 hover:text-primary transition-all duration-300 shadow-lg group"
         aria-label="Back to login"
       >
-        <span className="material-symbols-outlined text-xl transition-transform duration-300 group-hover:-translate-x-0.5">west</span>
+        <Icon name="west" className="text-xl transition-transform duration-300 group-hover:-translate-x-0.5" />
       </Link>
 
       <div className="w-full max-w-md bg-gradient-to-br from-blue-50 via-purple-50 to-blue-50 dark:from-[#1c1c1e] dark:via-[#241d36] dark:to-[#1c1c1e] auth-animated-gradient rounded-2xl shadow-2xl p-6 md:p-8 auth-fade-up">
@@ -49,7 +50,7 @@ export default function ForgotPasswordPage() {
         {sent ? (
           <div className="text-center auth-pop">
             <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-green-100 dark:bg-green-500/15 flex items-center justify-center">
-              <span className="material-symbols-outlined text-green-600 text-3xl">mark_email_read</span>
+              <Icon name="mark_email_read" className="text-green-600 text-3xl" />
             </div>
             <h1 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-1">Check your email</h1>
             <p className="text-gray-600 dark:text-slate-300 text-xs md:text-sm mb-6">
@@ -85,7 +86,7 @@ export default function ForgotPasswordPage() {
 
               {error && (
                 <div className="flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 px-3 py-2">
-                  <span className="material-symbols-outlined text-red-500 text-base flex-shrink-0">error</span>
+                  <Icon name="error" className="text-red-500 text-base flex-shrink-0" />
                   <p className="text-xs text-red-700 dark:text-red-300 font-medium">{error}</p>
                 </div>
               )}

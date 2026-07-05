@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import PersonCard from './PersonCard'
 import { initials, type PublicProfile } from '@/lib/social'
+import { Icon } from '@/components/ui/icon'
 
 const SAFE_COLS = 'id, username, full_name, headline, desired_role, role, location, photo_url, company_name, company_industry, followers_count, following_count'
 
@@ -111,13 +112,13 @@ export default function PeopleDirectory() {
               <span className="font-semibold text-slate-700 dark:text-slate-300">{me.followers}</span> followers · <span className="font-semibold text-slate-700 dark:text-slate-300">{me.following}</span> following
             </p>
           </div>
-          <span className="text-xs font-semibold text-primary flex items-center gap-1">View profile <span className="material-symbols-outlined text-[16px]">arrow_forward</span></span>
+          <span className="text-xs font-semibold text-primary flex items-center gap-1">View profile <Icon name="arrow_forward" className="text-[16px]" /></span>
         </Link>
       )}
 
       {/* Search */}
       <div className="relative mb-5">
-        <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+        <Icon name="search" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -126,7 +127,7 @@ export default function PeopleDirectory() {
         />
         {query && (
           <button onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-            <span className="material-symbols-outlined text-[20px]">close</span>
+            <Icon name="close" className="text-[20px]" />
           </button>
         )}
       </div>
@@ -149,7 +150,7 @@ export default function PeopleDirectory() {
         </div>
       ) : list.length === 0 ? (
         <div className="text-center py-16">
-          <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600">person_search</span>
+          <Icon name="person_search" className="text-5xl text-slate-300 dark:text-slate-600" />
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">{results !== null ? 'No people match your search.' : 'No one to suggest yet.'}</p>
         </div>
       ) : (

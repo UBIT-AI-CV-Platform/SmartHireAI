@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { Icon } from '@/components/ui/icon'
 
 type ExtJob = {
   id: string
@@ -77,15 +78,15 @@ export default function ExternalJobs({ defaultQuery = '' }: { defaultQuery?: str
       <div className="bg-white dark:bg-[#2c2c2e] p-3 md:p-4 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container mb-5 space-y-3">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+            <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search()} placeholder="Search jobs on LinkedIn, Indeed, Glassdoor…" className="w-full pl-12 pr-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#2c2c2e] transition-all text-on-surface font-medium placeholder:text-outline-variant outline-none" />
           </div>
           <div className="relative sm:w-52">
-            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">location_on</span>
+            <Icon name="location_on" className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" />
             <input value={location} onChange={(e) => setLocation(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search()} placeholder="Location" className="w-full pl-12 pr-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-[#2c2c2e] transition-all text-on-surface font-medium placeholder:text-outline-variant outline-none" />
           </div>
           <button onClick={search} disabled={loading} className="px-6 py-3 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] transition-all disabled:opacity-60">
-            <span className="material-symbols-outlined text-base">{loading ? 'hourglass_top' : 'travel_explore'}</span>Search
+            <Icon name={loading ? 'hourglass_top' : 'travel_explore'} className="text-base" />Search
           </button>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -94,7 +95,7 @@ export default function ExternalJobs({ defaultQuery = '' }: { defaultQuery?: str
           ))}
           {provider === 'demo' && (
             <span className="ml-auto flex items-center gap-1.5 text-[11px] font-semibold text-amber-600 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/15 px-2.5 py-1 rounded-lg">
-              <span className="material-symbols-outlined text-sm">info</span>Demo results — add a free API key for live jobs
+              <Icon name="info" className="text-sm" />Demo results - add a free API key for live jobs
             </span>
           )}
         </div>
@@ -111,16 +112,16 @@ export default function ExternalJobs({ defaultQuery = '' }: { defaultQuery?: str
         </div>
       ) : error ? (
         <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 dark:text-red-300 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
+          <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 dark:text-red-300 mb-5"><Icon name="cloud_off" className="text-3xl" /></div>
           <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn’t fetch external jobs</h2>
           <p className="text-sm text-on-surface-variant max-w-md mb-4">Something went wrong. Please try again.</p>
-          <button onClick={search} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>
+          <button onClick={search} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><Icon name="refresh" className="text-base" />Retry</button>
         </div>
       ) : filteredJobs.length === 0 ? (
         <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-5"><span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>travel_explore</span></div>
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-5"><Icon name="travel_explore" className="text-3xl" solid /></div>
           <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">{searched ? 'No jobs found' : 'Search external job boards'}</h2>
-          <p className="text-sm text-on-surface-variant max-w-md">{searched ? 'Try a different search term, location, or source filter.' : 'Find roles from LinkedIn, Indeed, and Glassdoor — apply directly on the source site.'}</p>
+          <p className="text-sm text-on-surface-variant max-w-md">{searched ? 'Try a different search term, location, or source filter.' : 'Find roles from LinkedIn, Indeed, and Glassdoor - apply directly on the source site.'}</p>
         </div>
       ) : (
         <>
@@ -144,7 +145,7 @@ export default function ExternalJobs({ defaultQuery = '' }: { defaultQuery?: str
                 <div className="flex items-center justify-between gap-3 mt-4 pt-3 border-t border-surface-container">
                   {job.salary ? <span className="px-3 py-1 bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300 text-xs font-semibold rounded-lg">{job.salary}</span> : <span className="text-xs text-outline">via {job.source}</span>}
                   <a href={job.url} target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-1.5 shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
-                    Apply<span className="material-symbols-outlined text-base">open_in_new</span>
+                    Apply<Icon name="open_in_new" className="text-base" />
                   </a>
                 </div>
               </div>
@@ -154,7 +155,7 @@ export default function ExternalJobs({ defaultQuery = '' }: { defaultQuery?: str
           {hasMore && (
             <div className="flex justify-center mt-6">
               <button onClick={loadMore} disabled={loadingMore} className="px-6 py-3 rounded-2xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-on-surface font-bold text-sm flex items-center gap-2 hover:shadow-lg hover:border-primary/40 transition-all disabled:opacity-60">
-                <span className={`material-symbols-outlined text-base ${loadingMore ? 'animate-spin' : ''}`}>{loadingMore ? 'progress_activity' : 'expand_more'}</span>
+                <Icon name={loadingMore ? 'progress_activity' : 'expand_more'} className={`text-base ${loadingMore ? 'animate-spin' : ''}`} />
                 {loadingMore ? 'Loading more…' : 'Load more jobs'}
               </button>
             </div>

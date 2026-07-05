@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import { Icon } from '@/components/ui/icon'
+import BrandLogo from '@/components/shared/BrandLogo'
 
 export const recruiterNavLinks = [
   { href: '/recruiter', label: 'Dashboard', icon: 'dashboard' },
@@ -32,7 +34,7 @@ export default function Sidebar({ pathname, userName, userEmail, userPhoto, user
       {userPhoto ? (
         <img src={userPhoto} alt={userName} className="h-full w-full object-cover" />
       ) : (
-        <span className="material-symbols-outlined text-indigo-700 dark:text-indigo-300 text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>work</span>
+        <Icon name="work" className="text-indigo-700 dark:text-indigo-300 text-lg" solid />
       )}
     </div>
   )
@@ -43,18 +45,10 @@ export default function Sidebar({ pathname, userName, userEmail, userPhoto, user
     <div className="flex flex-col h-full">
       {/* Brand */}
       <div className={`flex items-center mb-6 px-1 ${collapsed ? 'flex-col gap-2' : 'gap-3'}`}>
-        <div className="w-10 h-10 premium-gradient rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/25 flex-shrink-0">
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>work</span>
-        </div>
-        {!collapsed && (
-          <div className="flex-1 min-w-0">
-            <h1 className="text-base font-black text-slate-900 dark:text-slate-100 leading-tight tracking-tight truncate">SmartHire AI</h1>
-            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-400">Recruiter Portal</p>
-          </div>
-        )}
+        <BrandLogo size={collapsed ? 34 : 30} showText={!collapsed} subtitle="Recruiter Portal" className={collapsed ? '' : 'flex-1 min-w-0'} />
         {onToggleCollapse && (
           <button onClick={onToggleCollapse} title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
-            <span className="material-symbols-outlined text-xl">{collapsed ? 'chevron_right' : 'chevron_left'}</span>
+            <Icon name={collapsed ? 'chevron_right' : 'chevron_left'} className="text-xl" />
           </button>
         )}
       </div>
@@ -73,7 +67,7 @@ export default function Sidebar({ pathname, userName, userEmail, userPhoto, user
                 active ? 'bg-gradient-to-r from-[#3525cd] to-[#712ae2] text-white shadow-lg shadow-primary/25' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-white/10'
               }`}
             >
-              <span className="material-symbols-outlined text-[19px]" style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}>{link.icon}</span>
+              <Icon name={link.icon} className="text-[19px]" solid={active} />
               {!collapsed && <span className="truncate">{link.label}</span>}
             </Link>
           )
@@ -98,7 +92,7 @@ export default function Sidebar({ pathname, userName, userEmail, userPhoto, user
           title={collapsed ? 'Sign Out' : undefined}
           className={`w-full flex items-center rounded-xl text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/15 transition-all duration-200 ${collapsed ? 'justify-center px-2.5 py-3' : 'gap-3 px-3.5 py-2.5'}`}
         >
-          <span className="material-symbols-outlined text-[20px]">logout</span>
+          <Icon name="logout" className="text-[20px]" />
           {!collapsed && <span>Sign Out</span>}
         </button>
       </div>

@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import Cropper, { type Area } from 'react-easy-crop'
 import { getCroppedImg } from '@/lib/cropImage'
+import { Icon } from '@/components/ui/icon'
 
 interface ImageCropModalProps {
   imageSrc: string
@@ -60,7 +61,7 @@ export default function ImageCropModal({ imageSrc, onCancel, onCropped }: ImageC
         {/* Controls */}
         <div className="p-5 space-y-4">
           <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-slate-400 dark:text-slate-400 text-lg">zoom_out</span>
+            <Icon name="zoom_out" className="text-slate-400 dark:text-slate-400 text-lg" />
             <input
               type="range"
               min={1}
@@ -70,7 +71,7 @@ export default function ImageCropModal({ imageSrc, onCancel, onCropped }: ImageC
               onChange={(e) => setZoom(Number(e.target.value))}
               className="flex-1 accent-[#3525cd] cursor-pointer"
             />
-            <span className="material-symbols-outlined text-slate-600 dark:text-slate-300 text-2xl">zoom_in</span>
+            <Icon name="zoom_in" className="text-slate-600 dark:text-slate-300 text-2xl" />
           </div>
 
           <div className="flex gap-3">

@@ -1,5 +1,5 @@
 -- ============================================================================
---  SmartHireAI — SOCIAL LAYER · PHASE 3
+--  SmartHireAI - SOCIAL LAYER · PHASE 3
 --  Sharing · unified inbox (DM anyone) · share-a-post · repost
 --
 --  How to apply: Supabase → SQL Editor → New query → paste → Run.
@@ -8,7 +8,7 @@
 -- ============================================================================
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 1) UNIFY THE INBOX — any two users can chat in the SAME conversations table.
+-- 1) UNIFY THE INBOX - any two users can chat in the SAME conversations table.
 --    Existing rows are hiring threads, so is_hiring defaults to true (keeps the
 --    interview/offer quick-actions exactly as they are). Generic DMs are
 --    created with is_hiring = false (no hiring actions shown).
@@ -87,7 +87,7 @@ begin
 end; $$;
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 2) MESSAGE NOTIFICATIONS — route by the RECIPIENT's real role (so same-role
+-- 2) MESSAGE NOTIFICATIONS - route by the RECIPIENT's real role (so same-role
 --    DMs land in the right portal inbox) and also notify for shared posts.
 -- ────────────────────────────────────────────────────────────────────────────
 create or replace function public.handle_new_message()
@@ -121,7 +121,7 @@ begin
 end; $$;
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 3) REPOSTS — a repost is a post that references another (with an optional
+-- 3) REPOSTS - a repost is a post that references another (with an optional
 --    quote in `content`). repost_snapshot keeps the original visible even if the
 --    source post is later deleted.
 -- ────────────────────────────────────────────────────────────────────────────

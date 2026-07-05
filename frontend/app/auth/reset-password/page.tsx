@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { getPortalPath } from '@/lib/auth-helpers';
 import FormInput from '@/components/auth/FormInput';
 import Logo from '@/components/auth/Logo';
+import { Icon } from '@/components/ui/icon';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -63,7 +64,7 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    // password changed — send them into their portal
+    // password changed - send them into their portal
     const path = await getPortalPath(supabase);
     router.push(path);
     router.refresh();
@@ -77,7 +78,7 @@ export default function ResetPasswordPage() {
         {linkError ? (
           <div className="text-center auth-pop">
             <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-500/15 flex items-center justify-center">
-              <span className="material-symbols-outlined text-red-500 text-3xl">link_off</span>
+              <Icon name="link_off" className="text-red-500 text-3xl" />
             </div>
             <h1 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-1">Link invalid or expired</h1>
             <p className="text-gray-600 dark:text-slate-300 text-xs md:text-sm mb-6">This reset link is no longer valid. Please request a new one.</p>
@@ -122,7 +123,7 @@ export default function ResetPasswordPage() {
 
               {error && (
                 <div className="flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 px-3 py-2">
-                  <span className="material-symbols-outlined text-red-500 text-base flex-shrink-0">error</span>
+                  <Icon name="error" className="text-red-500 text-base flex-shrink-0" />
                   <p className="text-xs text-red-700 dark:text-red-300 font-medium">{error}</p>
                 </div>
               )}
@@ -145,9 +146,7 @@ export default function ResetPasswordPage() {
 function Cond({ met, text }: { met: boolean; text: string }) {
   return (
     <div className="flex items-center gap-1">
-      <span className={`material-symbols-outlined text-[14px] flex-shrink-0 ${met ? 'text-green-500' : 'text-red-500'}`}>
-        {met ? 'check_circle' : 'cancel'}
-      </span>
+      <Icon name={met ? 'check_circle' : 'cancel'} className={`text-[14px] flex-shrink-0 ${met ? 'text-green-500' : 'text-red-500'}`} />
       <span className={`text-[10px] md:text-[11px] ${met ? 'text-green-600 dark:text-green-300' : 'text-red-600 dark:text-red-300'}`}>{text}</span>
     </div>
   );

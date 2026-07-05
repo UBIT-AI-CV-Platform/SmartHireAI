@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Icon } from '@/components/ui/icon';
 
 interface FormInputProps {
   label: string;
@@ -31,9 +32,7 @@ export default function FormInput({
         {label}
       </label>
       <div className="relative group">
-        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400 group-focus-within:text-primary transition-colors text-xl">
-          {icon}
-        </span>
+        <Icon name={icon} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400 group-focus-within:text-primary transition-colors text-xl" />
         <input
           type={inputType}
           placeholder={placeholder}
@@ -50,9 +49,7 @@ export default function FormInput({
             aria-label={showPassword ? 'Hide password' : 'Show password'}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400 hover:text-primary transition-colors p-0.5"
           >
-            <span className="material-symbols-outlined text-xl">
-              {showPassword ? 'visibility_off' : 'visibility'}
-            </span>
+            <Icon name={showPassword ? 'visibility_off' : 'visibility'} className="text-xl" />
           </button>
         )}
       </div>

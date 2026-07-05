@@ -1,3 +1,5 @@
+import { Icon } from '@/components/ui/icon'
+
 export default function FAQSection() {
   const faqs = [
     {
@@ -60,9 +62,7 @@ export default function FAQSection() {
           >
             <div className="flex justify-between items-center px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 font-bold text-xs sm:text-sm md:text-base lg:text-lg cursor-pointer transition-colors group-hover:bg-indigo-50/30">
               <span>{faq.question}</span>
-              <span className="material-symbols-outlined text-primary text-lg sm:text-xl transition-transform duration-300 faq-icon flex-shrink-0">
-                expand_more
-              </span>
+              <Icon name="expand_more" className="text-primary text-lg sm:text-xl transition-transform duration-300 faq-icon flex-shrink-0" />
             </div>
             <div className="faq-answer px-4 sm:px-5 md:px-6 pt-0 text-slate-600 dark:text-slate-300 leading-relaxed text-[11px] sm:text-xs md:text-sm lg:text-base group-hover:bg-indigo-50/30">
               <p className="pb-4 sm:pb-5">{faq.answer}</p>
@@ -85,7 +85,7 @@ export default function FAQSection() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Email Support <span className="material-symbols-outlined text-lg">mail</span>
+              Email Support <Icon name="mail" className="text-lg" />
             </a>
           </div>
         </div>

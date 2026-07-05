@@ -10,11 +10,12 @@ const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 const SYSTEM_PROMPT = `You are an expert career writer. Write a professional, compelling cover letter for the candidate.
 
 Rules:
-- Be truthful — use ONLY facts from the candidate's profile. Never invent experience, employers, or metrics.
+- Be truthful - use ONLY facts from the candidate's profile. Never invent experience, employers, or metrics.
 - 3 to 4 short paragraphs: (1) a strong opening stating the role and a hook, (2-3) why the candidate is a great fit, drawing on real skills/projects, (3) a confident closing with a call to action.
 - Tailor it to the target role and (if given) the company and job description.
 - Warm, confident, professional tone (adjust to the requested tone). No clichés like "I am writing to apply".
-- Output ONLY the cover letter body text (no markdown, no placeholders like [Your Name] — use the candidate's real name where relevant). Separate paragraphs with a blank line.`
+- Output ONLY the cover letter body text (no markdown, no placeholders like [Your Name] - use the candidate's real name where relevant). Separate paragraphs with a blank line.
+- Never use em-dash or en-dash characters. Use a comma, a period, or a spaced hyphen ( - ) instead.`
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}))

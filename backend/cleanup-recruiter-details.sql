@@ -1,12 +1,12 @@
 -- ============================================================================
---  SmartHireAI — CLEANUP: remove fake recruiter profile sections
+--  SmartHireAI - CLEANUP: remove fake recruiter profile sections
 --  Recruiters have NO UI to add skills/languages/education/projects/etc., so any
 --  such rows for a recruiter were dummy seed data and shouldn't be shown.
 --  This deletes them. Recruiter profiles instead display their Company details
 --  (editable on the Company Profile page).
 --
 --  Run once in Supabase → SQL Editor. Safe to re-run.
---  (Does NOT touch candidates — they CAN manage these sections.)
+--  (Does NOT touch candidates - they CAN manage these sections.)
 -- ============================================================================
 
 delete from public.skills         s  using public.profiles p where s.profile_id  = p.id and p.role = 'recruiter';

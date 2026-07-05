@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { initials, type Post } from '@/lib/social'
+import { Icon } from '@/components/ui/icon'
 
 /** Share a post into the inbox: search anyone → ensure_dm → send a kind='post' message. */
 export default function SharePostModal({ post, onClose }: { post: Post; onClose: () => void }) {
@@ -64,12 +65,12 @@ export default function SharePostModal({ post, onClose }: { post: Post; onClose:
       <div className="relative w-full max-w-md max-h-[80vh] flex flex-col bg-white dark:bg-[#1c1c1e] rounded-3xl shadow-2xl border border-slate-200/70 dark:border-white/10 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200/70 dark:border-white/10">
           <h3 className="font-bold text-slate-900 dark:text-slate-100">Share to inbox</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400"><span className="material-symbols-outlined">close</span></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400"><Icon name="close" /></button>
         </div>
 
         {sentTo ? (
           <div className="p-10 text-center">
-            <span className="material-symbols-outlined text-5xl text-green-500">check_circle</span>
+            <Icon name="check_circle" className="text-5xl text-green-500" />
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-2">Sent to {sentTo}</p>
           </div>
         ) : (
@@ -81,7 +82,7 @@ export default function SharePostModal({ post, onClose }: { post: Post; onClose:
               className="w-full mb-3 px-4 py-2.5 bg-slate-100 dark:bg-white/5 rounded-2xl text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary/30"
             />
             <div className="relative mb-3">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+              <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]" />
               <input
                 value={q}
                 onChange={(e) => search(e.target.value)}
@@ -102,7 +103,7 @@ export default function SharePostModal({ post, onClose }: { post: Post; onClose:
                       <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{name}</p>
                       <p className="text-xs text-slate-400 truncate">{p.role === 'recruiter' ? 'Recruiter' : 'Candidate'}</p>
                     </div>
-                    <span className="material-symbols-outlined text-primary text-[20px]">send</span>
+                    <Icon name="send" className="text-primary text-[20px]" />
                   </button>
                 )
               })}

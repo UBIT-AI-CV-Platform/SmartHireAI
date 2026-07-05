@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { initials, type Post } from '@/lib/social'
+import { Icon } from '@/components/ui/icon'
 
 export interface MeSnapshot {
   id: string
@@ -25,7 +26,7 @@ export default function CreatePost({ me, onCreated }: { me: MeSnapshot; onCreate
           Share an update, a win, or what you&apos;re working on…
         </button>
         <button onClick={() => setOpen(true)} className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-semibold text-white premium-gradient shadow-sm shadow-primary/25">
-          <span className="material-symbols-outlined text-[18px]">edit_square</span> Post
+          <Icon name="edit_square" className="text-[18px]" /> Post
         </button>
       </div>
       {open && <PostComposerModal me={me} onClose={() => setOpen(false)} onCreated={onCreated} />}
@@ -111,7 +112,7 @@ function PostComposerModal({ me, onClose, onCreated }: { me: MeSnapshot; onClose
       <div className="relative w-full max-w-lg bg-white dark:bg-[#1c1c1e] rounded-3xl shadow-2xl border border-slate-200/70 dark:border-white/10 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200/70 dark:border-white/10">
           <h3 className="font-bold text-slate-900 dark:text-slate-100">Create a post</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400"><span className="material-symbols-outlined">close</span></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400"><Icon name="close" /></button>
         </div>
 
         <div className="p-5">
@@ -141,14 +142,14 @@ function PostComposerModal({ me, onClose, onCreated }: { me: MeSnapshot; onClose
           {imagePreview && (
             <div className="relative mt-2 rounded-2xl overflow-hidden border border-slate-200/70 dark:border-white/10">
               <img src={imagePreview} alt="preview" className="w-full max-h-72 object-cover" />
-              <button onClick={() => { setImage(null); setImagePreview(''); if (imgRef.current) imgRef.current.value = '' }} className="absolute top-2 right-2 h-8 w-8 rounded-full bg-slate-900/60 text-white flex items-center justify-center hover:bg-slate-900/80"><span className="material-symbols-outlined text-[18px]">close</span></button>
+              <button onClick={() => { setImage(null); setImagePreview(''); if (imgRef.current) imgRef.current.value = '' }} className="absolute top-2 right-2 h-8 w-8 rounded-full bg-slate-900/60 text-white flex items-center justify-center hover:bg-slate-900/80"><Icon name="close" className="text-[18px]" /></button>
             </div>
           )}
           {doc && (
             <div className="mt-2 flex items-center gap-2 p-3 rounded-xl border border-slate-200/70 dark:border-white/10 bg-slate-50 dark:bg-white/5">
-              <span className="material-symbols-outlined text-primary">description</span>
+              <Icon name="description" className="text-primary" />
               <span className="text-sm text-slate-700 dark:text-slate-200 truncate flex-1">{doc.name}</span>
-              <button onClick={() => { setDoc(null); if (docRef.current) docRef.current.value = '' }} className="text-slate-400 hover:text-red-500"><span className="material-symbols-outlined text-[18px]">close</span></button>
+              <button onClick={() => { setDoc(null); if (docRef.current) docRef.current.value = '' }} className="text-slate-400 hover:text-red-500"><Icon name="close" className="text-[18px]" /></button>
             </div>
           )}
 
@@ -157,10 +158,10 @@ function PostComposerModal({ me, onClose, onCreated }: { me: MeSnapshot; onClose
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-center gap-1">
               <button onClick={() => imgRef.current?.click()} title="Add photo" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
-                <span className="material-symbols-outlined text-[20px] text-green-600 dark:text-green-400">image</span><span className="hidden sm:inline">Photo</span>
+                <Icon name="image" className="text-[20px] text-green-600 dark:text-green-400" /><span className="hidden sm:inline">Photo</span>
               </button>
               <button onClick={() => docRef.current?.click()} title="Add document" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
-                <span className="material-symbols-outlined text-[20px] text-amber-600 dark:text-amber-400">attach_file</span><span className="hidden sm:inline">Document</span>
+                <Icon name="attach_file" className="text-[20px] text-amber-600 dark:text-amber-400" /><span className="hidden sm:inline">Document</span>
               </button>
               <input ref={imgRef} type="file" accept="image/*" className="hidden" onChange={pickImage} />
               <input ref={docRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.csv" className="hidden" onChange={pickDoc} />

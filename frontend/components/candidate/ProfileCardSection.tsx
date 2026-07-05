@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { Icon } from '@/components/ui/icon'
 
 type Field = { key: string; label: string; placeholder?: string; type?: 'text' | 'textarea'; full?: boolean }
 export type CardRow = { id: number; [key: string]: unknown }
@@ -74,11 +75,11 @@ export default function ProfileCardSection({
     <div className="w-full bg-surface-container-lowest p-6 md:p-8 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)]">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center space-x-3">
-          <span className="material-symbols-outlined text-primary">{icon}</span>
+          <Icon name={icon} className="text-primary" />
           <h2 className="text-lg md:text-xl font-bold">{title}</h2>
         </div>
         <button onClick={openAdd} className="text-primary font-bold text-xs md:text-sm flex items-center gap-1 hover:bg-primary/5 px-2 md:px-3 py-1 rounded-lg transition-colors">
-          <span className="material-symbols-outlined text-sm">add</span>
+          <Icon name="add" className="text-sm" />
           <span>{addLabel}</span>
         </button>
       </div>
@@ -89,10 +90,10 @@ export default function ProfileCardSection({
             <div className="flex-1 min-w-0">{renderItem(item)}</div>
             <div className="flex items-center gap-0.5 flex-shrink-0 opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
               <button onClick={() => openEdit(item)} className="text-on-surface-variant hover:text-primary p-1.5 rounded-lg hover:bg-primary/5" title="Edit">
-                <span className="material-symbols-outlined text-base md:text-lg">edit</span>
+                <Icon name="edit" className="text-base md:text-lg" />
               </button>
               <button onClick={() => remove(item.id)} className="text-on-surface-variant hover:text-red-500 dark:hover:text-red-300 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15" title="Delete">
-                <span className="material-symbols-outlined text-base md:text-lg">delete</span>
+                <Icon name="delete" className="text-base md:text-lg" />
               </button>
             </div>
           </div>

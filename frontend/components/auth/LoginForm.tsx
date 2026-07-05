@@ -6,6 +6,7 @@ import Link from 'next/link';
 import FormInput from './FormInput';
 import { createClient } from '@/lib/supabase/client';
 import { getPortalPath } from '@/lib/auth-helpers';
+import { Icon } from '@/components/ui/icon';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -81,7 +82,7 @@ export default function LoginForm() {
         {/* Error message */}
         {error && (
           <div className="flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 px-3 py-2">
-            <span className="material-symbols-outlined text-red-500 text-base flex-shrink-0">error</span>
+            <Icon name="error" className="text-red-500 text-base flex-shrink-0" />
             <p className="text-[11px] md:text-xs text-red-700 dark:text-red-300 font-medium">{error}</p>
           </div>
         )}

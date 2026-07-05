@@ -30,20 +30,20 @@ jobs:
       # ── 2. Lockfile guard ────────────────────────────────────────────────────
       # Must run BEFORE install so a bad lockfile is caught before npm sees it.
       # Prunes every node_modules directory to avoid false positives.
-      - name: Guard — block non-npm lockfiles
+      - name: Guard - block non-npm lockfiles
         working-directory: ${{ github.workspace }}
         run: |
           found=$(find . \( -name 'node_modules' -type d \) -prune \
             -o \( -name 'pnpm-lock.yaml' -o -name 'yarn.lock' \) -print)
           if [ -n "$found" ]; then
-            echo "::error::Non-npm lockfile detected — this repo is npm-only."
+            echo "::error::Non-npm lockfile detected - this repo is npm-only."
             for f in $found; do
               echo "  Found: $f"
             done
             echo "Remove the file, commit, and re-push."
             exit 1
           fi
-          echo "Lockfile guard passed — no pnpm-lock.yaml or yarn.lock found."
+          echo "Lockfile guard passed - no pnpm-lock.yaml or yarn.lock found."
 
       # ── 3. Node + cache ──────────────────────────────────────────────────────
       - name: Setup Node 22
@@ -65,7 +65,7 @@ jobs:
           if [ -f node_modules/.bin/eslint ]; then
             npm run lint
           else
-            echo "::warning::eslint binary not found in node_modules — skipping lint." \
+            echo "::warning::eslint binary not found in node_modules - skipping lint." \
               "Add eslint to devDependencies to enable this check."
           fi
 

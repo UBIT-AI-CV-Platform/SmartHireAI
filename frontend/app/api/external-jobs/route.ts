@@ -71,7 +71,7 @@ async function fromAdzuna(q: string, location: string, page: number): Promise<Ex
   })
 }
 
-// ── Demo fallback (no key needed — realistic sample external jobs) ────────────
+// ── Demo fallback (no key needed - realistic sample external jobs) ────────────
 const DEMO: ExtJob[] = [
   { id: 'demo-1', title: 'Senior Frontend Engineer', company: 'Stripe', location: 'Remote', salary: '$140k – $190k', source: 'LinkedIn', url: 'https://www.linkedin.com/jobs/', snippet: 'Build delightful, high-performance UIs with React and TypeScript for millions of users.', updated: null },
   { id: 'demo-2', title: 'Backend Developer (Node.js)', company: 'Shopify', location: 'Remote', salary: '$120k – $160k', source: 'Indeed', url: 'https://www.indeed.com/', snippet: 'Design scalable APIs and services powering commerce for millions of merchants.', updated: null },

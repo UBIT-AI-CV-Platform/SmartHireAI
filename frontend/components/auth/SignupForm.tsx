@@ -6,6 +6,7 @@ import FormInput from './FormInput';
 import { createClient } from '@/lib/supabase/client';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import LegalLink from '@/components/shared/LegalModal';
+import { Icon } from '@/components/ui/icon';
 
 export default function SignupForm() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function SignupForm() {
     router.refresh();
   };
 
-  // Step 1 — create the account; Supabase emails a 6-digit OTP
+  // Step 1 - create the account; Supabase emails a 6-digit OTP
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -75,7 +76,7 @@ export default function SignupForm() {
     setIsLoading(false);
   };
 
-  // Step 2 — verify the OTP from the email
+  // Step 2 - verify the OTP from the email
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -120,7 +121,7 @@ export default function SignupForm() {
       <div className="flex flex-col gap-4 auth-fade-up">
         <div className="text-center">
           <div className="mx-auto mb-3 w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center auth-pop">
-            <span className="material-symbols-outlined text-primary text-2xl">mark_email_unread</span>
+            <Icon name="mark_email_unread" className="text-primary text-2xl" />
           </div>
           <h1 className="text-base md:text-lg font-bold text-gray-900 dark:text-slate-100 mb-1">Verify your email</h1>
           <p className="text-gray-600 dark:text-slate-300 text-[11px] md:text-xs">
@@ -143,13 +144,13 @@ export default function SignupForm() {
 
           {error && (
             <div className="w-full flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 px-3 py-2">
-              <span className="material-symbols-outlined text-red-500 text-base flex-shrink-0">error</span>
+              <Icon name="error" className="text-red-500 text-base flex-shrink-0" />
               <p className="text-[11px] md:text-xs text-red-700 dark:text-red-300 font-medium">{error}</p>
             </div>
           )}
           {info && !error && (
             <div className="w-full flex items-start gap-2 rounded-lg bg-green-50 dark:bg-green-500/15 border border-green-200 dark:border-green-500/20 px-3 py-2">
-              <span className="material-symbols-outlined text-green-600 text-base flex-shrink-0">mark_email_read</span>
+              <Icon name="mark_email_read" className="text-green-600 text-base flex-shrink-0" />
               <p className="text-[11px] md:text-xs text-green-700 dark:text-green-300 font-medium">{info}</p>
             </div>
           )}
@@ -219,7 +220,7 @@ export default function SignupForm() {
 
         {error && (
           <div className="flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 px-3 py-2">
-            <span className="material-symbols-outlined text-red-500 text-base flex-shrink-0">error</span>
+            <Icon name="error" className="text-red-500 text-base flex-shrink-0" />
             <p className="text-[11px] md:text-xs text-red-700 dark:text-red-300 font-medium">{error}</p>
           </div>
         )}
@@ -258,9 +259,7 @@ function RoleOption({ label, icon, value, isSelected, onChange }: RoleOptionProp
           isSelected ? 'border-indigo-300 bg-indigo-100/60 dark:bg-indigo-500/15 scale-[1.02]' : 'border-indigo-200/40 dark:border-white/10 bg-white/50 dark:bg-white/5 hover:bg-white/70 dark:hover:bg-white/10'
         }`}
       >
-        <span className={`material-symbols-outlined text-lg md:text-2xl transition-colors ${isSelected ? 'text-primary' : 'text-gray-600 dark:text-slate-400'}`}>
-          {icon}
-        </span>
+        <Icon name={icon} className={`text-lg md:text-2xl transition-colors ${isSelected ? 'text-primary' : 'text-gray-600 dark:text-slate-400'}`} />
         <span className="text-[8px] md:text-[9px] font-bold text-gray-900 dark:text-slate-100 uppercase tracking-tighter">{label}</span>
       </div>
     </label>
@@ -275,9 +274,7 @@ interface PasswordConditionProps {
 function PasswordCondition({ met, text }: PasswordConditionProps) {
   return (
     <div className="flex items-center gap-1">
-      <span className={`material-symbols-outlined text-[14px] transition-colors duration-300 flex-shrink-0 ${met ? 'text-green-500' : 'text-red-500'}`}>
-        {met ? 'check_circle' : 'cancel'}
-      </span>
+      <Icon name={met ? 'check_circle' : 'cancel'} className={`text-[14px] transition-colors duration-300 flex-shrink-0 ${met ? 'text-green-500' : 'text-red-500'}`} />
       <span className={`text-[10px] md:text-[11px] transition-colors duration-300 ${met ? 'text-green-600 dark:text-green-300' : 'text-red-600 dark:text-red-300'}`}>
         {text}
       </span>

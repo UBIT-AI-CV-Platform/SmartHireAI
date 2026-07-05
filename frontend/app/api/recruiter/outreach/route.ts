@@ -28,7 +28,8 @@ const SYSTEM_PROMPT = `You are a professional, warm recruiter writing a short ou
 Rules:
 - 3 short paragraphs max. Professional but human and friendly.
 - Use the candidate's first name and the job title/company naturally.
-- Output ONLY the email body (no subject line, no markdown, no placeholders like [Your Name] — sign off with the recruiter/company name provided).`
+- Output ONLY the email body (no subject line, no markdown, no placeholders like [Your Name] - sign off with the recruiter/company name provided).
+- Never use em-dash or en-dash characters. Use a comma, a period, or a spaced hyphen ( - ) instead.`
 
 async function sendMail(to: string, subject: string, body: string, fromName: string) {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com'
@@ -70,9 +71,9 @@ export async function POST(request: Request) {
   const safeTitle = job.title.replace(/[\r\n]/g, ' ')
   const safeCompany = job.company.replace(/[\r\n]/g, ' ')
   const subjects: Record<string, string> = {
-    interview: `Interview invitation — ${safeTitle} at ${safeCompany}`,
-    rejection: `Update on your application — ${safeTitle}`,
-    offer: `Great news about your application — ${safeTitle}`,
+    interview: `Interview invitation - ${safeTitle} at ${safeCompany}`,
+    rejection: `Update on your application - ${safeTitle}`,
+    offer: `Great news about your application - ${safeTitle}`,
   }
 
   // ── SEND an already-written draft ──────────────────────────────────────────

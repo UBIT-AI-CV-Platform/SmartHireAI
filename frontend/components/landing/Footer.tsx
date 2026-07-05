@@ -1,6 +1,8 @@
 'use client'
 
 import LegalLink from '@/components/shared/LegalModal'
+import { Icon } from '@/components/ui/icon'
+import BrandLogo from '@/components/shared/BrandLogo'
 
 export default function Footer() {
   return (
@@ -9,9 +11,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10 mb-8 items-start">
           {/* Logo Section */}
           <div className="lg:col-span-4">
-            <div className="text-lg sm:text-xl md:text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary mb-3 sm:mb-4 tracking-tight">
-              SmartHire AI
-            </div>
+            <BrandLogo size={34} className="mb-3 sm:mb-4" />
             <p className="text-slate-400 dark:text-slate-400 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 max-w-sm">
               Empowering the modern workforce with editorial intelligence. We bridge the gap between
               top-tier talent and forward-thinking companies.
@@ -24,7 +24,7 @@ export default function Footer() {
                 className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-indigo-500/50 transition-all text-slate-300 hover:text-indigo-400"
                 title="Email Support"
               >
-                <span className="material-symbols-outlined text-xl">mail</span>
+                <Icon name="mail" className="text-xl" />
               </a>
             </div>
           </div>
@@ -79,12 +79,12 @@ export default function Footer() {
             </h4>
             <ul className="space-y-1.5 sm:space-y-2 text-[11px] sm:text-xs md:text-sm font-medium text-slate-400 dark:text-slate-400">
               <li>
-                <a className="hover:text-indigo-400" href="/about">
+                <a className="hover:text-indigo-400" href="/#about">
                   About Us
                 </a>
               </li>
               <li>
-                <a 
+                <a
                   href="https://mail.google.com/mail/u/0/?fs=1&to=smarthireai.fyp@gmail.com&su=Hello%20SmartHire%20AI"
                   target="_blank"
                   rel="noopener noreferrer"

@@ -7,6 +7,8 @@ import Sidebar from '@/components/candidate/Sidebar'
 import SignOutModal from '@/components/candidate/SignOutModal'
 import NotificationsBell from '@/components/candidate/NotificationsBell'
 import ThemeToggle from '@/components/shared/ThemeToggle'
+import { Icon } from '@/components/ui/icon'
+import BrandLogo from '@/components/shared/BrandLogo'
 
 const DAILY_TIPS = [
   'Use active verbs on your resume.',
@@ -142,16 +144,14 @@ export default function CandidateLayout({
               className="p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors"
               aria-label="Open menu"
             >
-              <span className="material-symbols-outlined">menu</span>
+              <Icon name="menu" />
             </button>
-            <div className="w-8 h-8 premium-gradient rounded-lg flex items-center justify-center text-white shadow">
-              <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-            </div>
+            <BrandLogo size={32} showText={false} />
           </div>
 
           {/* Daily tip */}
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-500/15 rounded-full border border-indigo-100 dark:border-white/10">
-            <span className="material-symbols-outlined text-indigo-500 text-base">lightbulb</span>
+            <Icon name="lightbulb" className="text-indigo-500 text-base" />
             <span key={tipIdx} className="text-xs font-medium text-slate-600 dark:text-slate-300 form-slide">Daily Tip: {DAILY_TIPS[tipIdx]}</span>
           </div>
         </div>
@@ -168,7 +168,7 @@ export default function CandidateLayout({
             {user.photo ? (
               <img src={user.photo} alt={user.name} className="h-full w-full object-cover" />
             ) : (
-              <span className="material-symbols-outlined text-indigo-700 text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
+              <Icon name="person" className="text-indigo-700 text-lg" solid />
             )}
           </div>
         </div>

@@ -10,6 +10,8 @@ import ReportModal from './ReportModal'
 import PostCard from './PostCard'
 import ThemeToggle from '@/components/shared/ThemeToggle'
 import { displayName, initials, roleLabel, tagline, type Post, type PublicProfile } from '@/lib/social'
+import { Icon } from '@/components/ui/icon'
+import BrandLogo from '@/components/shared/BrandLogo'
 import type { MeSnapshot } from './CreatePost'
 
 interface Sections {
@@ -119,11 +121,10 @@ export default function PublicProfileView({ username, embedded = false }: { user
       {!embedded && (
         <header className="sticky top-0 z-40 flex items-center justify-between px-4 md:px-8 h-14 bg-white/80 dark:bg-[#1c1c1e]/80 backdrop-blur-md border-b border-slate-200/70 dark:border-white/10">
           <button onClick={() => router.back()} className="flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
-            <span className="material-symbols-outlined text-[20px]">arrow_back</span><span className="hidden sm:inline">Back</span>
+            <Icon name="arrow_back" className="text-[20px]" /><span className="hidden sm:inline">Back</span>
           </button>
-          <Link href={homeHref} className="flex items-center gap-2">
-            <div className="w-8 h-8 premium-gradient rounded-lg flex items-center justify-center text-white shadow"><span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span></div>
-            <span className="font-black tracking-tight hidden sm:inline">SmartHire AI</span>
+          <Link href={homeHref}>
+            <BrandLogo size={28} />
           </Link>
           <ThemeToggle />
         </header>
@@ -137,7 +138,7 @@ export default function PublicProfileView({ username, embedded = false }: { user
         </div>
       ) : notFound || !profile ? (
         <div className="max-w-md mx-auto text-center py-32 px-4">
-          <span className="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600">person_off</span>
+          <Icon name="person_off" className="text-6xl text-slate-300 dark:text-slate-600" />
           <h2 className="text-xl font-bold mt-4">Profile not found</h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">This handle doesn’t exist or has been removed.</p>
           <Link href={homeHref} className="inline-block mt-5 px-5 py-2.5 rounded-full text-sm font-semibold text-white premium-gradient">Go to dashboard</Link>
@@ -161,13 +162,13 @@ export default function PublicProfileView({ username, embedded = false }: { user
                     <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">@{profile.username}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button onClick={copyLink} title="Copy link" className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-slate-200 dark:border-white/15 text-slate-500 dark:text-slate-400 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10"><span className="material-symbols-outlined text-[18px]">{copied ? 'check' : 'link'}</span></button>
-                    {!isOwn && <button onClick={() => setShowReport(true)} title="Report" className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-slate-200 dark:border-white/15 text-slate-500 dark:text-slate-400 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10"><span className="material-symbols-outlined text-[18px]">flag</span></button>}
+                    <button onClick={copyLink} title="Copy link" className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-slate-200 dark:border-white/15 text-slate-500 dark:text-slate-400 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10"><Icon name={copied ? 'check' : 'link'} className="text-[18px]" /></button>
+                    {!isOwn && <button onClick={() => setShowReport(true)} title="Report" className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-slate-200 dark:border-white/15 text-slate-500 dark:text-slate-400 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10"><Icon name="flag" className="text-[18px]" /></button>}
                     {isOwn ? (
-                      <button onClick={() => setShowEdit(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold text-white premium-gradient shadow-sm shadow-primary/25"><span className="material-symbols-outlined text-[16px]">edit</span> Edit profile</button>
+                      <button onClick={() => setShowEdit(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold text-white premium-gradient shadow-sm shadow-primary/25"><Icon name="edit" className="text-[16px]" /> Edit profile</button>
                     ) : (
                       <>
-                        <button onClick={startMessage} disabled={messaging} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-semibold border border-slate-200 dark:border-white/15 text-slate-600 dark:text-slate-300 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 disabled:opacity-60"><span className="material-symbols-outlined text-[16px]">chat</span>{messaging ? 'Opening…' : 'Message'}</button>
+                        <button onClick={startMessage} disabled={messaging} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-semibold border border-slate-200 dark:border-white/15 text-slate-600 dark:text-slate-300 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 disabled:opacity-60"><Icon name="chat" className="text-[16px]" />{messaging ? 'Opening…' : 'Message'}</button>
                         <FollowButton targetId={profile.id as string} initialFollowing={isFollowing} onChange={(now) => { setIsFollowing(now); setFollowers((c) => c + (now ? 1 : -1)) }} />
                       </>
                     )}
@@ -180,10 +181,10 @@ export default function PublicProfileView({ username, embedded = false }: { user
                 </div>
 
                 <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
-                  {profile.location && <span className="inline-flex items-center gap-1"><span className="material-symbols-outlined text-[15px]">location_on</span>{profile.location}</span>}
-                  {profile.role === 'recruiter' && profile.company_name && <span className="inline-flex items-center gap-1"><span className="material-symbols-outlined text-[15px]">apartment</span>{profile.company_name}</span>}
-                  {profile.linkedin_url && <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-primary"><span className="material-symbols-outlined text-[15px]">link</span>LinkedIn</a>}
-                  {profile.github_url && <a href={profile.github_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-primary"><span className="material-symbols-outlined text-[15px]">link</span>GitHub</a>}
+                  {profile.location && <span className="inline-flex items-center gap-1"><Icon name="location_on" className="text-[15px]" />{profile.location}</span>}
+                  {profile.role === 'recruiter' && profile.company_name && <span className="inline-flex items-center gap-1"><Icon name="apartment" className="text-[15px]" />{profile.company_name}</span>}
+                  {profile.linkedin_url && <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-primary"><Icon name="link" className="text-[15px]" />LinkedIn</a>}
+                  {profile.github_url && <a href={profile.github_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-primary"><Icon name="link" className="text-[15px]" />GitHub</a>}
                 </div>
 
                 {(profile.summary || profile.company_about) && (
@@ -195,12 +196,12 @@ export default function PublicProfileView({ username, embedded = false }: { user
 
           {/* 60/40: posts left, details right */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 mt-5">
-            {/* LEFT 60% — posts */}
+            {/* LEFT 60% - posts */}
             <div className="lg:col-span-3 space-y-4">
               <h2 className="text-sm font-bold uppercase tracking-wide text-slate-400 px-1">{isOwn ? 'Your posts' : 'Posts'}</h2>
               {posts.length === 0 ? (
                 <div className="bg-white dark:bg-[#1c1c1e] rounded-3xl border border-slate-200/70 dark:border-white/10 p-10 text-center">
-                  <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600">dynamic_feed</span>
+                  <Icon name="dynamic_feed" className="text-4xl text-slate-300 dark:text-slate-600" />
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">{isOwn ? 'You haven’t posted yet.' : 'No posts yet.'}</p>
                 </div>
               ) : posts.map((p) => (
@@ -208,7 +209,7 @@ export default function PublicProfileView({ username, embedded = false }: { user
               ))}
             </div>
 
-            {/* RIGHT 40% — details (recruiters: a Company card they can actually edit;
+            {/* RIGHT 40% - details (recruiters: a Company card they can actually edit;
                 candidates: profile sections from Build Profile) */}
             <div className="lg:col-span-2 space-y-4">
               {profile.role === 'recruiter' ? (
@@ -217,7 +218,7 @@ export default function PublicProfileView({ username, embedded = false }: { user
                     <div className="space-y-2 text-sm">
                       {profile.company_name && <p className="font-bold text-slate-900 dark:text-slate-100">{profile.company_name}</p>}
                       {(profile.company_industry || profile.company_size) && <p className="text-slate-500 dark:text-slate-400">{[profile.company_industry, profile.company_size].filter(Boolean).join(' · ')}</p>}
-                      {profile.company_website && <a href={profile.company_website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline"><span className="material-symbols-outlined text-[15px]">link</span>Website</a>}
+                      {profile.company_website && <a href={profile.company_website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline"><Icon name="link" className="text-[15px]" />Website</a>}
                       {profile.company_about && <p className="text-slate-600 dark:text-slate-300 whitespace-pre-line pt-1">{profile.company_about}</p>}
                     </div>
                   ) : (
@@ -229,7 +230,7 @@ export default function PublicProfileView({ username, embedded = false }: { user
               {!hasDetails && <div className="bg-white dark:bg-[#1c1c1e] rounded-3xl border border-slate-200/70 dark:border-white/10 p-6 text-center text-sm text-slate-400">No details added yet.</div>}
               {sections.skills.length > 0 && <Card title="Skills" icon="bolt"><div className="flex flex-wrap gap-2">{sections.skills.map((s) => <span key={s.id} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300">{s.name}</span>)}</div></Card>}
               {sections.languages.length > 0 && <Card title="Languages" icon="translate"><div className="flex flex-wrap gap-2">{sections.languages.map((l) => <span key={l.id} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300">{l.name}{l.level ? ` · ${l.level}` : ''}</span>)}</div></Card>}
-              {sections.projects.length > 0 && <Card title="Projects" icon="rocket_launch"><div className="space-y-4">{sections.projects.map((p) => (<div key={p.id} className="border-l-2 border-primary/30 pl-4"><div className="flex items-center gap-2"><h4 className="font-bold text-sm">{p.name}</h4>{p.link && <a href={p.link} target="_blank" rel="noopener noreferrer" className="text-primary"><span className="material-symbols-outlined text-[15px]">open_in_new</span></a>}</div>{p.description && <p className="text-sm text-slate-600 dark:text-slate-300 mt-0.5">{p.description}</p>}</div>))}</div></Card>}
+              {sections.projects.length > 0 && <Card title="Projects" icon="rocket_launch"><div className="space-y-4">{sections.projects.map((p) => (<div key={p.id} className="border-l-2 border-primary/30 pl-4"><div className="flex items-center gap-2"><h4 className="font-bold text-sm">{p.name}</h4>{p.link && <a href={p.link} target="_blank" rel="noopener noreferrer" className="text-primary"><Icon name="open_in_new" className="text-[15px]" /></a>}</div>{p.description && <p className="text-sm text-slate-600 dark:text-slate-300 mt-0.5">{p.description}</p>}</div>))}</div></Card>}
               {sections.education.length > 0 && <Card title="Education" icon="school"><div className="space-y-4">{sections.education.map((e) => (<div key={e.id} className="border-l-2 border-primary/30 pl-4"><h4 className="font-bold text-sm">{e.degree}</h4><p className="text-sm text-slate-600 dark:text-slate-300">{e.institute}</p>{(e.start_year || e.end_year) && <p className="text-xs text-slate-400 mt-0.5">{[e.start_year, e.end_year].filter(Boolean).join(' – ')}</p>}</div>))}</div></Card>}
               {sections.certifications.length > 0 && <Card title="Certifications" icon="verified"><ListItems items={sections.certifications.map((c) => ({ id: c.id, primary: c.name, secondary: [c.issuer, c.issue_date].filter(Boolean).join(' · ') }))} /></Card>}
               {sections.courses.length > 0 && <Card title="Courses" icon="menu_book"><ListItems items={sections.courses.map((c) => ({ id: c.id, primary: c.name, secondary: [c.provider, c.completion_date].filter(Boolean).join(' · ') }))} /></Card>}
@@ -298,7 +299,7 @@ function EditProfileModal({ profile, onClose, onSaved }: { profile: PublicProfil
       <div className="relative w-full max-w-lg max-h-[88vh] overflow-y-auto bg-white dark:bg-[#1c1c1e] rounded-3xl shadow-2xl border border-slate-200/70 dark:border-white/10">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200/70 dark:border-white/10 sticky top-0 bg-white dark:bg-[#1c1c1e]">
           <h3 className="font-bold">Edit profile</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400"><span className="material-symbols-outlined">close</span></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400"><Icon name="close" /></button>
         </div>
         <div className="p-5 space-y-4">
           <div className="flex items-center gap-4">
@@ -337,7 +338,7 @@ function Field({ label, value, onChange, placeholder }: { label: string; value: 
 function Card({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
   return (
     <section className="bg-white dark:bg-[#1c1c1e] rounded-3xl border border-slate-200/70 dark:border-white/10 p-5 shadow-sm">
-      <h3 className="flex items-center gap-2 font-bold mb-4"><span className="material-symbols-outlined text-[20px] text-primary">{icon}</span>{title}</h3>
+      <h3 className="flex items-center gap-2 font-bold mb-4"><Icon name={icon} className="text-[20px] text-primary" />{title}</h3>
       {children}
     </section>
   )
