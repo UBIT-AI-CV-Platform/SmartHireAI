@@ -61,5 +61,5 @@ desktop.ini
 *.swp
 *.swo
 
-# npm lockfile (package.json is authoritative; project uses pnpm)
-package-lock.json
+# Stray root lockfile only - the real lockfile lives in frontend/ and MUST be committed
+/package-lock.json
