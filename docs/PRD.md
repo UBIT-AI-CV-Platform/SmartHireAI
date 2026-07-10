@@ -948,7 +948,7 @@ This gate was validated empirically: a pull request with a deliberately introduc
 
 ### 21.3 Package-Manager Enforcement
 
-Reproducibility of the dependency graph is enforced at three levels: an `only-allow npm` preinstall script rejects install commands issued with pnpm or Yarn; the `packageManager` field in `package.json` pins the exact npm version; and engine-strict configuration prevents use of an unsupported Node.js version.
+Reproducibility of the dependency graph is enforced at two levels: an `only-allow npm` preinstall script rejects install commands issued with pnpm or Yarn; and the `packageManager` field in `package.json` pins the exact npm version.
 
 ### 21.4 Secrets & Security Posture
 
