@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useProfileLink } from '@/lib/useProfileLink'
 import { initials, type PublicProfile } from '@/lib/social'
 import { Icon } from '@/components/ui/icon'
+import { AvatarImage } from '@/components/ui/optimized-image'
 
 /** Top-of-dashboard people search with a live results dropdown. */
 export default function PeopleSearchBar() {
@@ -53,7 +54,7 @@ export default function PeopleSearchBar() {
           ) : results.map((p) => (
             <Link key={p.id} href={profileLink(p.username)} className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-white/10">
               <div className="h-9 w-9 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {p.photo_url ? <img src={p.photo_url} alt="" className="h-full w-full object-cover" /> : <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{initials(p.full_name)}</span>}
+                {p.photo_url ? <AvatarImage src={p.photo_url} /> : <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{initials(p.full_name)}</span>}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{p.full_name || '@' + p.username}</p>

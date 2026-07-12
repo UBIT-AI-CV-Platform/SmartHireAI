@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { initials, type Post } from '@/lib/social'
 import { Icon } from '@/components/ui/icon'
+import { AvatarImage } from '@/components/ui/optimized-image'
 
 export interface MeSnapshot {
   id: string
@@ -20,7 +21,7 @@ export default function CreatePost({ me, onCreated }: { me: MeSnapshot; onCreate
     <>
       <div className="bg-white dark:bg-[#1c1c1e] rounded-3xl border border-slate-200/70 dark:border-white/10 p-3 md:p-4 shadow-sm flex items-center gap-3">
         <div className="h-11 w-11 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden flex-shrink-0 border border-white dark:border-white/10">
-          {me.photo ? <img src={me.photo} alt="You" className="h-full w-full object-cover" /> : <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{initials(me.name)}</span>}
+          {me.photo ? <AvatarImage src={me.photo} alt="You" /> : <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{initials(me.name)}</span>}
         </div>
         <button onClick={() => setOpen(true)} className="flex-1 text-left px-4 py-2.5 rounded-full bg-slate-100 dark:bg-white/5 text-sm text-slate-500 dark:text-slate-400 hover:bg-slate-200/70 dark:hover:bg-white/10 transition-colors">
           Share an update, a win, or what you&apos;re working on…
@@ -118,7 +119,7 @@ function PostComposerModal({ me, onClose, onCreated }: { me: MeSnapshot; onClose
         <div className="p-5">
           <div className="flex items-center gap-3 mb-3">
             <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden flex-shrink-0">
-              {me.photo ? <img src={me.photo} alt="You" className="h-full w-full object-cover" /> : <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{initials(me.name)}</span>}
+              {me.photo ? <AvatarImage src={me.photo} alt="You" /> : <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{initials(me.name)}</span>}
             </div>
             <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{me.name || 'You'}</p>
           </div>
@@ -141,6 +142,10 @@ function PostComposerModal({ me, onClose, onCreated }: { me: MeSnapshot; onClose
 
           {imagePreview && (
             <div className="relative mt-2 rounded-2xl overflow-hidden border border-slate-200/70 dark:border-white/10">
+              {/* Stays a plain <img>: this is a local blob: URL from the file picker,
+                  which next/image cannot optimize - and there is nothing to gain,
+                  the bytes are already on the device. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={imagePreview} alt="preview" className="w-full max-h-72 object-cover" />
               <button onClick={() => { setImage(null); setImagePreview(''); if (imgRef.current) imgRef.current.value = '' }} className="absolute top-2 right-2 h-8 w-8 rounded-full bg-slate-900/60 text-white flex items-center justify-center hover:bg-slate-900/80"><Icon name="close" className="text-[18px]" /></button>
             </div>

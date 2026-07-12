@@ -8,6 +8,7 @@ import WhoToFollow from './WhoToFollow'
 import PeopleSearchBar from './PeopleSearchBar'
 import { initials } from '@/lib/social'
 import { Icon } from '@/components/ui/icon'
+import { AvatarImage } from '@/components/ui/optimized-image'
 
 type Role = 'candidate' | 'recruiter'
 
@@ -61,7 +62,7 @@ function ProfileMiniCard({ base }: { base: string }) {
       <div className="h-16 premium-gradient" />
       <div className="px-5 pb-5 -mt-8">
         <div className="h-16 w-16 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center overflow-hidden border-4 border-white dark:border-[#1c1c1e] shadow">
-          {p?.photo ? <img src={p.photo} alt="" className="h-full w-full object-cover" /> : <span className="text-xl font-black text-indigo-700 dark:text-indigo-300">{initials(p?.full_name)}</span>}
+          {p?.photo ? <AvatarImage src={p.photo} /> : <span className="text-xl font-black text-indigo-700 dark:text-indigo-300">{initials(p?.full_name)}</span>}
         </div>
         <p className="font-bold text-slate-900 dark:text-slate-100 mt-2 truncate">{greeting()}, {(p?.full_name || 'there').split(' ')[0]} 👋</p>
         <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{p?.headline}{p?.role === 'recruiter' && p?.company ? ` · ${p.company}` : ''}</p>

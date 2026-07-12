@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import PersonCard from './PersonCard'
 import { initials, type PublicProfile } from '@/lib/social'
 import { Icon } from '@/components/ui/icon'
+import { AvatarImage } from '@/components/ui/optimized-image'
 
 const SAFE_COLS = 'id, username, full_name, headline, desired_role, role, location, photo_url, company_name, company_industry, followers_count, following_count'
 
@@ -104,7 +105,7 @@ export default function PeopleDirectory() {
           className="flex items-center gap-3 p-4 mb-6 rounded-2xl border border-slate-200/70 dark:border-white/10 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 hover:shadow-md transition-all"
         >
           <div className="h-12 w-12 rounded-full bg-white dark:bg-white/10 flex items-center justify-center overflow-hidden border border-white dark:border-white/10 shadow-sm">
-            {me.photo_url ? <img src={me.photo_url} alt="You" className="h-full w-full object-cover" /> : <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{initials(me.full_name)}</span>}
+            {me.photo_url ? <AvatarImage src={me.photo_url} alt="You" /> : <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{initials(me.full_name)}</span>}
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">{me.full_name || 'Your profile'}</p>

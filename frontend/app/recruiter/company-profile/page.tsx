@@ -126,6 +126,9 @@ export default function CompanyProfilePage() {
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
             <div className="relative flex-shrink-0">
               <div className="w-24 h-24 rounded-2xl overflow-hidden bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center border border-surface-container">
+                {/* Plain <img>: `photo` is a remote URL once saved, but a FileReader data:
+                    URL while a new logo is being picked - next/image cannot handle that. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 {photo ? <img src={photo} alt="Logo" className="w-full h-full object-cover" /> : <Icon name="apartment" className="text-indigo-700 dark:text-indigo-300 text-4xl" solid />}
               </div>
               <button onClick={() => fileRef.current?.click()} disabled={uploading} className="absolute -bottom-2 -right-2 w-9 h-9 rounded-full premium-gradient text-white flex items-center justify-center shadow-lg hover:scale-105 transition-all disabled:opacity-60" title="Upload logo">
@@ -182,6 +185,9 @@ export default function CompanyProfilePage() {
             <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-3">Candidate preview</p>
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 rounded-2xl overflow-hidden bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center flex-shrink-0 border border-surface-container">
+                {/* Plain <img>: `photo` is a remote URL once saved, but a FileReader data:
+                    URL while a new logo is being picked - next/image cannot handle that. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 {photo ? <img src={photo} alt="Logo" className="w-full h-full object-cover" /> : <Icon name="apartment" className="text-indigo-700 dark:text-indigo-300 text-2xl" solid />}
               </div>
               <div className="min-w-0">

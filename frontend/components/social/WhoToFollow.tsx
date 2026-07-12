@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import FollowButton from './FollowButton'
+import { AvatarImage } from '@/components/ui/optimized-image'
 import { useProfileLink } from '@/lib/useProfileLink'
 import { displayName, initials, tagline, type PublicProfile } from '@/lib/social'
 
@@ -47,7 +48,7 @@ export default function WhoToFollow({ seeAllHref, limit = 4 }: { seeAllHref?: st
           <div key={p.id} className="flex items-center gap-3">
             <Link href={profileLink(p.username)} className="flex-shrink-0">
               <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden border border-white dark:border-white/10">
-                {p.photo_url ? <img src={p.photo_url} alt={displayName(p)} className="h-full w-full object-cover" /> : <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{initials(p.full_name)}</span>}
+                {p.photo_url ? <AvatarImage src={p.photo_url} alt={displayName(p)} /> : <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{initials(p.full_name)}</span>}
               </div>
             </Link>
             <Link href={profileLink(p.username)} className="min-w-0 flex-1">
