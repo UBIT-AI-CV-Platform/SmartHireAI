@@ -7,10 +7,10 @@ export default function CTASection() {
         <div className="absolute bottom-0 right-0 w-64 md:w-80 h-64 md:h-80 bg-secondary/15 rounded-full blur-3xl translate-x-1/4 translate-y-1/4 opacity-60"></div>
 
         <div className="relative z-10 max-w-2xl mx-auto">
-          <h2 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black mb-2 sm:mb-3 leading-tight text-indigo-950 dark:text-slate-100">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black mb-2 sm:mb-3 leading-tight text-indigo-950 dark:text-slate-100">
             Ready to transform your hiring workflow?
           </h2>
-          <p className="text-xs sm:text-sm md:text-base mb-4 sm:mb-5 md:mb-6 text-indigo-800/80 dark:text-slate-300 font-medium">
+          <p className="text-sm md:text-base mb-5 md:mb-6 text-indigo-800/80 dark:text-slate-300 font-medium">
             Build smarter CVs, match with the right roles, and hire with confidence - all in one AI-powered platform.
           </p>
           <div className="flex justify-center">

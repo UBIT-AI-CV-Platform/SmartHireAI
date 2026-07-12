@@ -3,6 +3,7 @@ import { Inter, Sora } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import ThemeProvider from '@/components/shared/ThemeProvider'
 import SiteLoader from '@/components/shared/SiteLoader'
+import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
 // Primary font - used for all body / UI text
@@ -71,6 +72,7 @@ export default function RootLayout({
         <ThemeProvider>
           <SiteLoader />
           {children}
+          <Toaster />
           {process.env.NODE_ENV === 'production' && <Analytics />}
         </ThemeProvider>
       </body>

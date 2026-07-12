@@ -1138,6 +1138,10 @@ export type Database = {
         Args: { p_conversation_id: string }
         Returns: boolean
       }
+      check_rate_limit: {
+        Args: { p_bucket: string; p_limit: number; p_window_seconds: number }
+        Returns: { allowed: boolean; remaining: number; reset_at: string }[]
+      }
     }
     Enums: {
       application_status:

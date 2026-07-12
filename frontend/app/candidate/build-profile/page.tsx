@@ -6,6 +6,7 @@ import ImageCropModal from '@/components/candidate/ImageCropModal'
 import ProfileCardSection, { type CardRow } from '@/components/candidate/ProfileCardSection'
 import CustomSections from '@/components/candidate/CustomSections'
 import { Icon } from '@/components/ui/icon'
+import { toast } from '@/hooks/use-toast'
 
 type Skill = { id: number; name: string }
 type Language = { id: number; name: string; level: string }
@@ -124,7 +125,10 @@ export default function BuildProfilePage() {
       summary: form.summary || null, photo_url: profilePhoto ? profilePhoto.split('?')[0] : null,
     }).eq('id', userId)
     setSaving(false)
-    if (error) { alert(error.message); return }
+    if (error) {
+      toast({ variant: 'destructive', title: "Couldn't save your profile", description: error.message })
+      return
+    }
     setSaved(true)
     setTimeout(() => setSaved(false), 2500)
   }
@@ -139,16 +143,17 @@ export default function BuildProfilePage() {
     // Validate: image only, JPG/PNG, max 5MB
     const allowed = ['image/jpeg', 'image/jpg', 'image/png']
     if (!allowed.includes(file.type)) {
-      alert('Please choose a PNG, JPG or JPEG image.')
+      toast({ variant: 'destructive', title: 'Unsupported file type', description: 'Please choose a PNG, JPG or JPEG image.' })
       return
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('That image is larger than 5MB. Please choose a smaller file.')
+      toast({ variant: 'destructive', title: 'Image is too large', description: 'That image is larger than 5MB. Please choose a smaller file.' })
       return
     }
     const reader = new FileReader()
     reader.onload = () => setCropSrc(reader.result as string)
-    reader.onerror = () => alert('Could not read that file. Please try another image.')
+    reader.onerror = () =>
+      toast({ variant: 'destructive', title: "Couldn't read that file", description: 'Please try another image.' })
     reader.readAsDataURL(file)
   }
 
@@ -156,7 +161,11 @@ export default function BuildProfilePage() {
     if (!userId) { setCropSrc(null); return }
     const path = `${userId}/avatar.jpg`
     const { error } = await supabase.storage.from('avatars').upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
-    if (error) { alert(error.message); setCropSrc(null); return }
+    if (error) {
+      toast({ variant: 'destructive', title: "Couldn't upload your photo", description: error.message })
+      setCropSrc(null)
+      return
+    }
     const { data } = supabase.storage.from('avatars').getPublicUrl(path)
     const url = data.publicUrl
     // Cache-buster only for immediate on-screen refresh; the DB keeps the clean URL.
@@ -179,7 +188,7 @@ export default function BuildProfilePage() {
     const name = skillInput.trim()
     if (!name || !userId) return
     if (skills.some((s) => s.name.toLowerCase() === name.toLowerCase() && s.id !== editingSkillId)) {
-      alert('That skill is already added.')
+      toast({ title: 'Already added', description: `"${name}" is already in your skills.` })
       return
     }
     if (editingSkillId) {
@@ -204,7 +213,7 @@ export default function BuildProfilePage() {
     const name = languageInput.trim()
     if (!name || !userId) return
     if (languages.some((l) => l.name.toLowerCase() === name.toLowerCase() && l.id !== editingLanguageId)) {
-      alert('That language is already added.')
+      toast({ title: 'Already added', description: `"${name}" is already in your languages.` })
       return
     }
     if (editingLanguageId) {
@@ -277,6 +286,10 @@ export default function BuildProfilePage() {
               <div className="relative group cursor-pointer">
                 <div className="w-32 h-32 rounded-full bg-surface-container flex items-center justify-center border-4 border-white dark:border-white/10 shadow-sm overflow-hidden group-hover:bg-surface-container-high transition-all relative" onClick={handleCameraClick}>
                   {profilePhoto ? (
+                    /* Stays a plain <img>: profilePhoto is a remote URL once saved, but a
+                       FileReader data: URL while the user is picking a new one. next/image
+                       cannot handle the data: case, so this one src is left unoptimized. */
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img alt="Profile photo" className="w-full h-full object-cover object-center" src={profilePhoto} />
                   ) : (
                     <Icon name="person" className="text-4xl text-on-surface-variant/40 group-hover:text-primary transition-colors" />

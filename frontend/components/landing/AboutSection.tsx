@@ -14,13 +14,13 @@ export default function AboutSection() {
   ]
 
   return (
-    <section id="about" className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-16 overflow-hidden">
+    <section id="about" className="max-w-7xl mx-auto scroll-mt-24 px-4 md:px-6 py-10 md:py-16 overflow-hidden">
       {/* Heading (matches the other landing sections) */}
       <div className="text-center mb-6 sm:mb-9 md:mb-12">
-        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-on-surface tracking-tighter mb-2">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-on-surface tracking-tighter mb-2">
           About Us
         </h2>
-        <p className="text-primary font-bold text-xs sm:text-sm md:text-base lg:text-lg tracking-tight max-w-2xl mx-auto px-4">
+        <p className="text-primary font-bold text-sm sm:text-base md:text-lg tracking-tight max-w-2xl mx-auto">
           Turning potential into opportunity
         </p>
       </div>

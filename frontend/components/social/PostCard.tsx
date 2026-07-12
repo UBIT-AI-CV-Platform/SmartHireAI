@@ -5,6 +5,7 @@ import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { createClient } from '@/lib/supabase/client'
+import { AvatarImage, ContentImage } from '@/components/ui/optimized-image'
 import { useProfileLink } from '@/lib/useProfileLink'
 import { initials, relativeTime, roleLabel, type Post, type PostComment } from '@/lib/social'
 import type { MeSnapshot } from './CreatePost'
@@ -137,7 +138,7 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
       <div className="flex items-start gap-3 p-4 md:p-5 pb-3">
         <Link href={authorHref} className="flex-shrink-0">
           <div className="h-11 w-11 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden border border-white dark:border-white/10">
-            {post.author_photo ? <img src={post.author_photo} alt={post.author_name ?? ''} className="h-full w-full object-cover" /> : <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{initials(post.author_name)}</span>}
+            {post.author_photo ? <AvatarImage src={post.author_photo} alt={post.author_name ?? ''} /> : <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{initials(post.author_name)}</span>}
           </div>
         </Link>
         <div className="min-w-0 flex-1">
@@ -193,17 +194,17 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
         <Link href={`/post/${repost.post_id}`} className="block mx-4 md:mx-5 mb-3 rounded-2xl border border-slate-200/70 dark:border-white/10 overflow-hidden hover:border-slate-300 dark:hover:border-white/20 transition-colors">
           <div className="flex items-center gap-2 p-3 pb-1.5">
             <div className="h-7 w-7 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden flex-shrink-0">
-              {repost.author_photo ? <img src={repost.author_photo} alt="" className="h-full w-full object-cover" /> : <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300">{initials(repost.author_name)}</span>}
+              {repost.author_photo ? <AvatarImage src={repost.author_photo} /> : <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300">{initials(repost.author_name)}</span>}
             </div>
             <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{repost.author_name || 'User'}</p>
             <p className="text-[10px] text-slate-400">· {relativeTime(repost.created_at)}</p>
           </div>
           {repost.content && <p className="px-3 pb-2 text-xs text-slate-600 dark:text-slate-300 whitespace-pre-line line-clamp-5">{repost.content}</p>}
-          {repost.image_url && <img src={repost.image_url} alt="" className="w-full max-h-72 object-cover" />}
+          {repost.image_url && <ContentImage src={repost.image_url} className="w-full max-h-72 object-cover" />}
         </Link>
       ) : post.image_url && (
         <div className="bg-slate-50 dark:bg-black/20 border-y border-slate-100 dark:border-white/5">
-          <img src={post.image_url} alt="post" className="w-full max-h-[28rem] object-contain mx-auto" />
+          <ContentImage src={post.image_url} alt="post" className="w-full max-h-[28rem] object-contain mx-auto" />
         </div>
       )}
 
@@ -263,7 +264,7 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
           {me && (
             <div className="flex gap-2.5">
               <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {me.photo ? <img src={me.photo} alt="You" className="h-full w-full object-cover" /> : <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{initials(me.name)}</span>}
+                {me.photo ? <AvatarImage src={me.photo} alt="You" /> : <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{initials(me.name)}</span>}
               </div>
               <div className="flex-1 flex items-end gap-2">
                 <input
@@ -289,7 +290,7 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
                 <div key={c.id} className="flex gap-2.5 group">
                   <Link href={profileLink(c.author_username)} className="flex-shrink-0">
                     <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden">
-                      {c.author_photo ? <img src={c.author_photo} alt={c.author_name ?? ''} className="h-full w-full object-cover" /> : <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{initials(c.author_name)}</span>}
+                      {c.author_photo ? <AvatarImage src={c.author_photo} alt={c.author_name ?? ''} /> : <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{initials(c.author_name)}</span>}
                     </div>
                   </Link>
                   <div className="min-w-0 flex-1">

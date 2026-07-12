@@ -392,7 +392,7 @@ A LinkedIn/Glassdoor-style job discovery and application tracker with four tabs 
 - Application cards: company, title, location, "Applied X ago", match score, status badge (Applied/Screening/Interview/Offer/Rejected), View job, Withdraw.
 
 **8.5.7 Web Jobs Tab (External)** - *C*
-- Aggregated listings (Jooble → Adzuna → demo fallback) tagged by source (LinkedIn/Indeed/Glassdoor).
+- Aggregated listings (Jooble → sample fallback) tagged by source (LinkedIn/Indeed/Glassdoor).
 - Source-filter chips derived from actual results; **Load more**; Apply opens the original posting in a new tab.
 
 **8.5.8 Sidebar Widgets** - *S*
@@ -769,7 +769,7 @@ SmartHire AI is a **single Next.js (App Router) application** with role-based ro
 | AI | Google Gemini (`gemini-2.5-flash`, structured JSON output, streaming) |
 | Video | WebRTC (browser-native P2P) + Supabase Realtime signalling + Google STUN |
 | Email | Nodemailer over SMTP |
-| External jobs | Jooble API (with Adzuna + demo fallback) |
+| External jobs | Jooble API (with sample fallback) |
 | Hosting | Vercel (frontend) + Supabase (managed backend) |
 | Notable libraries | `@supabase/ssr`, `react-easy-crop`, `react-to-print`, `docx`, `react-markdown`, `remark-gfm`, `date-fns` |
 
@@ -839,7 +839,7 @@ SmartHire AI is a **single Next.js (App Router) application** with role-based ro
 | Anthropic (Claude) | Recruiter copilot (conversational) | Server-side only |
 | Google OAuth | Social sign-in | Optional |
 | SMTP (e.g. Gmail) | Transactional emails | Best-effort; app works without it |
-| Jooble (+ Adzuna) | External job listings | Optional; demo fallback |
+| Jooble | External job listings | Optional; sample fallback |
 | Google STUN | WebRTC NAT traversal | No TURN (P2P on non-symmetric NATs) |
 
 ---

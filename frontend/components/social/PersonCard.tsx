@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import FollowButton from './FollowButton'
+import { AvatarImage } from '@/components/ui/optimized-image'
 import { useProfileLink } from '@/lib/useProfileLink'
 import { displayName, initials, roleLabel, tagline, type PublicProfile } from '@/lib/social'
 
@@ -23,7 +24,7 @@ export default function PersonCard({ person, viewerId, isFollowing, onFollowChan
       <Link href={href} onClick={onNavigate} className="flex-shrink-0">
         <div className="h-12 w-12 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden border border-white dark:border-white/10 shadow-sm">
           {person.photo_url ? (
-            <img src={person.photo_url} alt={displayName(person)} className="h-full w-full object-cover" />
+            <AvatarImage src={person.photo_url} alt={displayName(person)} />
           ) : (
             <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{initials(person.full_name)}</span>
           )}

@@ -23,6 +23,35 @@ const ICE_SERVERS: RTCIceServer[] = [
 const fmtWhen = (iso: string | null) => iso ? new Date(iso).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Now'
 const initial = (s: string) => (s || '?').charAt(0).toUpperCase()
 
+/**
+ * The room is only live for a confirmed interview.
+ *
+ * Being a participant was previously the ONLY check, so either side could walk into
+ * the room of an interview that was declined, or had already finished, just by
+ * holding the URL. The Join link is only ever surfaced at stage 'accepted', so the
+ * route now enforces the same rule instead of trusting the UI to hide it.
+ *
+ * Returns null when the stage is joinable, otherwise the reason to show.
+ */
+function stageBlockReason(stage: string): string | null {
+  switch (stage) {
+    case 'accepted':
+      return null
+    case 'proposed':
+      return 'This interview hasn’t been confirmed yet. The room opens once both sides accept the time.'
+    case 'declined':
+      return 'This interview was declined, so its room is closed.'
+    case 'cancelled':
+      return 'This interview was cancelled, so its room is closed.'
+    case 'completed':
+    case 'offer':
+    case 'rejected':
+      return 'This interview has already finished. Its room is closed.'
+    default:
+      return 'This interview room isn’t open.'
+  }
+}
+
 export default function InterviewRoomPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
@@ -30,6 +59,8 @@ export default function InterviewRoomPage() {
 
   const [loading, setLoading] = useState(true)
   const [denied, setDenied] = useState(false)
+  /** Set when the caller IS a participant but the interview's stage isn't joinable. */
+  const [closedReason, setClosedReason] = useState<string | null>(null)
   const [iv, setIv] = useState<Interview | null>(null)
   const [isRecruiter, setIsRecruiter] = useState(false)
   const [me, setMe] = useState('You')
@@ -41,6 +72,10 @@ export default function InterviewRoomPage() {
   const [remoteActive, setRemoteActive] = useState(false)
   const [mediaError, setMediaError] = useState<string | null>(null)
   const [elapsed, setElapsed] = useState(0)
+  /** Bumping this tears the peer connection down and rebuilds it - the Retry button. */
+  const [retryKey, setRetryKey] = useState(0)
+  /** Peer is in the room but negotiation has been dragging on far too long. */
+  const [stalled, setStalled] = useState(false)
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
@@ -61,6 +96,11 @@ export default function InterviewRoomPage() {
       if (user.id !== row.recruiter_id && user.id !== row.candidate_id) { setDenied(true); setLoading(false); return }
       const rec = user.id === row.recruiter_id
       setIsRecruiter(rec); setIv(row)
+
+      // Participant, but is the interview actually live? Bail out before touching
+      // the camera or opening a signalling channel.
+      const blocked = stageBlockReason(row.stage)
+      if (blocked) { setClosedReason(blocked); setLoading(false); return }
       idsRef.current = { me: user.id, other: rec ? row.candidate_id : row.recruiter_id }
       const { data: prof } = await supabase.from('profiles').select('full_name, company_name').eq('id', user.id).single()
       setMe(prof?.full_name || prof?.company_name || 'You')
@@ -76,7 +116,7 @@ export default function InterviewRoomPage() {
 
   // ── WebRTC setup once identities are known ───────────────────────────────────
   useEffect(() => {
-    if (loading || denied || !iv) return
+    if (loading || denied || closedReason || !iv) return
     const { me: myId, other: otherId } = idsRef.current
     if (!myId || !otherId) return
     const isInitiator = myId < otherId
@@ -164,7 +204,7 @@ export default function InterviewRoomPage() {
       pendingIce.current = []; offeredRef.current = false
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, denied, iv])
+  }, [loading, denied, closedReason, iv, retryKey])
 
   // call timer once connected
   useEffect(() => {
@@ -172,6 +212,32 @@ export default function InterviewRoomPage() {
     const t = setInterval(() => setElapsed((e) => e + 1), 1000)
     return () => clearInterval(t)
   }, [connState])
+
+  /**
+   * Watchdog for the silent-hang case.
+   *
+   * We only use public STUN servers - no TURN - so when the two peers sit behind
+   * networks that won't let them reach each other directly (symmetric NAT, mobile
+   * data, locked-down campus Wi-Fi) ICE simply never completes. The connection state
+   * can sit on 'connecting' indefinitely without ever reaching 'failed', which used
+   * to leave the user staring at "Connecting…" forever with nothing to act on.
+   */
+  useEffect(() => {
+    if (!peerPresent || connState === 'connected' || connState === 'failed') {
+      setStalled(false)
+      return
+    }
+    const t = setTimeout(() => setStalled(true), 20000)
+    return () => clearTimeout(t)
+  }, [peerPresent, connState, retryKey])
+
+  const retryConnection = () => {
+    setStalled(false)
+    setRemoteActive(false)
+    setConnState('new')
+    offeredRef.current = false
+    setRetryKey((k) => k + 1) // re-runs the WebRTC effect; its cleanup closes the old pc
+  }
 
   const toggleMic = () => {
     const track = localStreamRef.current?.getAudioTracks()[0]
@@ -184,7 +250,14 @@ export default function InterviewRoomPage() {
 
   const backHref = isRecruiter ? '/recruiter/interviews' : '/candidate/interviews'
   const mmss = `${String(Math.floor(elapsed / 60)).padStart(2, '0')}:${String(elapsed % 60).padStart(2, '0')}`
-  const statusText = connState === 'connected' ? `Connected · ${mmss}` : peerPresent ? 'Connecting…' : `Waiting for ${other}…`
+  const failed = connState === 'failed'
+  const statusText = failed
+    ? 'Connection failed'
+    : connState === 'connected'
+      ? `Connected · ${mmss}`
+      : peerPresent
+        ? 'Connecting…'
+        : `Waiting for ${other}…`
 
   if (loading) {
     return <div className="min-h-screen bg-[#0d0d12] flex items-center justify-center"><div className="flex gap-1.5"><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce"></div><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></div><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></div></div></div>
@@ -194,8 +267,20 @@ export default function InterviewRoomPage() {
       <div className="min-h-screen bg-[#0d0d12] flex flex-col items-center justify-center text-center p-6">
         <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center text-white mb-5"><Icon name="lock" className="text-3xl" /></div>
         <h1 className="text-xl font-bold text-white mb-2">Room not available</h1>
-        <p className="text-white/60 text-sm max-w-sm mb-5">This interview room doesn't exist or you don't have access to it.</p>
+        <p className="text-white/60 text-sm max-w-sm mb-5">This interview room doesn&apos;t exist or you don&apos;t have access to it.</p>
         <Link href="/" className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm">Go home</Link>
+      </div>
+    )
+  }
+  if (closedReason) {
+    return (
+      <div className="min-h-screen bg-[#0d0d12] flex flex-col items-center justify-center text-center p-6">
+        <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center text-white mb-5"><Icon name="event_busy" className="text-3xl" /></div>
+        <h1 className="text-xl font-bold text-white mb-2">Room is closed</h1>
+        <p className="text-white/60 text-sm max-w-sm mb-5">{closedReason}</p>
+        <Link href={isRecruiter ? '/recruiter/interviews' : '/candidate/interviews'} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm">
+          Back to interviews
+        </Link>
       </div>
     )
   }
@@ -212,7 +297,7 @@ export default function InterviewRoomPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 text-white/80 text-xs font-bold"><span className={`w-2 h-2 rounded-full ${connState === 'connected' ? 'bg-green-400' : 'bg-amber-400 animate-pulse'}`} />{statusText}</span>
+          <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 text-white/80 text-xs font-bold"><span className={`w-2 h-2 rounded-full ${connState === 'connected' ? 'bg-green-400' : failed ? 'bg-red-400' : 'bg-amber-400 animate-pulse'}`} />{statusText}</span>
           <ThemeToggle className="h-9 w-9 rounded-full flex items-center justify-center bg-white/10 text-white hover:bg-white/20 transition-colors" />
           <Link href={backHref} className="px-3 py-2 rounded-xl bg-white/10 text-white font-bold text-xs hover:bg-white/20 transition-colors flex items-center gap-1.5"><Icon name="close" className="text-base" />Leave</Link>
         </div>
@@ -224,10 +309,32 @@ export default function InterviewRoomPage() {
         </div>
       )}
 
+      {/* Negotiation never completing used to be invisible - the pill just said
+          "Connecting…" forever. Surface it, explain the likely cause, and give the
+          user something to press. */}
+      {(failed || stalled) && (
+        <div className="px-4 md:px-6 pt-3 flex-shrink-0">
+          <div className={`max-w-3xl mx-auto flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 px-4 py-2.5 rounded-xl border text-xs ${failed ? 'bg-red-500/15 border-red-500/30 text-red-200' : 'bg-amber-500/15 border-amber-500/30 text-amber-200'}`}>
+            <Icon name={failed ? 'wifi_off' : 'sync_problem'} className="text-base flex-shrink-0" />
+            <span className="flex-1">
+              {failed
+                ? `Couldn’t connect to ${other}. This usually means the two networks can’t reach each other directly.`
+                : `Still connecting to ${other}. If this doesn’t clear, one of you may be on a network that blocks a direct connection - try a different Wi-Fi.`}
+            </span>
+            <button
+              onClick={retryConnection}
+              className="self-start sm:self-auto flex-shrink-0 px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold transition-colors flex items-center gap-1.5"
+            >
+              <Icon name="refresh" className="text-sm" />Retry
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Stage */}
       <div className="flex-1 p-3 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 min-h-0">
         {/* Remote */}
-        <Tile name={other} tag={isRecruiter ? 'Candidate' : 'Interviewer'} waiting={!remoteActive} waitLabel={peerPresent ? 'Connecting…' : 'Waiting to join…'}>
+        <Tile name={other} tag={isRecruiter ? 'Candidate' : 'Interviewer'} waiting={!remoteActive} waitLabel={failed ? 'Connection failed' : peerPresent ? 'Connecting…' : 'Waiting to join…'}>
           <video ref={remoteVideoRef} autoPlay playsInline className={`w-full h-full object-cover ${remoteActive ? '' : 'hidden'}`} />
         </Tile>
         {/* Local */}

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { initials, relativeTime, type Post } from '@/lib/social'
 import { Icon } from '@/components/ui/icon'
+import { AvatarImage, ContentImage } from '@/components/ui/optimized-image'
 import type { MeSnapshot } from './CreatePost'
 
 type Snapshot = { post_id: string; author_name: string | null; author_username: string | null; author_photo: string | null; content: string | null; image_url: string | null; created_at: string | null }
@@ -51,7 +52,7 @@ export default function RepostModal({ post, me, onClose, onReposted }: { post: P
         <div className="p-4">
           <div className="flex gap-3">
             <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden flex-shrink-0">
-              {me.photo ? <img src={me.photo} alt="You" className="h-full w-full object-cover" /> : <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{initials(me.name)}</span>}
+              {me.photo ? <AvatarImage src={me.photo} alt="You" /> : <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{initials(me.name)}</span>}
             </div>
             <textarea
               value={quote}
@@ -66,13 +67,13 @@ export default function RepostModal({ post, me, onClose, onReposted }: { post: P
           <div className="mt-2 ml-[3.25rem] rounded-2xl border border-slate-200/70 dark:border-white/10 overflow-hidden">
             <div className="flex items-center gap-2 p-3 pb-1.5">
               <div className="h-7 w-7 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {snap.author_photo ? <img src={snap.author_photo} alt="" className="h-full w-full object-cover" /> : <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300">{initials(snap.author_name)}</span>}
+                {snap.author_photo ? <AvatarImage src={snap.author_photo} /> : <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300">{initials(snap.author_name)}</span>}
               </div>
               <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{snap.author_name || 'User'}</p>
               <p className="text-[10px] text-slate-400">· {relativeTime(snap.created_at)}</p>
             </div>
             {snap.content && <p className="px-3 pb-2 text-xs text-slate-600 dark:text-slate-300 line-clamp-4">{snap.content}</p>}
-            {snap.image_url && <img src={snap.image_url} alt="" className="w-full max-h-44 object-cover" />}
+            {snap.image_url && <ContentImage src={snap.image_url} className="w-full max-h-44 object-cover" />}
           </div>
 
           <button onClick={submit} disabled={busy} className="w-full mt-4 py-2.5 rounded-full text-sm font-semibold text-white premium-gradient shadow-sm shadow-primary/25 disabled:opacity-60">

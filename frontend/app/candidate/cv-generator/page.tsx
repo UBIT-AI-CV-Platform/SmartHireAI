@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useReactToPrint } from 'react-to-print'
 import { createClient } from '@/lib/supabase/client'
 import { Icon } from '@/components/ui/icon'
+import { toast } from '@/hooks/use-toast'
 
 type Contact = {
   email?: string; phone?: string; location?: string
@@ -144,7 +145,7 @@ export default function CVGeneratorPage() {
       link.click()
       URL.revokeObjectURL(url)
     } catch {
-      alert('Could not create the Word file. Please try again.')
+      toast({ variant: 'destructive', title: "Couldn't create the Word file", description: 'Please try again.' })
     }
     setDocxLoading(false)
   }
@@ -628,6 +629,10 @@ export default function CVGeneratorPage() {
                 {/* Header */}
                 <div className={`flex gap-5 pb-5 ${template === 'Classic' ? 'flex-col items-center text-center' : 'items-start'}`}>
                   {includePhoto && cv.photo_url && (
+                    /* Stays a plain <img>: this CV is printed / exported to PDF, and
+                       next/image lazy-loads by default, which can leave the photo
+                       blank in the exported document. Not worth the risk for one image. */
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img src={cv.photo_url} alt={cv.full_name} className="w-24 h-24 rounded-2xl object-cover flex-shrink-0 border border-surface-container shadow-sm" />
                   )}
                   <div className="flex-1 min-w-0">

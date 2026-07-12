@@ -654,6 +654,10 @@ function CompanyLogo({ name, size = 'w-14 h-14', rounded = 'rounded-2xl', text =
   if (err || !name) return <div className={`${size} ${rounded} flex items-center justify-center flex-shrink-0 ${text} font-black ${avatarColor(name || '?')}`}>{(name || '?').charAt(0).toUpperCase()}</div>
   const bg = LOGO_BG[hashIdx(name, LOGO_BG.length)]
   const url = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${bg}&color=fff&bold=true&format=svg`
+  // Stays a plain <img>: ui-avatars.com is not in next.config's remotePatterns, and
+  // it returns an SVG, which next/image refuses to optimize without dangerouslyAllowSVG.
+  // The payload is a few hundred bytes anyway, so there is nothing to optimize.
+  // eslint-disable-next-line @next/next/no-img-element
   return <img src={url} onError={() => setErr(true)} alt={name} className={`${size} ${rounded} object-cover flex-shrink-0 border border-surface-container`} />
 }
 

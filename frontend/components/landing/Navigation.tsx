@@ -76,14 +76,15 @@ export default function Navigation() {
             <BrandLogo size={30} />
           </a>
 
-          {/* Center: nav options */}
-          <div className="hidden lg:flex items-center gap-7 xl:gap-9 absolute left-1/2 -translate-x-1/2 text-sm font-medium tracking-tight">
+          {/* Center: nav options. Only from xl - at lg the six links cram into the
+              centred column and wrap onto two lines, so tablets get the hamburger. */}
+          <div className="hidden xl:flex items-center gap-7 2xl:gap-9 absolute left-1/2 -translate-x-1/2 text-sm font-medium tracking-tight">
             {links.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
                 onClick={link.onClick}
-                className="text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300"
+                className="whitespace-nowrap text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300"
               >
                 {link.label}
               </a>
@@ -104,7 +105,7 @@ export default function Navigation() {
             <button
               onClick={toggleMobileMenu}
               aria-label="Toggle Menu"
-              className="lg:hidden p-2 text-slate-900 dark:text-slate-100 focus:outline-none"
+              className="xl:hidden p-2 text-slate-900 dark:text-slate-100 focus:outline-none"
             >
               <Icon name={mobileMenuOpen ? 'close' : 'menu'} className="text-2xl" />
             </button>
@@ -115,7 +116,7 @@ export default function Navigation() {
       {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div
-          className={`lg:hidden bg-white/90 dark:bg-[#1c1c1e]/90 backdrop-blur-xl border-b border-black/5 dark:border-white/10 shadow-2xl overflow-hidden ${
+          className={`xl:hidden bg-white/90 dark:bg-[#1c1c1e]/90 backdrop-blur-xl border-b border-black/5 dark:border-white/10 shadow-2xl max-h-[calc(100svh-4rem)] overflow-y-auto overscroll-contain ${
             isClosing ? 'animate-out slide-out-to-top-4 duration-300' : 'animate-in slide-in-from-top-4 duration-500'
           }`}
         >

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import FollowButton from './FollowButton'
 import FollowListModal from './FollowListModal'
+import { AvatarImage } from '@/components/ui/optimized-image'
 import ReportModal from './ReportModal'
 import PostCard from './PostCard'
 import ThemeToggle from '@/components/shared/ThemeToggle'
@@ -149,7 +150,7 @@ export default function PublicProfileView({ username, embedded = false }: { user
           <section className="bg-white dark:bg-[#1c1c1e] rounded-3xl border border-slate-200/70 dark:border-white/10 shadow-sm p-5 md:p-7">
             <div className="flex flex-col sm:flex-row sm:items-start gap-5">
               <div className="h-24 w-24 md:h-28 md:w-28 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center overflow-hidden border-4 border-white dark:border-[#1c1c1e] shadow-lg flex-shrink-0">
-                {profile.photo_url ? <img src={profile.photo_url} alt={displayName(profile)} className="h-full w-full object-cover" /> : <span className="text-3xl font-black text-indigo-700 dark:text-indigo-300">{initials(profile.full_name)}</span>}
+                {profile.photo_url ? <AvatarImage src={profile.photo_url} alt={displayName(profile)} size={192} /> : <span className="text-3xl font-black text-indigo-700 dark:text-indigo-300">{initials(profile.full_name)}</span>}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -304,7 +305,7 @@ function EditProfileModal({ profile, onClose, onSaved }: { profile: PublicProfil
         <div className="p-5 space-y-4">
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden flex-shrink-0">
-              {photo ? <img src={photo} alt="" className="h-full w-full object-cover" /> : <span className="text-lg font-black text-indigo-700 dark:text-indigo-300">{initials(fullName)}</span>}
+              {photo ? <AvatarImage src={photo} /> : <span className="text-lg font-black text-indigo-700 dark:text-indigo-300">{initials(fullName)}</span>}
             </div>
             <label className="px-3.5 py-2 rounded-full text-sm font-semibold border border-slate-200 dark:border-white/15 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/10 cursor-pointer">
               Change photo

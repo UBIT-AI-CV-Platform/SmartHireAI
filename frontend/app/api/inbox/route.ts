@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
 import { createClient } from '@/lib/supabase/server'
 import { newMessageEmail, interviewScheduledEmail, offerEmail, rejectionEmail } from '@/lib/emails'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -39,6 +40,9 @@ export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'You must be signed in.' }, { status: 401 })
+
+  const limited = await rateLimit(supabase, 'inbox')
+  if (!limited.ok) return limited.response
 
   // RLS guarantees the caller is a member of this conversation.
   const { data: conv } = await supabase

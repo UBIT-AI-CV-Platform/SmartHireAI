@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { initials, type Post } from '@/lib/social'
 import { Icon } from '@/components/ui/icon'
+import { AvatarImage } from '@/components/ui/optimized-image'
 
 /** Share a post into the inbox: search anyone → ensure_dm → send a kind='post' message. */
 export default function SharePostModal({ post, onClose }: { post: Post; onClose: () => void }) {
@@ -97,7 +98,7 @@ export default function SharePostModal({ post, onClose }: { post: Post; onClose:
                 return (
                   <button key={p.id} onClick={() => shareTo(p.id, name)} disabled={sending} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors disabled:opacity-60">
                     <div className="h-9 w-9 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {p.photo_url ? <img src={p.photo_url} alt={name} className="h-full w-full object-cover" /> : <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{initials(p.full_name)}</span>}
+                      {p.photo_url ? <AvatarImage src={p.photo_url} alt={name} /> : <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{initials(p.full_name)}</span>}
                     </div>
                     <div className="min-w-0 text-left flex-1">
                       <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{name}</p>

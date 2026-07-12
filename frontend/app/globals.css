@@ -35,24 +35,14 @@ html {
   font-family: var(--font-display);
 }
 
-/* ===== Zefani - display font for headings =====
-   Drop the font file at frontend/public/fonts/ (any one format is enough;
-   the browser picks whichever exists). Falls back to Sora until then. */
-@font-face {
-  font-family: 'Zefani';
-  src:
-    url('/fonts/Zefani.woff2') format('woff2'),
-    url('/fonts/Zefani.woff') format('woff'),
-    url('/fonts/Zefani.ttf') format('truetype'),
-    url('/fonts/Zefani.otf') format('opentype');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Apply to any heading we opt-in with this class (hero first, site-wide later). */
+/* Opt-in display class for headings (hero, section titles).
+   NOTE: this used to @font-face a "Zefani" family from /fonts/Zefani.{woff2,woff,ttf,otf},
+   but those files were never added - so every single page load fired four 404s while
+   silently falling back to Sora anyway. Dropping the @font-face changes nothing
+   visually and removes four failed requests per page. To bring a custom display face
+   back, add the file to public/fonts/ and re-declare @font-face here. */
 .font-heading {
-  font-family: 'Zefani', var(--font-display);
+  font-family: var(--font-display);
 }
 
 .material-symbols-outlined {
@@ -161,14 +151,29 @@ html {
   overflow: hidden;
 }
 
-.faq-item:hover .faq-answer {
+.faq-item.is-open .faq-answer {
   max-height: 500px;
   opacity: 1;
   transition: max-height 0.8s ease-in, opacity 0.5s ease;
 }
 
-.faq-item:hover .faq-icon {
+.faq-item.is-open .faq-icon {
   transform: rotate(180deg);
+}
+
+/* Hover-to-peek is a mouse affordance only. Touch devices have no hover, so
+   gating it here keeps the tap-to-toggle state as the single source of truth
+   on phones and tablets. */
+@media (hover: hover) and (pointer: fine) {
+  .faq-item:hover .faq-answer {
+    max-height: 500px;
+    opacity: 1;
+    transition: max-height 0.8s ease-in, opacity 0.5s ease;
+  }
+
+  .faq-item:hover .faq-icon {
+    transform: rotate(180deg);
+  }
 }
 
 .vibrant-cta-gradient {

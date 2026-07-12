@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
 import { createClient } from '@/lib/supabase/server'
 import { applicationConfirmationEmail } from '@/lib/emails'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -41,6 +42,9 @@ export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'You must be signed in.' }, { status: 401 })
+
+  const limited = await rateLimit(supabase, 'apply')
+  if (!limited.ok) return limited.response
 
   const [cvRes, jobRes, profRes, skillsRes] = await Promise.all([
     supabase.from('cvs').select('id, content').eq('id', cvId).eq('profile_id', user.id).single(),

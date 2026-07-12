@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import FancySelect from '@/components/shared/FancySelect'
 import { useProfileLink } from '@/lib/useProfileLink'
 import { Icon } from '@/components/ui/icon'
+import { AvatarImage, ContentImage } from '@/components/ui/optimized-image'
 
 type Role = 'recruiter' | 'candidate'
 
@@ -406,7 +407,7 @@ export default function Inbox({ role }: { role: Role }) {
               return (
                 <button key={c.id} onClick={() => openConv(c)} className={`w-full text-left flex items-start gap-3 px-4 py-3 border-b border-surface-container/60 hover:bg-surface-container-low transition-colors ${active?.id === c.id ? 'bg-primary/5' : ''}`}>
                   <div className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black overflow-hidden ${avatarColor(otherName(c))}`}>
-                    {oi?.photo ? <img src={oi.photo} alt={otherName(c)} className="h-full w-full object-cover" /> : initial(otherName(c))}
+                    {oi?.photo ? <AvatarImage src={oi.photo} alt={otherName(c)} /> : initial(otherName(c))}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
@@ -463,7 +464,7 @@ export default function Inbox({ role }: { role: Role }) {
                 const oi = otherInfo[otherId(active)]
                 const avatar = (
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black overflow-hidden ${avatarColor(otherName(active))}`}>
-                    {oi?.photo ? <img src={oi.photo} alt={otherName(active)} className="h-full w-full object-cover" /> : initial(otherName(active))}
+                    {oi?.photo ? <AvatarImage src={oi.photo} alt={otherName(active)} /> : initial(otherName(active))}
                   </div>
                 )
                 const name = <p className="text-sm font-bold text-on-surface truncate">{otherName(active)}</p>
@@ -497,7 +498,7 @@ export default function Inbox({ role }: { role: Role }) {
                       <div className={`max-w-[78%] md:max-w-[70%] ${mine ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
                         {m.body && <p className={`px-4 py-2 rounded-2xl text-sm ${mine ? 'premium-gradient text-white' : 'bg-white dark:bg-white/10 text-on-surface border border-surface-container'}`}>{m.body}</p>}
                         <Link href={meta.post_id ? `/post/${meta.post_id}` : '#'} className="block w-full bg-white dark:bg-white/10 border border-surface-container rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
-                          {meta.image_url && <img src={meta.image_url} alt="shared post" className="w-full max-h-44 object-cover" />}
+                          {meta.image_url && <ContentImage src={meta.image_url} alt="shared post" className="w-full max-h-44 object-cover" />}
                           <div className="p-3">
                             <p className="text-[10px] font-bold uppercase tracking-wide text-primary flex items-center gap-1"><Icon name="dynamic_feed" className="text-[13px]" />Shared post</p>
                             <p className="text-xs font-semibold text-on-surface mt-1">{meta.author_name || 'A post'}</p>

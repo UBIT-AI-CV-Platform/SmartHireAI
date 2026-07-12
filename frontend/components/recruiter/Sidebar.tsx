@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Icon } from '@/components/ui/icon'
+import { AvatarImage } from '@/components/ui/optimized-image'
 import BrandLogo from '@/components/shared/BrandLogo'
 
 export const recruiterNavLinks = [
@@ -32,7 +33,7 @@ export default function Sidebar({ pathname, userName, userEmail, userPhoto, user
   const avatar = (
     <div className="h-9 w-9 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center flex-shrink-0 overflow-hidden">
       {userPhoto ? (
-        <img src={userPhoto} alt={userName} className="h-full w-full object-cover" />
+        <AvatarImage src={userPhoto} alt={userName} />
       ) : (
         <Icon name="work" className="text-indigo-700 dark:text-indigo-300 text-lg" solid />
       )}

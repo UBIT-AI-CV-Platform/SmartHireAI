@@ -93,9 +93,11 @@ export default function ExternalJobs({ defaultQuery = '' }: { defaultQuery?: str
           {sources.map((f) => (
             <button key={f} onClick={() => setSource(f)} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${source === f ? 'bg-primary text-white shadow' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'}`}>{f}</button>
           ))}
-          {provider === 'demo' && (
+          {/* Only worth saying when sample jobs are actually on screen - otherwise it
+              contradicts the "No jobs found" empty state below. */}
+          {provider === 'demo' && filteredJobs.length > 0 && (
             <span className="ml-auto flex items-center gap-1.5 text-[11px] font-semibold text-amber-600 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/15 px-2.5 py-1 rounded-lg">
-              <Icon name="info" className="text-sm" />Demo results - add a free API key for live jobs
+              <Icon name="info" className="text-sm" />Sample results - live job search is temporarily unavailable
             </span>
           )}
         </div>

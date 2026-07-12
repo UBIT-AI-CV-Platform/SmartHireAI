@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import Cropper, { type Area } from 'react-easy-crop'
 import { getCroppedImg } from '@/lib/cropImage'
 import { Icon } from '@/components/ui/icon'
+import { toast } from '@/hooks/use-toast'
 
 interface ImageCropModalProps {
   imageSrc: string
@@ -28,7 +29,7 @@ export default function ImageCropModal({ imageSrc, onCancel, onCropped }: ImageC
       const blob = await getCroppedImg(imageSrc, pixels)
       await onCropped(blob)
     } catch (e) {
-      alert('Could not crop the image. Please try another file.')
+      toast({ variant: 'destructive', title: "Couldn't crop the image", description: 'Please try another file.' })
       setSaving(false)
     }
   }

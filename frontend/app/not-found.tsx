@@ -34,7 +34,7 @@ export default function NotFound() {
           Go to Home
         </Link>
         <Link
-          href="/auth/login"
+          href="/auth"
           className="px-6 py-2.5 bg-white dark:bg-[#2c2c2e] text-slate-700 dark:text-slate-200 text-sm font-semibold rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors"
         >
           Sign In

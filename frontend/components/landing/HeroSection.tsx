@@ -97,33 +97,34 @@ function CircleVisual({ screen }: { screen: number }) {
 
       {/* centered cycling app screen */}
       <div className="absolute inset-0 grid place-items-center p-[8%]">
-        <div className="w-full max-w-[320px] rounded-[1.4rem] border border-black/5 bg-white p-4 shadow-2xl dark:border-white/10 dark:bg-[#1c1c1e]">
-          <div className="mb-3 flex gap-1.5">
+        <div className="w-full max-w-[240px] rounded-[1.4rem] border border-black/5 bg-white p-3 shadow-2xl dark:border-white/10 dark:bg-[#1c1c1e] sm:max-w-[320px] sm:p-4">
+          <div className="mb-2.5 flex gap-1.5 sm:mb-3">
             <span className="h-2 w-2 rounded-full bg-red-400/70" />
             <span className="h-2 w-2 rounded-full bg-amber-400/70" />
             <span className="h-2 w-2 rounded-full bg-emerald-400/70" />
           </div>
-          <div key={screen} className="hiw-reveal min-h-[172px]">
+          <div key={screen} className="hiw-reveal min-h-[168px] sm:min-h-[172px]">
             <Screen i={screen} />
           </div>
         </div>
       </div>
 
-      {/* floating: match badge (upper-left, always visible) */}
-      <div className="absolute left-[-6%] top-[16%] flex items-center gap-1.5 rounded-full border border-black/5 bg-white px-3 py-2 shadow-xl about-float dark:border-white/10 dark:bg-[#2c2c2e]">
+      {/* Floating pills hang off the circle's left edge. The circle bleeds past
+          the right edge at every breakpoint, so there is always room on its left. */}
+      <div className="absolute left-[-5%] top-[16%] flex items-center gap-1.5 rounded-full border border-black/5 bg-white px-2.5 py-1.5 shadow-xl about-float dark:border-white/10 dark:bg-[#2c2c2e] sm:px-3 sm:py-2">
         <Icon name="trending_up" solid className="text-emerald-500 text-sm" />
-        <span className="text-[11px] font-black text-on-surface">94% Match</span>
+        <span className="text-[10px] font-black text-on-surface sm:text-[11px]">94% Match</span>
       </div>
 
-      {/* floating: location pill (lower-left) */}
-      <div className="absolute bottom-[14%] left-[-8%] flex items-center gap-1.5 rounded-full border border-black/5 bg-white px-3 py-2 shadow-xl about-float-alt dark:border-white/10 dark:bg-[#2c2c2e]">
-        <Icon name="location_on" solid className="text-rose-500 text-base" />
-        <span className="text-[11px] font-black text-on-surface">Remote · Karachi</span>
+      <div className="absolute bottom-[14%] left-[-7%] flex items-center gap-1.5 rounded-full border border-black/5 bg-white px-2.5 py-1.5 shadow-xl about-float-alt dark:border-white/10 dark:bg-[#2c2c2e] sm:px-3 sm:py-2">
+        <Icon name="location_on" solid className="text-rose-500 text-sm sm:text-base" />
+        <span className="text-[10px] font-black text-on-surface sm:text-[11px]">Remote · Karachi</span>
       </div>
 
-      {/* floating: notification (upper-right) */}
-      <div className="absolute right-[2%] top-[2%] grid h-11 w-11 place-items-center rounded-2xl border border-black/5 bg-white shadow-xl hiw-float dark:border-white/10 dark:bg-[#2c2c2e]">
-        <Icon name="notifications" solid className="text-purple-500 text-xl" />
+      {/* Pulled further in than the desktop 2% so it clears the right-edge bleed
+          instead of being sliced in half by the viewport. */}
+      <div className="absolute right-[14%] top-[2%] grid h-9 w-9 place-items-center rounded-xl border border-black/5 bg-white shadow-xl hiw-float dark:border-white/10 dark:bg-[#2c2c2e] sm:h-11 sm:w-11 sm:rounded-2xl xl:right-[2%]">
+        <Icon name="notifications" solid className="text-purple-500 text-lg sm:text-xl" />
       </div>
     </div>
   )
@@ -141,23 +142,26 @@ export default function HeroSection() {
   const isCand = role === 'candidate'
 
   return (
-    <section className="relative flex min-h-screen items-center overflow-hidden pt-24 pb-12">
-      {/* desktop circle - bleeds off the right edge of the page */}
-      <div className="pointer-events-none absolute right-0 top-1/2 hidden aspect-square w-[44vw] max-w-[600px] -translate-y-1/2 translate-x-[16%] lg:block">
+    <section className="relative flex min-h-[100svh] flex-col overflow-hidden pt-20 sm:pt-24 lg:block lg:pb-12">
+      {/* Desktop circle - bleeds off the right edge of the page. The bleed is
+          smaller at lg (iPad landscape), where 44vw leaves the circle too small
+          for a 16% bleed to clear the screen inside it. */}
+      <div className="pointer-events-none absolute right-0 top-1/2 hidden aspect-square w-[44vw] max-w-[600px] -translate-y-1/2 translate-x-[8%] lg:block xl:translate-x-[16%]">
         <div className="hero-enter-right h-full w-full">
           <CircleVisual screen={wi} />
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6">
-        {/* ---------------- copy ---------------- */}
-        <div className="text-center lg:w-[52%] lg:text-left">
+      {/* Copy. On phones/tablets it fills the top half of the screen; on desktop
+          it goes back to being a vertically-centred 52% column. */}
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 items-center px-4 sm:px-6 lg:min-h-[calc(100svh-9rem)]">
+        <div className="w-full text-left lg:w-[52%]">
           <span style={{ animationDelay: '0.05s' }} className="auth-fade-up inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 text-[11px] font-bold text-white shadow-lg shadow-indigo-500/30 sm:text-xs">
             AI-Powered Hiring
             <span className="text-sm">✨</span>
           </span>
 
-          <h1 style={{ animationDelay: '0.15s' }} className="auth-fade-up font-heading mt-5 text-4xl font-black leading-[1.05] tracking-tighter text-on-surface sm:text-5xl lg:text-6xl xl:text-7xl">
+          <h1 style={{ animationDelay: '0.15s' }} className="auth-fade-up font-heading mt-4 text-[2.6rem] font-black leading-[1.05] tracking-tighter text-on-surface sm:mt-5 sm:text-6xl md:text-7xl lg:text-6xl xl:text-7xl">
             Get Hired, Get
             <br />
             <span key={wi} className="hiw-reveal inline-block bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">
@@ -166,16 +170,17 @@ export default function HeroSection() {
             <span className="inline-block">🚀</span>
           </h1>
 
-          <p style={{ animationDelay: '0.25s' }} className="auth-fade-up mx-auto mt-5 max-w-lg text-sm leading-relaxed text-on-surface-variant sm:text-base lg:mx-0 lg:text-lg">
+          <p style={{ animationDelay: '0.25s' }} className="auth-fade-up mt-5 max-w-lg text-sm leading-relaxed text-on-surface-variant sm:text-base md:max-w-xl md:text-lg">
             AI-optimized CVs, real job matches, mock interviews, and a professional network that gets you noticed - the whole hiring journey in one place.
           </p>
 
-          {/* reference-style action bar with a role toggle */}
-          <div style={{ animationDelay: '0.35s' }} className="auth-fade-up mx-auto mt-8 flex max-w-xl items-center gap-1.5 rounded-2xl border border-black/5 bg-white/90 p-2 shadow-xl backdrop-blur dark:border-white/10 dark:bg-[#232325]/90 lg:mx-0">
+          {/* Action bar with a role toggle. Below `sm` the three cells stack into
+              a card so nothing has to truncate; from `sm` up it's the one-line bar. */}
+          <div style={{ animationDelay: '0.35s' }} className="auth-fade-up mt-6 flex max-w-xl flex-col gap-1.5 rounded-2xl border border-black/5 bg-white/90 p-2 shadow-xl backdrop-blur dark:border-white/10 dark:bg-[#232325]/90 sm:mt-8 sm:flex-row sm:items-center">
             <button
               type="button"
               onClick={() => setRole(isCand ? 'recruiter' : 'candidate')}
-              className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-left transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.06] sm:w-auto"
             >
               <Icon name={isCand ? 'person' : 'work'} solid className="shrink-0 text-xl text-indigo-500" />
               <div>
@@ -187,7 +192,7 @@ export default function HeroSection() {
               </div>
             </button>
 
-            <div className="h-9 w-px shrink-0 bg-black/10 dark:bg-white/10" />
+            <div className="h-px w-full shrink-0 bg-black/10 dark:bg-white/10 sm:h-9 sm:w-px" />
 
             <div className="flex min-w-0 flex-1 items-center gap-2.5 px-3 py-2">
               <Icon name={isCand ? 'travel_explore' : 'groups'} solid className="shrink-0 text-xl text-purple-500" />
@@ -199,31 +204,35 @@ export default function HeroSection() {
 
             <a
               href="/auth"
-              aria-label="Get started"
-              className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30 transition-transform hover:scale-105 active:scale-95"
+              className="flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-sm font-black text-white shadow-lg shadow-indigo-500/30 transition-transform hover:scale-105 active:scale-95 sm:w-11 sm:gap-0"
             >
+              <span className="sm:hidden">Get Started</span>
               <Icon name="arrow_forward" className="text-xl" />
             </a>
           </div>
 
           {/* trust row */}
-          <div style={{ animationDelay: '0.45s' }} className="auth-fade-up mt-6 flex items-center justify-center gap-3 lg:justify-start">
+          <div style={{ animationDelay: '0.45s' }} className="auth-fade-up mt-6 flex items-center gap-3">
             <div className="flex -space-x-2">
               {['from-pink-400 to-rose-500', 'from-sky-400 to-blue-500', 'from-amber-400 to-orange-500', 'from-emerald-400 to-teal-500'].map((g, i) => (
                 <div key={i} className={`h-7 w-7 rounded-full border-2 border-white bg-gradient-to-br dark:border-[#1c1c1e] ${g}`} />
               ))}
             </div>
             <p className="text-xs font-semibold text-on-surface-variant">
-              Join <span className="font-black text-on-surface">5,000+</span> candidates &amp; recruiters
+              <span className="font-black text-on-surface">Free</span> for candidates &amp; recruiters
             </p>
           </div>
+        </div>
+      </div>
 
-          {/* mobile circle - in flow, centered */}
-          <div className="mt-14 lg:hidden">
-            <div className="hero-enter-right relative mx-auto aspect-square w-full max-w-[340px] sm:max-w-[420px]">
-              <CircleVisual screen={wi} />
-            </div>
-          </div>
+      {/* Phone + tablet circle: owns the lower half of the screen and bleeds off
+          the right edge, mirroring the desktop treatment. The offsets are
+          translate-% (relative to the circle, like desktop) rather than inset-%
+          (relative to the band), so the bleed scales with the circle and the
+          screen inside it never gets clipped by the viewport edge. */}
+      <div className="relative z-0 h-[40svh] min-h-[320px] w-full shrink-0 sm:h-[44svh] lg:hidden">
+        <div className="hero-enter-right absolute bottom-0 right-0 aspect-square h-full translate-x-[10%] translate-y-[6%]">
+          <CircleVisual screen={wi} />
         </div>
       </div>
     </section>

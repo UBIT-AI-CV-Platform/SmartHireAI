@@ -8,6 +8,7 @@ import SignOutModal from '@/components/candidate/SignOutModal'
 import NotificationsBell from '@/components/candidate/NotificationsBell'
 import ThemeToggle from '@/components/shared/ThemeToggle'
 import { Icon } from '@/components/ui/icon'
+import ProfileBadge from '@/components/shared/ProfileBadge'
 import BrandLogo from '@/components/shared/BrandLogo'
 
 export default function RecruiterLayout({ children }: { children: React.ReactNode }) {
@@ -94,17 +95,15 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
         <div className="flex items-center gap-2.5">
           <ThemeToggle />
           <NotificationsBell basePath="/recruiter" />
-          <div className="text-right hidden sm:block">
-            <p className="text-xs font-bold text-slate-900 dark:text-slate-100 leading-tight">{user.name}</p>
-            <p className="text-[10px] text-slate-400 leading-tight">Recruiter</p>
-          </div>
-          <div className="h-9 w-9 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center border-2 border-white dark:border-white/10 shadow-sm overflow-hidden">
-            {user.photo ? (
-              <img src={user.photo} alt={user.name} className="h-full w-full object-cover" />
-            ) : (
-              <Icon name="work" className="text-indigo-700 text-lg" solid />
-            )}
-          </div>
+          {/* Name + avatar open your own public profile. Rendered as a plain div
+              until the username has loaded, so we never ship a dead href="#". */}
+          <ProfileBadge
+            href={user.username ? `/recruiter/u/${user.username}` : null}
+            name={user.name}
+            photo={user.photo}
+            roleLabel="Recruiter"
+            fallbackIcon="work"
+          />
         </div>
       </header>
 
