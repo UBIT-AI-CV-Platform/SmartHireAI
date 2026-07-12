@@ -6,7 +6,10 @@ import * as React from 'react'
 import type { ToastActionElement, ToastProps } from '@/components/ui/toast'
 
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+// How long a dismissed toast lingers before it is dropped from state. The shadcn
+// scaffold ships this as 1000000ms (~16 minutes), which means toasts never go away
+// on their own - 5s is what we actually want.
+const TOAST_REMOVE_DELAY = 5000
 
 type ToasterToast = ToastProps & {
   id: string

@@ -6,7 +6,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: ['/', '/auth/login', '/auth/signup'],
+        // /auth is the single page that hosts both sign-in and sign-up.
+        allow: ['/', '/auth', '/auth/forgot-password'],
         disallow: ['/candidate/', '/recruiter/', '/interview/', '/api/'],
       },
     ],
