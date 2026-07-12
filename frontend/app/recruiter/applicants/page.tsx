@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import CVPreview, { type CVContent } from '@/components/candidate/CVPreview'
 import FancySelect from '@/components/shared/FancySelect'
 import { Icon } from '@/components/ui/icon'
+import { toast } from '@/hooks/use-toast'
 
 type AppStatus = 'applied' | 'screening' | 'interview' | 'offer' | 'rejected' | 'withdrawn'
 type Applicant = {
@@ -122,20 +123,41 @@ export default function ApplicantsPage() {
       && (!q || (a.candidate_name || '').toLowerCase().includes(q) || (a.job?.title || '').toLowerCase().includes(q)))
   }, [apps, jobFilter, search])
 
+  // These three all write optimistically. Previously the write's result was never
+  // checked, so a failed update (RLS, offline, expired session) left the card sitting
+  // in its new column while the database still held the old value - the change only
+  // vanished on the next refresh, with nothing ever telling the recruiter. Now a
+  // failure rolls the optimistic edit back and says so.
   const setStatus = async (id: string, status: AppStatus) => {
+    const prev = apps.find((x) => x.id === id)?.status
     setApps((a) => a.map((x) => (x.id === id ? { ...x, status } : x)))
-    await createClient().from('applications').update({ status }).eq('id', id)
+    const { error } = await createClient().from('applications').update({ status }).eq('id', id)
+    if (error) {
+      if (prev) setApps((a) => a.map((x) => (x.id === id ? { ...x, status: prev } : x)))
+      toast({ variant: 'destructive', title: "Couldn't move this applicant", description: error.message })
+    }
   }
   const setRating = async (id: string, rating: number) => {
     const val = rating === 0 ? null : rating
+    const prev = apps.find((x) => x.id === id)?.recruiter_rating ?? null
     setApps((a) => a.map((x) => (x.id === id ? { ...x, recruiter_rating: val } : x)))
-    await createClient().from('applications').update({ recruiter_rating: val }).eq('id', id)
+    const { error } = await createClient().from('applications').update({ recruiter_rating: val }).eq('id', id)
+    if (error) {
+      setApps((a) => a.map((x) => (x.id === id ? { ...x, recruiter_rating: prev } : x)))
+      toast({ variant: 'destructive', title: "Couldn't save the rating", description: error.message })
+    }
   }
   const openNotes = (ap: Applicant) => { setNotesOpen(notesOpen === ap.id ? null : ap.id); setNotesDraft(ap.recruiter_notes || '') }
   const saveNotes = async (id: string) => {
     const val = notesDraft.trim() || null
+    const prev = apps.find((x) => x.id === id)?.recruiter_notes ?? null
     setApps((a) => a.map((x) => (x.id === id ? { ...x, recruiter_notes: val } : x)))
-    await createClient().from('applications').update({ recruiter_notes: val }).eq('id', id)
+    const { error } = await createClient().from('applications').update({ recruiter_notes: val }).eq('id', id)
+    if (error) {
+      setApps((a) => a.map((x) => (x.id === id ? { ...x, recruiter_notes: prev } : x)))
+      toast({ variant: 'destructive', title: "Couldn't save your notes", description: error.message })
+      return
+    }
     setNotesOpen(null)
   }
 
