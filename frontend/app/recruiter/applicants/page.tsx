@@ -128,6 +128,29 @@ export default function ApplicantsPage() {
   // in its new column while the database still held the old value - the change only
   // vanished on the next refresh, with nothing ever telling the recruiter. Now a
   // failure rolls the optimistic edit back and says so.
+  /**
+   * Keep interviews.stage in step with applications.status.
+   *
+   * The Inbox already syncs the other direction (moving an interview to accepted /
+   * rejected / offer updates the application), but the Kanban only ever wrote
+   * applications.status. So dragging a card to Rejected left the interview sitting
+   * at stage 'accepted' - the candidate still saw a confirmed interview, and its
+   * video room stayed open.
+   *
+   * Only live interviews are touched (`proposed` / `accepted`). A `completed`,
+   * `declined` or `cancelled` interview is history and must not be rewritten by a
+   * later pipeline move.
+   */
+  const syncInterviewStage = async (applicationId: string, status: AppStatus) => {
+    const stage = status === 'rejected' ? 'rejected' : status === 'offer' ? 'offer' : null
+    if (!stage) return
+    await createClient()
+      .from('interviews')
+      .update({ stage })
+      .eq('application_id', applicationId)
+      .in('stage', ['proposed', 'accepted'])
+  }
+
   const setStatus = async (id: string, status: AppStatus) => {
     const prev = apps.find((x) => x.id === id)?.status
     setApps((a) => a.map((x) => (x.id === id ? { ...x, status } : x)))
@@ -135,7 +158,9 @@ export default function ApplicantsPage() {
     if (error) {
       if (prev) setApps((a) => a.map((x) => (x.id === id ? { ...x, status: prev } : x)))
       toast({ variant: 'destructive', title: "Couldn't move this applicant", description: error.message })
+      return
     }
+    await syncInterviewStage(id, status)
   }
   const setRating = async (id: string, rating: number) => {
     const val = rating === 0 ? null : rating
