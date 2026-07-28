@@ -179,7 +179,7 @@ export default function AboutSection() {
             href="/auth"
             className="inline-flex items-center gap-1.5 mt-7 text-sm font-bold text-primary hover:gap-2.5 transition-all"
           >
-            Let&apos;s build something great together
+            One platform. Every step of the journey.
             <Icon name="arrow_forward" className="text-base" />
           </a>
         </Reveal>

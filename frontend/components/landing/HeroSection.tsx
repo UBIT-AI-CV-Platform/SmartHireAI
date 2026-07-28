@@ -219,7 +219,7 @@ export default function HeroSection() {
               ))}
             </div>
             <p className="text-xs font-semibold text-on-surface-variant">
-              <span className="font-black text-on-surface">Free</span> for candidates &amp; recruiters
+              <span className="font-black text-on-surface">Free</span>{' '}for candidates &amp; recruiters
             </p>
           </div>
         </div>

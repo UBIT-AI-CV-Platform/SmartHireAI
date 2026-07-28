@@ -122,7 +122,7 @@ export default function Footer() {
         {/* Copyright */}
         <div className="pt-3 sm:pt-4 border-t text-center md:text-left border-slate-200 dark:border-white/10">
           <div className="text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] md:text-xs font-medium tracking-wide">
-            © {new Date().getFullYear()} SmartHire AI. Editorial Intelligence for Modern Teams.
+            © {new Date().getFullYear()} SmartHire AI. AI-powered hiring, built for everyone.
           </div>
         </div>
       </div>

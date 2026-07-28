@@ -17,7 +17,7 @@ export default function FAQSection() {
       id: 2,
       question: 'What does the AI actually do?',
       answer:
-        'It writes and rewrites for you. It turns your profile into an ATS-friendly CV and cover letter, suggests concrete improvements, runs mock interviews you can practise with, and helps recruiters summarise and rank the applications they receive.',
+        'It writes and rewrites for you. It turns your profile into an ATS-friendly CV and cover letter, suggests concrete improvements, runs mock interviews you can practice with, and helps recruiters summarise and rank the applications they receive.',
     },
     {
       id: 3,
@@ -101,7 +101,7 @@ export default function FAQSection() {
             Still have questions?
           </h4>
           <p className="text-indigo-800/70 dark:text-slate-300 mb-4 text-xs sm:text-sm font-medium">
-            Our expert team is here to help you.
+            Have more questions? Reach out via email.
           </p>
           <a
             className="bg-primary text-white px-6 md:px-8 py-2.5 rounded-xl font-bold inline-flex items-center justify-center gap-2 hover:bg-indigo-700 transition-all text-sm"
