@@ -167,7 +167,7 @@ export default function HeroSection() {
             <span key={wi} className="hiw-reveal inline-block bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">
               {WORDS[wi]}
             </span>{' '}
-            <span className="inline-block">🚀</span>
+            <span className="inline-block"></span>
           </h1>
 
           <p style={{ animationDelay: '0.25s' }} className="auth-fade-up mt-5 max-w-lg text-sm leading-relaxed text-on-surface-variant sm:text-base md:max-w-xl md:text-lg">
