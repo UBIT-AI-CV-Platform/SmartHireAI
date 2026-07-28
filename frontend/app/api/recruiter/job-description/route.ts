@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { geminiGenerate } from '@/lib/gemini'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -11,7 +12,8 @@ Rules:
 - Structure: a short engaging intro about the role, then "What you'll do" (4-6 bullet points), then "What we're looking for" (4-6 bullet points covering the required skills), and a brief closing line.
 - Use the company name and required skills naturally.
 - Warm, modern, inclusive tone. No buzzword salad, no discriminatory language.
-- Output ONLY the job description text (plain text with simple dashes for bullets). No markdown headers, no preamble like "Here is...".`
+- Output ONLY the job description text (plain text with simple dashes for bullets). No markdown headers, no preamble like "Here is...".
+- Never use em-dash or en-dash characters in sentences. Use a comma, a period, or a spaced hyphen ( - ) instead.`
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}))
@@ -24,6 +26,9 @@ export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'You must be signed in.' }, { status: 401 })
+
+  const limited = await rateLimit(supabase, 'job-description')
+  if (!limited.ok) return limited.response
 
   const userPrompt = `Job title: ${title}
 ${company ? `Company: ${company}` : ''}

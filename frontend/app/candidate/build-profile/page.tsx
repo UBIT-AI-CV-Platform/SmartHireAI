@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import ImageCropModal from '@/components/candidate/ImageCropModal'
 import ProfileCardSection, { type CardRow } from '@/components/candidate/ProfileCardSection'
 import CustomSections from '@/components/candidate/CustomSections'
+import { Icon } from '@/components/ui/icon'
+import { toast } from '@/hooks/use-toast'
 
 type Skill = { id: number; name: string }
 type Language = { id: number; name: string; level: string }
@@ -123,7 +125,10 @@ export default function BuildProfilePage() {
       summary: form.summary || null, photo_url: profilePhoto ? profilePhoto.split('?')[0] : null,
     }).eq('id', userId)
     setSaving(false)
-    if (error) { alert(error.message); return }
+    if (error) {
+      toast({ variant: 'destructive', title: "Couldn't save your profile", description: error.message })
+      return
+    }
     setSaved(true)
     setTimeout(() => setSaved(false), 2500)
   }
@@ -138,16 +143,17 @@ export default function BuildProfilePage() {
     // Validate: image only, JPG/PNG, max 5MB
     const allowed = ['image/jpeg', 'image/jpg', 'image/png']
     if (!allowed.includes(file.type)) {
-      alert('Please choose a PNG, JPG or JPEG image.')
+      toast({ variant: 'destructive', title: 'Unsupported file type', description: 'Please choose a PNG, JPG or JPEG image.' })
       return
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('That image is larger than 5MB. Please choose a smaller file.')
+      toast({ variant: 'destructive', title: 'Image is too large', description: 'That image is larger than 5MB. Please choose a smaller file.' })
       return
     }
     const reader = new FileReader()
     reader.onload = () => setCropSrc(reader.result as string)
-    reader.onerror = () => alert('Could not read that file. Please try another image.')
+    reader.onerror = () =>
+      toast({ variant: 'destructive', title: "Couldn't read that file", description: 'Please try another image.' })
     reader.readAsDataURL(file)
   }
 
@@ -155,7 +161,11 @@ export default function BuildProfilePage() {
     if (!userId) { setCropSrc(null); return }
     const path = `${userId}/avatar.jpg`
     const { error } = await supabase.storage.from('avatars').upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
-    if (error) { alert(error.message); setCropSrc(null); return }
+    if (error) {
+      toast({ variant: 'destructive', title: "Couldn't upload your photo", description: error.message })
+      setCropSrc(null)
+      return
+    }
     const { data } = supabase.storage.from('avatars').getPublicUrl(path)
     const url = data.publicUrl
     // Cache-buster only for immediate on-screen refresh; the DB keeps the clean URL.
@@ -178,7 +188,7 @@ export default function BuildProfilePage() {
     const name = skillInput.trim()
     if (!name || !userId) return
     if (skills.some((s) => s.name.toLowerCase() === name.toLowerCase() && s.id !== editingSkillId)) {
-      alert('That skill is already added.')
+      toast({ title: 'Already added', description: `"${name}" is already in your skills.` })
       return
     }
     if (editingSkillId) {
@@ -203,7 +213,7 @@ export default function BuildProfilePage() {
     const name = languageInput.trim()
     if (!name || !userId) return
     if (languages.some((l) => l.name.toLowerCase() === name.toLowerCase() && l.id !== editingLanguageId)) {
-      alert('That language is already added.')
+      toast({ title: 'Already added', description: `"${name}" is already in your languages.` })
       return
     }
     if (editingLanguageId) {
@@ -251,15 +261,15 @@ export default function BuildProfilePage() {
           onClick={handleSave}
           disabled={saving}
         >
-          <span className="material-symbols-outlined text-base sm:text-lg">{saved ? 'check_circle' : 'save'}</span>
+          <Icon name={saved ? 'check_circle' : 'save'} className="text-base sm:text-lg" />
           <span>{saving ? 'Saving...' : saved ? 'Saved!' : 'Save Profile'}</span>
         </button>
       </div>
 
       {formError && (
-        <div className="mb-6 flex items-start gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-3">
-          <span className="material-symbols-outlined text-red-500">error</span>
-          <p className="text-sm text-red-700 font-medium">{formError}</p>
+        <div className="mb-6 flex items-start gap-2 rounded-xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-white/10 px-4 py-3">
+          <Icon name="error" className="text-red-500" />
+          <p className="text-sm text-red-700 dark:text-red-300 font-medium">{formError}</p>
         </div>
       )}
 
@@ -267,22 +277,26 @@ export default function BuildProfilePage() {
         {/* Basic Info */}
         <div className="w-full bg-surface-container-lowest p-4 md:p-6 lg:p-8 rounded-[1.2rem] md:rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)]">
           <div className="flex items-center space-x-2 md:space-x-3 mb-4 md:mb-6">
-            <span className="material-symbols-outlined text-primary text-base md:text-lg">person</span>
+            <Icon name="person" className="text-primary text-base md:text-lg" />
             <h2 className="text-base md:text-lg lg:text-xl font-bold">Basic Info</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {/* Photo */}
             <div className="col-span-full flex flex-col items-center justify-center mb-8">
               <div className="relative group cursor-pointer">
-                <div className="w-32 h-32 rounded-full bg-surface-container flex items-center justify-center border-4 border-white shadow-sm overflow-hidden group-hover:bg-surface-container-high transition-all relative" onClick={handleCameraClick}>
+                <div className="w-32 h-32 rounded-full bg-surface-container flex items-center justify-center border-4 border-white dark:border-white/10 shadow-sm overflow-hidden group-hover:bg-surface-container-high transition-all relative" onClick={handleCameraClick}>
                   {profilePhoto ? (
+                    /* Stays a plain <img>: profilePhoto is a remote URL once saved, but a
+                       FileReader data: URL while the user is picking a new one. next/image
+                       cannot handle the data: case, so this one src is left unoptimized. */
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img alt="Profile photo" className="w-full h-full object-cover object-center" src={profilePhoto} />
                   ) : (
-                    <span className="material-symbols-outlined text-4xl text-on-surface-variant/40 group-hover:text-primary transition-colors">person</span>
+                    <Icon name="person" className="text-4xl text-on-surface-variant/40 group-hover:text-primary transition-colors" />
                   )}
                 </div>
                 <button onClick={handleCameraClick} className="absolute bottom-0 right-0 p-2 bg-primary text-white rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all">
-                  <span className="material-symbols-outlined text-sm">photo_camera</span>
+                  <Icon name="photo_camera" className="text-sm" />
                 </button>
               </div>
               <div className="mt-4 text-center">
@@ -290,7 +304,7 @@ export default function BuildProfilePage() {
                 <p className="text-[10px] text-on-surface-variant/60 uppercase font-bold tracking-widest mt-1">PNG, JPG OR JPEG UP TO 5MB</p>
                 {profilePhoto && (
                   <button onClick={handleRemovePhoto} className="mt-2 text-xs font-bold text-red-500 hover:text-red-600 inline-flex items-center gap-1 transition-colors">
-                    <span className="material-symbols-outlined text-sm">delete</span>
+                    <Icon name="delete" className="text-sm" />
                     Remove photo
                   </button>
                 )}
@@ -360,7 +374,7 @@ export default function BuildProfilePage() {
         {/* Professional Summary */}
         <div className="w-full bg-surface-container-lowest p-6 md:p-8 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)]">
           <div className="flex items-center space-x-3 mb-6">
-            <span className="material-symbols-outlined text-primary">auto_awesome</span>
+            <Icon name="auto_awesome" className="text-primary" />
             <h2 className="text-lg md:text-xl font-bold">Professional Summary</h2>
           </div>
           <p className="text-sm text-on-surface-variant mb-4">Briefly describe your career goals and what makes you unique.</p>
@@ -371,11 +385,11 @@ export default function BuildProfilePage() {
         <div className="w-full bg-surface-container-lowest p-6 md:p-8 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)]">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center space-x-3">
-              <span className="material-symbols-outlined text-primary">psychology</span>
+              <Icon name="psychology" className="text-primary" />
               <h2 className="text-lg md:text-xl font-bold">Skills</h2>
             </div>
             <button onClick={() => { setEditingSkillId(null); setSkillInput(''); setShowSkillInput(true) }} className="text-primary font-bold text-xs md:text-sm flex items-center gap-1 hover:bg-primary/5 px-2 md:px-3 py-1 rounded-lg transition-colors">
-              <span className="material-symbols-outlined text-sm">add</span>
+              <Icon name="add" className="text-sm" />
               <span>Add Skill</span>
             </button>
           </div>
@@ -386,10 +400,10 @@ export default function BuildProfilePage() {
                   <span className="font-bold text-on-surface text-sm truncate">{skill.name}</span>
                   <div className="flex items-center gap-0.5 flex-shrink-0 opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     <button onClick={() => editSkill(skill)} className="text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-primary/5" title="Edit">
-                      <span className="material-symbols-outlined text-base">edit</span>
+                      <Icon name="edit" className="text-base" />
                     </button>
-                    <button onClick={() => removeSkill(skill.id)} className="text-on-surface-variant hover:text-red-500 p-1 rounded-lg hover:bg-red-50" title="Delete">
-                      <span className="material-symbols-outlined text-base">close</span>
+                    <button onClick={() => removeSkill(skill.id)} className="text-on-surface-variant hover:text-red-500 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15" title="Delete">
+                      <Icon name="close" className="text-base" />
                     </button>
                   </div>
                 </div>
@@ -399,7 +413,7 @@ export default function BuildProfilePage() {
               <div className="w-full max-w-2xl gap-4 flex items-end mb-6 mx-auto bg-surface-container-low p-6 rounded-xl">
                 <div className="flex-1">
                   <label className="text-[10px] font-bold text-on-surface-variant mb-1 block uppercase">Skill Name</label>
-                  <input value={skillInput} onChange={(e) => setSkillInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveSkill()} className="w-full bg-white border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all outline-none" placeholder="e.g. Figma, Python" type="text" autoFocus />
+                  <input value={skillInput} onChange={(e) => setSkillInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveSkill()} className="w-full bg-white dark:bg-[#2c2c2e] border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all outline-none" placeholder="e.g. Figma, Python" type="text" autoFocus />
                 </div>
                 <div className="flex gap-2">
                   <button onClick={cancelSkill} className="px-6 py-2.5 text-on-surface-variant text-sm font-bold rounded-xl transition-colors border border-outline-variant/30 bg-surface-container-low hover:bg-surface-variant">Cancel</button>
@@ -420,11 +434,11 @@ export default function BuildProfilePage() {
         <div className="w-full bg-surface-container-lowest p-6 md:p-8 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)]">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center space-x-3">
-              <span className="material-symbols-outlined text-primary">translate</span>
+              <Icon name="translate" className="text-primary" />
               <h2 className="text-lg md:text-xl font-bold">Languages</h2>
             </div>
             <button onClick={() => { setEditingLanguageId(null); setLanguageInput(''); setLanguageLevelInput('Fluent'); setShowLanguageInput(true) }} className="text-primary font-bold text-xs md:text-sm flex items-center gap-1 hover:bg-primary/5 px-2 md:px-3 py-1 rounded-lg transition-colors">
-              <span className="material-symbols-outlined text-sm">add</span>
+              <Icon name="add" className="text-sm" />
               <span>Add Language</span>
             </button>
           </div>
@@ -438,10 +452,10 @@ export default function BuildProfilePage() {
                   </div>
                   <div className="flex items-center gap-0.5 flex-shrink-0 opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     <button onClick={() => editLanguage(lang)} className="text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-primary/5" title="Edit">
-                      <span className="material-symbols-outlined text-base">edit</span>
+                      <Icon name="edit" className="text-base" />
                     </button>
-                    <button onClick={() => removeLanguage(lang.id)} className="text-on-surface-variant hover:text-red-500 p-1 rounded-lg hover:bg-red-50" title="Delete">
-                      <span className="material-symbols-outlined text-base">delete</span>
+                    <button onClick={() => removeLanguage(lang.id)} className="text-on-surface-variant hover:text-red-500 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15" title="Delete">
+                      <Icon name="delete" className="text-base" />
                     </button>
                   </div>
                 </div>
@@ -451,11 +465,11 @@ export default function BuildProfilePage() {
               <div className="w-full max-w-2xl gap-4 flex items-end mb-6 mx-auto bg-surface-container-low p-6 rounded-xl">
                 <div className="flex-1">
                   <label className="text-[10px] font-bold text-on-surface-variant mb-1 block uppercase">Language Name</label>
-                  <input value={languageInput} onChange={(e) => setLanguageInput(e.target.value)} className="w-full bg-white border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all outline-none" placeholder="e.g. Spanish" type="text" autoFocus />
+                  <input value={languageInput} onChange={(e) => setLanguageInput(e.target.value)} className="w-full bg-white dark:bg-[#2c2c2e] border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all outline-none" placeholder="e.g. Spanish" type="text" autoFocus />
                 </div>
                 <div className="flex-1">
                   <label className="text-[10px] font-bold text-on-surface-variant mb-1 block uppercase">Proficiency</label>
-                  <select value={languageLevelInput} onChange={(e) => setLanguageLevelInput(e.target.value)} className="w-full bg-white border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all appearance-none cursor-pointer outline-none hover:border-primary/50">
+                  <select value={languageLevelInput} onChange={(e) => setLanguageLevelInput(e.target.value)} className="w-full bg-white dark:bg-[#2c2c2e] border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-2 focus:ring-primary transition-all appearance-none cursor-pointer outline-none hover:border-primary/50">
                     <option value="Native">Native</option>
                     <option value="Fluent">Fluent</option>
                     <option value="Professional">Professional</option>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { geminiGenerate } from '@/lib/gemini'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -39,7 +40,9 @@ For each applicant:
 - "recommendation": "Shortlist" (strong fit), "Maybe" (partial fit), or "Pass" (weak fit).
 - ALWAYS echo back the exact application_id you were given for that applicant.
 
-Rank from best to worst. Be fair, specific, and grounded ONLY in the provided CV data — never invent experience. Also give an "overall_summary" (2-3 sentences) about the candidate pool and who stands out.`
+Rank from best to worst. Be fair, specific, and grounded ONLY in the provided CV data - never invent experience. Also give an "overall_summary" (2-3 sentences) about the candidate pool and who stands out.
+
+WRITING STYLE: Never use em-dash or en-dash characters in any text field (verdict, strengths, concerns, summary). Use a comma, a period, or a spaced hyphen ( - ) instead.`
 
 type Snapshot = {
   full_name?: string; title?: string; summary?: string; skills?: string[]
@@ -55,7 +58,7 @@ const cvToText = (cv: Snapshot | null): string => {
   return [
     cv.title ? `Title: ${cv.title}` : '',
     cv.summary ? `Summary: ${cv.summary}` : '',
-    `Skills: ${(cv.skills ?? []).join(', ') || '—'}`,
+    `Skills: ${(cv.skills ?? []).join(', ') || '-'}`,
     exp ? `Experience: ${exp}` : '',
     edu ? `Education: ${edu}` : '',
     cv.certifications?.length ? `Certifications: ${cv.certifications.map((c) => c.name).join(', ')}` : '',
@@ -70,6 +73,9 @@ export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'You must be signed in.' }, { status: 401 })
+
+  const limited = await rateLimit(supabase, 'screen-applicants')
+  if (!limited.ok) return limited.response
 
   const { data: job } = await supabase.from('jobs').select('title, company, location, skills, description, recruiter_id').eq('id', jobId).single()
   if (!job) return NextResponse.json({ error: 'Job not found.' }, { status: 404 })
@@ -91,9 +97,9 @@ export async function POST(request: Request) {
   const userPrompt = `JOB
 Title: ${job.title}
 Company: ${job.company}
-Location: ${job.location || '—'}
-Required skills: ${(job.skills ?? []).join(', ') || '—'}
-Description: ${job.description || '—'}
+Location: ${job.location || '-'}
+Required skills: ${(job.skills ?? []).join(', ') || '-'}
+Description: ${job.description || '-'}
 
 APPLICANTS (${apps.length})
 ${applicantBlocks}`

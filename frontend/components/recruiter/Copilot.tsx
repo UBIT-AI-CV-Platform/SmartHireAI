@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { useVoiceInput } from '@/lib/useVoiceInput'
+import { Icon } from '@/components/ui/icon'
 
 type ChatMsg = { role: 'user' | 'assistant'; content: string }
 
@@ -25,6 +27,20 @@ export default function Copilot() {
 
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }) }, [messages])
   const adjust = () => { const el = taRef.current; if (!el) return; el.style.height = 'auto'; el.style.height = `${Math.min(el.scrollHeight, 140)}px` }
+
+  // voice input (Web Speech API + Gemini fallback) - see lib/useVoiceInput
+  const voiceBaseRef = useRef('')
+  const voice = useVoiceInput({
+    onTranscript: (text) => {
+      const base = voiceBaseRef.current
+      setInput(base ? `${base} ${text}` : text)
+      requestAnimationFrame(adjust)
+    },
+  })
+  const toggleMic = () => {
+    if (!voice.listening && !voice.busy) voiceBaseRef.current = input.trim()
+    voice.toggle()
+  }
 
   const send = async (text: string) => {
     const content = text.trim()
@@ -52,23 +68,23 @@ export default function Copilot() {
   const onKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input) } }
 
   return (
-    <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container flex flex-col h-[72vh] overflow-hidden">
+    <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container flex flex-col h-[72vh] overflow-hidden">
       <div className="px-4 py-3 border-b border-surface-container flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg premium-gradient flex items-center justify-center text-white"><span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>smart_toy</span></div>
+        <div className="w-8 h-8 rounded-lg premium-gradient flex items-center justify-center text-white"><Icon name="smart_toy" className="text-base" solid /></div>
         <p className="text-sm font-black text-on-surface">Recruiting Copilot</p>
-        {messages.length > 0 && <button onClick={() => setMessages([])} className="ml-auto px-3 py-1.5 rounded-xl bg-surface-container-low text-on-surface font-bold text-xs hover:bg-surface-container transition-colors flex items-center gap-1.5"><span className="material-symbols-outlined text-base">add</span>New</button>}
+        {messages.length > 0 && <button onClick={() => setMessages([])} className="ml-auto px-3 py-1.5 rounded-xl bg-surface-container-low text-on-surface font-bold text-xs hover:bg-surface-container transition-colors flex items-center gap-1.5"><Icon name="add" className="text-base" />New</button>}
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center text-center pt-6">
-            <div className="w-14 h-14 rounded-2xl premium-gradient flex items-center justify-center text-white shadow-lg mb-4"><span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>smart_toy</span></div>
+            <div className="w-14 h-14 rounded-2xl premium-gradient flex items-center justify-center text-white shadow-lg mb-4"><Icon name="smart_toy" className="text-2xl" solid /></div>
             <h3 className="text-lg font-bold text-on-surface mb-1">How can I help you hire?</h3>
-            <p className="text-sm text-on-surface-variant max-w-md mb-5">Draft job posts, candidate emails, interview questions, and screening advice — I know your open roles.</p>
+            <p className="text-sm text-on-surface-variant max-w-md mb-5">Draft job posts, candidate emails, interview questions, and screening advice - I know your open roles.</p>
             <div className="grid sm:grid-cols-2 gap-2 w-full max-w-xl">
               {STARTERS.map((s) => (
                 <button key={s.label} onClick={() => send(s.label)} className="flex items-center gap-2.5 p-3 rounded-2xl bg-surface-container-low text-left hover:bg-surface-container transition-all">
-                  <span className="material-symbols-outlined text-primary text-lg">{s.icon}</span><span className="text-sm font-semibold text-on-surface">{s.label}</span>
+                  <Icon name={s.icon} className="text-primary text-lg" /><span className="text-sm font-semibold text-on-surface">{s.label}</span>
                 </button>
               ))}
             </div>
@@ -77,7 +93,7 @@ export default function Copilot() {
           <div className="space-y-4">
             {messages.map((m, i) => (
               <div key={i} className={`flex gap-2.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                {m.role === 'assistant' && <div className="w-7 h-7 rounded-lg premium-gradient flex items-center justify-center text-white flex-shrink-0 mt-0.5"><span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>smart_toy</span></div>}
+                {m.role === 'assistant' && <div className="w-7 h-7 rounded-lg premium-gradient flex items-center justify-center text-white flex-shrink-0 mt-0.5"><Icon name="smart_toy" className="text-sm" solid /></div>}
                 <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${m.role === 'user' ? 'premium-gradient text-white rounded-br-md' : 'bg-surface-container-low text-on-surface rounded-bl-md'}`}>
                   {m.role === 'user' ? (
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{m.content}</p>
@@ -94,9 +110,19 @@ export default function Copilot() {
       </div>
 
       <div className="border-t border-surface-container p-3">
+        {voice.error && (
+          <div className="mb-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs">
+            <Icon name="info" className="text-sm flex-shrink-0" />
+            <span className="flex-1">{voice.error}</span>
+            <button onClick={voice.clearError} aria-label="Dismiss" className="text-sm hover:opacity-70 flex-shrink-0"><Icon name="close" /></button>
+          </div>
+        )}
         <div className="flex items-end gap-2 bg-surface-container-low rounded-2xl p-2 focus-within:ring-2 focus-within:ring-primary/40 transition">
-          <textarea ref={taRef} value={input} onChange={(e) => { setInput(e.target.value); adjust() }} onKeyDown={onKey} rows={1} placeholder="Ask your copilot anything about hiring…" className="flex-1 bg-transparent resize-none outline-none px-2 py-1.5 text-sm text-on-surface placeholder:text-outline-variant max-h-36" />
-          <button onClick={() => send(input)} disabled={!input.trim() || streaming} className="h-9 w-9 flex items-center justify-center rounded-xl premium-gradient text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:hover:scale-100 flex-shrink-0"><span className="material-symbols-outlined text-lg">send</span></button>
+          <button onClick={toggleMic} disabled={voice.busy} title={voice.listening ? 'Stop' : voice.busy ? 'Transcribing…' : 'Speak'} className={`h-9 w-9 flex items-center justify-center rounded-xl transition-colors flex-shrink-0 ${voice.listening ? 'bg-red-500 text-white animate-pulse' : voice.busy ? 'text-primary' : 'text-on-surface-variant hover:bg-surface-container'}`}>
+            <Icon name={voice.listening ? 'mic' : voice.busy ? 'progress_activity' : 'mic_none'} className={`text-lg ${voice.busy ? 'animate-spin' : ''}`} />
+          </button>
+          <textarea ref={taRef} value={input} onChange={(e) => { setInput(e.target.value); adjust() }} onKeyDown={onKey} rows={1} placeholder={voice.listening ? 'Listening…' : voice.busy ? 'Transcribing…' : 'Ask your copilot anything about hiring…'} className="flex-1 bg-transparent resize-none outline-none px-2 py-1.5 text-sm text-on-surface placeholder:text-outline-variant max-h-36" />
+          <button onClick={() => send(input)} disabled={!input.trim() || streaming} className="h-9 w-9 flex items-center justify-center rounded-xl premium-gradient text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:hover:scale-100 flex-shrink-0"><Icon name="send" className="text-lg" /></button>
         </div>
       </div>
     </div>

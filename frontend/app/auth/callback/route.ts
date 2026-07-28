@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      // Password reset — send to the reset form (session is already in cookies)
+      // Password reset - send to the reset form (session is already in cookies)
       if (type === 'recovery') {
         return NextResponse.redirect(`${origin}/auth/reset-password`)
       }
@@ -24,6 +24,6 @@ export async function GET(request: Request) {
     }
   }
 
-  // Something went wrong — back to the auth page
+  // Something went wrong - back to the auth page
   return NextResponse.redirect(`${origin}/auth`)
 }

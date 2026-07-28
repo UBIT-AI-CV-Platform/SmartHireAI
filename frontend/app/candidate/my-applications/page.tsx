@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import CVPreview, { type CVContent } from '@/components/candidate/CVPreview'
 import ExternalJobs from '@/components/candidate/ExternalJobs'
 import Pagination from '@/components/candidate/Pagination'
+import { Icon } from '@/components/ui/icon'
 
 const PAGE_SIZE = 15
 
@@ -38,15 +39,15 @@ const SORT_OPTIONS: { v: SortKey; label: string }[] = [
 ]
 
 const STATUS_STYLE: Record<AppStatus, { label: string; cls: string; icon: string }> = {
-  applied: { label: 'Applied', cls: 'bg-indigo-100 text-indigo-700', icon: 'send' },
-  screening: { label: 'Screening', cls: 'bg-amber-100 text-amber-700', icon: 'fact_check' },
-  interview: { label: 'Interview', cls: 'bg-sky-100 text-sky-700', icon: 'event' },
-  offer: { label: 'Offer', cls: 'bg-green-100 text-green-700', icon: 'verified' },
-  rejected: { label: 'Not selected', cls: 'bg-red-100 text-red-600', icon: 'cancel' },
-  withdrawn: { label: 'Withdrawn', cls: 'bg-slate-100 text-slate-500', icon: 'undo' },
+  applied: { label: 'Applied', cls: 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300', icon: 'send' },
+  screening: { label: 'Screening', cls: 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300', icon: 'fact_check' },
+  interview: { label: 'Interview', cls: 'bg-sky-100 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300', icon: 'event' },
+  offer: { label: 'Offer', cls: 'bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-300', icon: 'verified' },
+  rejected: { label: 'Not selected', cls: 'bg-red-100 dark:bg-red-500/15 text-red-600 dark:text-red-300', icon: 'cancel' },
+  withdrawn: { label: 'Withdrawn', cls: 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400', icon: 'undo' },
 }
 
-const AVATAR_COLORS = ['bg-indigo-100 text-indigo-700', 'bg-purple-100 text-purple-700', 'bg-sky-100 text-sky-700', 'bg-pink-100 text-pink-700', 'bg-emerald-100 text-emerald-700', 'bg-amber-100 text-amber-700']
+const AVATAR_COLORS = ['bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300', 'bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300', 'bg-sky-100 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300', 'bg-pink-100 dark:bg-pink-500/15 text-pink-700 dark:text-pink-300', 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300', 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300']
 const LOGO_BG = ['4f46e5', '7c3aed', '0284c7', 'db2777', '059669', 'd97706']
 const hashIdx = (s: string, n: number) => Array.from(s).reduce((a, c) => a + c.charCodeAt(0), 0) % n
 const avatarColor = (s: string) => AVATAR_COLORS[hashIdx(s, AVATAR_COLORS.length)]
@@ -60,7 +61,7 @@ const matchScore = (jobSkills: string[], mySkills: string[]): number | null => {
   if (!jobSkills?.length) return null
   return Math.round((matchedSkills(jobSkills, mySkills).length / jobSkills.length) * 100)
 }
-const scoreColor = (s: number) => (s >= 75 ? 'text-green-600' : s >= 40 ? 'text-amber-600' : 'text-slate-500')
+const scoreColor = (s: number) => (s >= 75 ? 'text-green-600' : s >= 40 ? 'text-amber-600' : 'text-slate-500 dark:text-slate-400')
 const scoreBg = (s: number) => (s >= 75 ? 'bg-green-500' : s >= 40 ? 'bg-amber-500' : 'bg-slate-400')
 const isRemote = (loc: string | null) => !!loc && /remote|anywhere|wfh/i.test(loc)
 const isNew = (iso: string) => Date.now() - new Date(iso).getTime() < 7 * 86400000
@@ -265,7 +266,7 @@ export default function MyApplicationsPage() {
     const score = matchScore(job.skills, candidateSkills)
     const matched = matchedSkills(job.skills, candidateSkills).length
     return (
-      <div key={job.id} className="bg-white p-4 md:p-5 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container hover:shadow-[0_12px_40px_-8px_rgba(25,28,30,0.14)] hover:-translate-y-0.5 transition-all">
+      <div key={job.id} className="bg-white dark:bg-[#2c2c2e] p-4 md:p-5 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container hover:shadow-[0_12px_40px_-8px_rgba(25,28,30,0.14)] hover:-translate-y-0.5 transition-all">
         <div className="flex gap-4">
           <CompanyLogo name={job.company} />
           <div className="flex-1 min-w-0">
@@ -273,7 +274,7 @@ export default function MyApplicationsPage() {
               <button onClick={() => setSelectedJob(job)} className="text-left min-w-0">
                 <div className="flex items-center gap-2">
                   <h4 className="text-base md:text-lg font-bold text-on-surface truncate hover:text-primary transition-colors">{job.title}</h4>
-                  {isNew(job.created_at) && <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-black rounded uppercase tracking-wide">New</span>}
+                  {isNew(job.created_at) && <span className="px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10px] font-black rounded uppercase tracking-wide">New</span>}
                 </div>
                 <p className="text-on-surface-variant text-sm truncate">{job.company}{job.location ? ` • ${job.location}` : ''}</p>
               </button>
@@ -285,7 +286,7 @@ export default function MyApplicationsPage() {
                   </div>
                 )}
                 <button onClick={() => toggleSave(job.id)} title={saved ? 'Saved' : 'Save job'} className={`p-2 rounded-xl transition ${saved ? 'text-primary bg-primary/10' : 'text-outline-variant hover:text-primary hover:bg-primary/5'}`}>
-                  <span className="material-symbols-outlined text-xl" style={saved ? { fontVariationSettings: "'FILL' 1" } : undefined}>bookmark</span>
+                  <Icon name="bookmark" className="text-xl" solid={saved} />
                 </button>
               </div>
             </div>
@@ -293,11 +294,11 @@ export default function MyApplicationsPage() {
             {job.description && <p className="text-sm text-on-surface-variant mt-2 line-clamp-2">{job.description}</p>}
 
             <div className="flex flex-wrap gap-2 mt-3">
-              {isRemote(job.location) && <span className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-bold rounded-lg flex items-center gap-1"><span className="material-symbols-outlined text-sm">home_work</span>Remote</span>}
-              {job.salary && <span className="px-3 py-1 bg-green-50 text-green-700 text-xs font-semibold rounded-lg">{job.salary}</span>}
+              {isRemote(job.location) && <span className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-bold rounded-lg flex items-center gap-1"><Icon name="home_work" className="text-sm" />Remote</span>}
+              {job.salary && <span className="px-3 py-1 bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300 text-xs font-semibold rounded-lg">{job.salary}</span>}
               {job.skills.slice(0, 4).map((s) => {
                 const has = candidateSkills.some((m) => norm(m) === norm(s))
-                return <span key={s} className={`px-3 py-1 text-xs rounded-lg ${has ? 'bg-green-100 text-green-700 font-semibold' : 'bg-surface-container text-on-surface-variant'}`}>{s}</span>
+                return <span key={s} className={`px-3 py-1 text-xs rounded-lg ${has ? 'bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-300 font-semibold' : 'bg-surface-container text-on-surface-variant'}`}>{s}</span>
               })}
               {job.skills.length > 4 && <span className="px-2 py-1 text-on-surface-variant text-xs">+{job.skills.length - 4}</span>}
             </div>
@@ -309,8 +310,8 @@ export default function MyApplicationsPage() {
               </span>
               <div className="flex items-center gap-2">
                 <button onClick={() => setSelectedJob(job)} className="px-4 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-bold text-sm hover:bg-surface-container transition-colors">Details</button>
-                <button onClick={() => openApply(job)} disabled={applied} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-1.5 transition-all ${applied ? 'bg-green-100 text-green-700 cursor-default' : 'premium-gradient text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-95'}`}>
-                  {applied ? (<><span className="material-symbols-outlined text-base">check</span>Applied</>) : (<><span className="material-symbols-outlined text-base">send</span>Apply</>)}
+                <button onClick={() => openApply(job)} disabled={applied} className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-1.5 transition-all ${applied ? 'bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-300 cursor-default' : 'premium-gradient text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-95'}`}>
+                  {applied ? (<><Icon name="check" className="text-base" />Applied</>) : (<><Icon name="send" className="text-base" />Apply</>)}
                 </button>
               </div>
             </div>
@@ -330,11 +331,11 @@ export default function MyApplicationsPage() {
       {/* Tabs */}
       <div className="flex items-center gap-2 mb-5">
         <div className="flex bg-surface-container-low rounded-2xl p-1 flex-wrap">
-          <button onClick={() => setTab('browse')} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === 'browse' ? 'bg-white shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>Browse Jobs</button>
-          <button onClick={() => setTab('saved')} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === 'saved' ? 'bg-white shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>Saved {savedIds.size > 0 && <span className="ml-1 text-xs">({savedIds.size})</span>}</button>
-          <button onClick={() => setTab('applied')} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === 'applied' ? 'bg-white shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>My Applications {activeApps.length > 0 && <span className="ml-1 text-xs">({activeApps.length})</span>}</button>
-          <button onClick={() => setTab('external')} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5 ${tab === 'external' ? 'bg-white shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
-            <span className="material-symbols-outlined text-base">public</span>Web Jobs
+          <button onClick={() => setTab('browse')} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === 'browse' ? 'bg-white dark:bg-[#3a3a3c] shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>Browse Jobs</button>
+          <button onClick={() => setTab('saved')} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === 'saved' ? 'bg-white dark:bg-[#3a3a3c] shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>Saved {savedIds.size > 0 && <span className="ml-1 text-xs">({savedIds.size})</span>}</button>
+          <button onClick={() => setTab('applied')} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === 'applied' ? 'bg-white dark:bg-[#3a3a3c] shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>My Applications {activeApps.length > 0 && <span className="ml-1 text-xs">({activeApps.length})</span>}</button>
+          <button onClick={() => setTab('external')} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5 ${tab === 'external' ? 'bg-white dark:bg-[#3a3a3c] shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
+            <Icon name="public" className="text-base" />Web Jobs
           </button>
         </div>
       </div>
@@ -345,33 +346,33 @@ export default function MyApplicationsPage() {
         <ErrorState onRetry={load} />
       ) : (
         <div className="grid grid-cols-12 gap-4 md:gap-6">
-          {/* LEFT — only this column changes per tab */}
+          {/* LEFT - only this column changes per tab */}
           <div className="col-span-12 lg:col-span-8">
             {tab === 'browse' ? (
               <>
           {/* Filters */}
-          <div className="bg-white p-3 md:p-4 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container mb-5 space-y-3">
+          <div className="bg-white dark:bg-[#2c2c2e] p-3 md:p-4 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container mb-5 space-y-3">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
-                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search title, company, or skill" className="w-full pl-12 pr-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface font-medium placeholder:text-outline-variant outline-none" />
+                <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" />
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search title, company, or skill" className="w-full pl-12 pr-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all text-on-surface font-medium placeholder:text-outline-variant outline-none" />
               </div>
               <div className="relative sm:w-48">
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">location_on</span>
-                <input value={locFilter} onChange={(e) => setLocFilter(e.target.value)} placeholder="Location" className="w-full pl-12 pr-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface font-medium placeholder:text-outline-variant outline-none" />
+                <Icon name="location_on" className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" />
+                <input value={locFilter} onChange={(e) => setLocFilter(e.target.value)} placeholder="Location" className="w-full pl-12 pr-4 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all text-on-surface font-medium placeholder:text-outline-variant outline-none" />
               </div>
               <div className="relative sm:w-52">
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none">sort</span>
-                <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} className="w-full appearance-none pl-12 pr-10 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white transition-all text-on-surface font-medium outline-none cursor-pointer">
+                <Icon name="sort" className="absolute left-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none" />
+                <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} className="w-full appearance-none pl-12 pr-10 py-3 bg-surface-container-low border-2 border-transparent rounded-2xl focus:border-primary focus:bg-white dark:focus:bg-white/10 transition-all text-on-surface font-medium outline-none cursor-pointer">
                   {SORT_OPTIONS.map((o) => <option key={o.v} value={o.v}>{o.label}</option>)}
                 </select>
-                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+                <Icon name="expand_more" className="absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none" />
               </div>
             </div>
 
             {maxSalary > 0 && (
               <div className="flex items-center gap-3 px-1">
-                <span className="text-xs font-bold text-on-surface-variant whitespace-nowrap flex items-center gap-1"><span className="material-symbols-outlined text-sm">payments</span>Min salary</span>
+                <span className="text-xs font-bold text-on-surface-variant whitespace-nowrap flex items-center gap-1"><Icon name="payments" className="text-sm" />Min salary</span>
                 <input type="range" min={0} max={maxSalary} step={5000} value={minSalary} onChange={(e) => setMinSalary(Number(e.target.value))} className="flex-1 accent-[var(--color-primary)] cursor-pointer" />
                 <span className="text-xs font-black text-primary w-16 text-right">{minSalary === 0 ? 'Any' : formatK(minSalary)}+</span>
               </div>
@@ -379,14 +380,14 @@ export default function MyApplicationsPage() {
 
             <div className="flex flex-wrap items-center gap-2">
               <button onClick={() => setRemoteOnly((v) => !v)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${remoteOnly ? 'bg-primary/10 text-primary' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'}`}>
-                <span className="material-symbols-outlined text-sm">{remoteOnly ? 'check_circle' : 'home_work'}</span>Remote only
+                <Icon name={remoteOnly ? 'check_circle' : 'home_work'} className="text-sm" />Remote only
               </button>
               <span className="w-px h-5 bg-surface-container mx-1 hidden sm:block" />
               {popularSkills.map((s) => {
                 const on = selectedSkills.includes(s)
                 return <button key={s} onClick={() => toggleSkill(s)} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${on ? 'bg-primary text-white shadow' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'}`}>{s}</button>
               })}
-              {hasFilters && <button onClick={clearFilters} className="ml-auto flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 transition-colors"><span className="material-symbols-outlined text-sm">close</span>Clear</button>}
+              {hasFilters && <button onClick={clearFilters} className="ml-auto flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 transition-colors"><Icon name="close" className="text-sm" />Clear</button>}
             </div>
           </div>
 
@@ -413,7 +414,7 @@ export default function MyApplicationsPage() {
               )
             ) : tab === 'applied' ? (
               activeApps.length === 0 ? (
-                <EmptyState icon="work_history" title="No applications yet" text="Browse open jobs and apply with one click — they’ll show up here with live status." action={<button onClick={() => setTab('browse')} className="mt-4 px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm">Browse Jobs</button>} />
+                <EmptyState icon="work_history" title="No applications yet" text="Browse open jobs and apply with one click - they’ll show up here with live status." action={<button onClick={() => setTab('browse')} className="mt-4 px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm">Browse Jobs</button>} />
               ) : (
                 <>
                   <div className="space-y-3">
@@ -421,16 +422,16 @@ export default function MyApplicationsPage() {
                       const job = app.job
                       const st = STATUS_STYLE[app.status]
                       return (
-                        <div key={app.id} className="bg-white p-4 md:p-5 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container flex items-center gap-4">
+                        <div key={app.id} className="bg-white dark:bg-[#2c2c2e] p-4 md:p-5 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container flex items-center gap-4">
                           <CompanyLogo name={job?.company || '?'} size="w-12 h-12" rounded="rounded-xl" text="text-lg" />
                           <div className="flex-1 min-w-0">
                             <h4 className="text-sm md:text-base font-bold text-on-surface truncate">{job?.title || 'Job no longer available'}</h4>
                             <p className="text-on-surface-variant text-xs md:text-sm truncate">{job?.company}{job?.location ? ` • ${job.location}` : ''} · Applied {timeAgo(app.applied_at)}</p>
                           </div>
                           {app.match_score !== null && <span className={`hidden sm:flex items-baseline gap-0.5 text-sm font-black flex-shrink-0 ${scoreColor(app.match_score)}`}>{app.match_score}<span className="text-[10px] text-on-surface-variant font-medium">% match</span></span>}
-                          <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold flex-shrink-0 ${st.cls}`}><span className="material-symbols-outlined text-sm">{st.icon}</span><span className="hidden sm:inline">{st.label}</span></span>
-                          {job && <button onClick={() => setSelectedJob(job)} title="View job" className="text-on-surface-variant hover:text-primary p-2 rounded-lg hover:bg-primary/5 transition flex-shrink-0"><span className="material-symbols-outlined text-base">visibility</span></button>}
-                          <button onClick={() => withdraw(app.id)} title="Withdraw" className="text-on-surface-variant hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition flex-shrink-0"><span className="material-symbols-outlined text-base">delete</span></button>
+                          <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold flex-shrink-0 ${st.cls}`}><Icon name={st.icon} className="text-sm" /><span className="hidden sm:inline">{st.label}</span></span>
+                          {job && <button onClick={() => setSelectedJob(job)} title="View job" className="text-on-surface-variant hover:text-primary p-2 rounded-lg hover:bg-primary/5 transition flex-shrink-0"><Icon name="visibility" className="text-base" /></button>}
+                          <button onClick={() => withdraw(app.id)} title="Withdraw" className="text-on-surface-variant hover:text-red-500 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15 transition flex-shrink-0"><Icon name="delete" className="text-base" /></button>
                         </div>
                       )
                     })}
@@ -443,7 +444,7 @@ export default function MyApplicationsPage() {
             )}
           </div>
 
-          {/* RIGHT — always visible across every tab */}
+          {/* RIGHT - always visible across every tab */}
           <aside className="col-span-12 lg:col-span-4 space-y-4 lg:sticky lg:top-20 self-start">
             <div className="p-5 rounded-[1.5rem] bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-xl relative overflow-hidden">
               <div className="relative z-10">
@@ -459,8 +460,8 @@ export default function MyApplicationsPage() {
             </div>
 
             {topMatches.length > 0 && topMatches[0].s > 0 && (
-              <div className="p-5 rounded-[1.5rem] bg-white border border-surface-container shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)]">
-                <h3 className="text-sm font-black text-on-surface mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-primary text-lg">trending_up</span>Top Matches for You</h3>
+              <div className="p-5 rounded-[1.5rem] bg-white dark:bg-[#2c2c2e] border border-surface-container shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)]">
+                <h3 className="text-sm font-black text-on-surface mb-3 flex items-center gap-2"><Icon name="trending_up" className="text-primary text-lg" />Top Matches for You</h3>
                 <div className="space-y-2">
                   {topMatches.map(({ j, s }) => (
                     <button key={j.id} onClick={() => setSelectedJob(j)} className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-surface-container-low transition-colors text-left">
@@ -474,8 +475,8 @@ export default function MyApplicationsPage() {
             )}
 
             {skillDemand.length > 0 && (
-              <div className="p-5 rounded-[1.5rem] bg-white border border-surface-container shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)]">
-                <h3 className="text-sm font-black text-on-surface mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-primary text-lg">local_fire_department</span>Skills in Demand</h3>
+              <div className="p-5 rounded-[1.5rem] bg-white dark:bg-[#2c2c2e] border border-surface-container shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)]">
+                <h3 className="text-sm font-black text-on-surface mb-3 flex items-center gap-2"><Icon name="local_fire_department" className="text-primary text-lg" />Skills in Demand</h3>
                 <div className="flex flex-wrap gap-2">
                   {skillDemand.slice(0, 8).map(([s, n]) => {
                     const on = selectedSkills.includes(s)
@@ -486,9 +487,9 @@ export default function MyApplicationsPage() {
             )}
 
             <div className="p-5 rounded-[1.5rem] bg-pink-200/50 border border-pink-300/30">
-              <div className="flex items-center gap-2 mb-2"><span className="material-symbols-outlined text-pink-700" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span><h3 className="text-sm font-black text-pink-950">Boost your match score</h3></div>
+              <div className="flex items-center gap-2 mb-2"><Icon name="lightbulb" className="text-pink-700" solid /><h3 className="text-sm font-black text-pink-950">Boost your match score</h3></div>
               <p className="text-xs text-pink-900/80 leading-relaxed mb-3">Add more skills to your profile so the AI can match you to more roles and recruiters can find you faster.</p>
-              <Link href="/candidate/build-profile" className="inline-flex items-center gap-1 text-xs font-bold text-pink-800 hover:underline">Update profile <span className="material-symbols-outlined text-sm">arrow_forward</span></Link>
+              <Link href="/candidate/build-profile" className="inline-flex items-center gap-1 text-xs font-bold text-pink-800 hover:underline">Update profile <Icon name="arrow_forward" className="text-sm" /></Link>
             </div>
           </aside>
         </div>
@@ -501,27 +502,27 @@ export default function MyApplicationsPage() {
         const missing = selectedJob.skills.filter((s) => !matched.some((m) => norm(m) === norm(s)))
         const applied = appliedJobIds.has(selectedJob.id)
         const shareJob = () => {
-          navigator.clipboard.writeText(`${selectedJob.title} at ${selectedJob.company}${selectedJob.location ? ` (${selectedJob.location})` : ''} — apply on SmartHire AI`)
+          navigator.clipboard.writeText(`${selectedJob.title} at ${selectedJob.company}${selectedJob.location ? ` (${selectedJob.location})` : ''} - apply on SmartHire AI`)
           setShared(true); setTimeout(() => setShared(false), 1800)
         }
         return (
           <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSelectedJob(null)} />
-            <div className="relative z-10 w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
+            <div className="relative z-10 w-full max-w-2xl bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
               <div className="p-5 border-b border-surface-container flex items-start gap-4">
                 <CompanyLogo name={selectedJob.company} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-bold text-on-surface">{selectedJob.title}</h3>
-                    {isNew(selectedJob.created_at) && <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-black rounded uppercase">New</span>}
+                    {isNew(selectedJob.created_at) && <span className="px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10px] font-black rounded uppercase">New</span>}
                   </div>
                   <p className="text-on-surface-variant text-sm">{selectedJob.company}{selectedJob.location ? ` • ${selectedJob.location}` : ''}</p>
                   <p className="text-xs text-outline mt-0.5">Posted {timeAgo(selectedJob.created_at)}</p>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <button onClick={() => toggleSave(selectedJob.id)} title={savedIds.has(selectedJob.id) ? 'Saved' : 'Save job'} className={`p-2 rounded-xl transition ${savedIds.has(selectedJob.id) ? 'text-primary bg-primary/10' : 'text-on-surface-variant hover:text-primary hover:bg-primary/5'}`}><span className="material-symbols-outlined" style={savedIds.has(selectedJob.id) ? { fontVariationSettings: "'FILL' 1" } : undefined}>bookmark</span></button>
-                  <button onClick={shareJob} title="Copy job details" className="p-2 rounded-xl text-on-surface-variant hover:text-primary hover:bg-primary/5 transition"><span className="material-symbols-outlined">{shared ? 'check' : 'share'}</span></button>
-                  <button onClick={() => setSelectedJob(null)} className="p-1 text-on-surface-variant hover:text-on-surface"><span className="material-symbols-outlined">close</span></button>
+                  <button onClick={() => toggleSave(selectedJob.id)} title={savedIds.has(selectedJob.id) ? 'Saved' : 'Save job'} className={`p-2 rounded-xl transition ${savedIds.has(selectedJob.id) ? 'text-primary bg-primary/10' : 'text-on-surface-variant hover:text-primary hover:bg-primary/5'}`}><Icon name="bookmark" solid={savedIds.has(selectedJob.id)} /></button>
+                  <button onClick={shareJob} title="Copy job details" className="p-2 rounded-xl text-on-surface-variant hover:text-primary hover:bg-primary/5 transition"><Icon name={shared ? 'check' : 'share'} /></button>
+                  <button onClick={() => setSelectedJob(null)} className="p-1 text-on-surface-variant hover:text-on-surface"><Icon name="close" /></button>
                 </div>
               </div>
 
@@ -529,18 +530,18 @@ export default function MyApplicationsPage() {
                 <div className="flex flex-wrap gap-2">
                   {isRemote(selectedJob.location) && <Pill icon="home_work" text="Remote" />}
                   {selectedJob.location && <Pill icon="location_on" text={selectedJob.location} />}
-                  {selectedJob.salary && <Pill icon="payments" text={selectedJob.salary} cls="bg-green-50 text-green-700" />}
+                  {selectedJob.salary && <Pill icon="payments" text={selectedJob.salary} cls="bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300" />}
                 </div>
                 {score !== null && (
                   <div className="p-4 rounded-2xl bg-surface-container-low/70 border border-surface-container">
-                    <div className="flex items-center justify-between mb-2"><span className="text-sm font-bold text-on-surface flex items-center gap-1.5"><span className="material-symbols-outlined text-primary text-lg">insights</span>Skills match</span><span className={`text-lg font-black ${scoreColor(score)}`}>{score}%</span></div>
+                    <div className="flex items-center justify-between mb-2"><span className="text-sm font-bold text-on-surface flex items-center gap-1.5"><Icon name="insights" className="text-primary text-lg" />Skills match</span><span className={`text-lg font-black ${scoreColor(score)}`}>{score}%</span></div>
                     <div className="w-full h-2.5 bg-surface-container rounded-full overflow-hidden mb-2"><div className={`h-full rounded-full transition-all duration-700 ${scoreBg(score)}`} style={{ width: `${score}%` }} /></div>
                     <p className="text-xs text-on-surface-variant">You have <b>{matched.length}</b> of <b>{selectedJob.skills.length}</b> required skills.</p>
                   </div>
                 )}
                 {selectedJob.skills.length > 0 && (
                   <div className="space-y-3">
-                    {matched.length > 0 && <div><p className="text-[10px] font-black text-green-700 uppercase tracking-widest mb-2">Your matching skills</p><div className="flex flex-wrap gap-2">{matched.map((s) => <span key={s} className="px-3 py-1.5 bg-green-100 text-green-700 text-xs font-semibold rounded-lg flex items-center gap-1"><span className="material-symbols-outlined text-sm">check</span>{s}</span>)}</div></div>}
+                    {matched.length > 0 && <div><p className="text-[10px] font-black text-green-700 dark:text-green-300 uppercase tracking-widest mb-2">Your matching skills</p><div className="flex flex-wrap gap-2">{matched.map((s) => <span key={s} className="px-3 py-1.5 bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-300 text-xs font-semibold rounded-lg flex items-center gap-1"><Icon name="check" className="text-sm" />{s}</span>)}</div></div>}
                     {missing.length > 0 && <div><p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Skills to highlight or learn</p><div className="flex flex-wrap gap-2">{missing.map((s) => <span key={s} className="px-3 py-1.5 bg-surface-container text-on-surface-variant text-xs font-semibold rounded-lg">{s}</span>)}</div></div>}
                   </div>
                 )}
@@ -550,10 +551,10 @@ export default function MyApplicationsPage() {
               <div className="p-4 border-t border-surface-container flex gap-3">
                 <button onClick={() => setSelectedJob(null)} className="px-5 py-3.5 rounded-2xl bg-surface-container-low text-on-surface font-bold text-sm hover:bg-surface-container transition-colors">Close</button>
                 {applied ? (
-                  <div className="flex-1 py-3.5 rounded-2xl bg-green-100 text-green-700 font-bold text-sm flex items-center justify-center gap-2"><span className="material-symbols-outlined text-lg">check_circle</span>Already applied</div>
+                  <div className="flex-1 py-3.5 rounded-2xl bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-300 font-bold text-sm flex items-center justify-center gap-2"><Icon name="check_circle" className="text-lg" />Already applied</div>
                 ) : (
                   <button onClick={() => openApply(selectedJob)} className="flex-1 py-3.5 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] active:scale-95 transition-all">
-                    <span className="material-symbols-outlined text-lg">send</span>Apply &amp; choose CV
+                    <Icon name="send" className="text-lg" />Apply &amp; choose CV
                   </button>
                 )}
               </div>
@@ -566,14 +567,14 @@ export default function MyApplicationsPage() {
       {applyJob && (
         <div className="fixed inset-0 z-[85] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => !applying && setApplyJob(null)} />
-          <div className="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[88vh] flex flex-col">
+          <div className="relative z-10 w-full max-w-lg bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[88vh] flex flex-col">
             <div className="p-5 border-b border-surface-container">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <h3 className="text-lg font-bold text-on-surface">Choose a CV to send</h3>
                   <p className="text-xs text-on-surface-variant truncate">for {applyJob.title} · {applyJob.company}</p>
                 </div>
-                <button onClick={() => !applying && setApplyJob(null)} className="text-on-surface-variant hover:text-on-surface p-1 flex-shrink-0"><span className="material-symbols-outlined">close</span></button>
+                <button onClick={() => !applying && setApplyJob(null)} className="text-on-surface-variant hover:text-on-surface p-1 flex-shrink-0"><Icon name="close" /></button>
               </div>
             </div>
 
@@ -582,13 +583,13 @@ export default function MyApplicationsPage() {
                 const sel = selectedCvId === cv.id
                 return (
                   <div key={cv.id} className={`flex items-center gap-3 p-3 rounded-2xl border-2 transition-all cursor-pointer ${sel ? 'border-primary bg-primary/5' : 'border-surface-container hover:border-primary/30'}`} onClick={() => setSelectedCvId(cv.id)}>
-                    <span className={`material-symbols-outlined ${sel ? 'text-primary' : 'text-outline-variant'}`} style={sel ? { fontVariationSettings: "'FILL' 1" } : undefined}>{sel ? 'radio_button_checked' : 'radio_button_unchecked'}</span>
+                    <Icon name={sel ? 'radio_button_checked' : 'radio_button_unchecked'} className={sel ? 'text-primary' : 'text-outline-variant'} solid={sel} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold text-on-surface truncate">{cv.target_role || 'Untitled CV'}</p>
                       <p className="text-xs text-on-surface-variant">{new Date(cv.created_at).toLocaleDateString()}{cv.ats_score != null ? ` · ATS ${cv.ats_score}/100` : ''}</p>
                     </div>
                     <button onClick={(e) => { e.stopPropagation(); setPreviewCv(cv.content) }} className="px-3 py-2 rounded-xl bg-surface-container-low text-on-surface font-bold text-xs flex items-center gap-1.5 hover:bg-surface-container transition-colors flex-shrink-0">
-                      <span className="material-symbols-outlined text-base">visibility</span>View
+                      <Icon name="visibility" className="text-base" />View
                     </button>
                   </div>
                 )
@@ -596,18 +597,18 @@ export default function MyApplicationsPage() {
             </div>
 
             {applyError && (
-              <div className="mx-4 mb-2 flex items-start gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-3">
-                <span className="material-symbols-outlined text-red-500">error</span>
-                <p className="text-sm text-red-700 font-medium">{applyError}</p>
+              <div className="mx-4 mb-2 flex items-start gap-2 rounded-xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-white/10 px-4 py-3">
+                <Icon name="error" className="text-red-500" />
+                <p className="text-sm text-red-700 dark:text-red-300 font-medium">{applyError}</p>
               </div>
             )}
 
             <div className="p-4 border-t border-surface-container">
-              <p className="text-xs text-on-surface-variant mb-3 flex items-center gap-1.5"><span className="material-symbols-outlined text-sm text-primary">mail</span>We&apos;ll email you a confirmation, and the recruiter receives the CV you pick.</p>
+              <p className="text-xs text-on-surface-variant mb-3 flex items-center gap-1.5"><Icon name="mail" className="text-sm text-primary" />We&apos;ll email you a confirmation, and the recruiter receives the CV you pick.</p>
               <div className="flex gap-3">
                 <button onClick={() => setApplyJob(null)} disabled={applying} className="px-5 py-3.5 rounded-2xl bg-surface-container-low text-on-surface font-bold text-sm hover:bg-surface-container transition-colors disabled:opacity-60">Cancel</button>
                 <button onClick={sendApplication} disabled={applying || !selectedCvId} className="flex-1 py-3.5 rounded-2xl premium-gradient text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 disabled:hover:scale-100">
-                  <span className="material-symbols-outlined text-lg">{applying ? 'hourglass_top' : 'send'}</span>{applying ? 'Sending your CV...' : 'Send application'}
+                  <Icon name={applying ? 'hourglass_top' : 'send'} className="text-lg" />{applying ? 'Sending your CV...' : 'Send application'}
                 </button>
               </div>
             </div>
@@ -619,10 +620,10 @@ export default function MyApplicationsPage() {
       {previewCv && (
         <div className="fixed inset-0 z-[95] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-md" onClick={() => setPreviewCv(null)} />
-          <div className="relative z-10 w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
+          <div className="relative z-10 w-full max-w-2xl bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[90vh] flex flex-col">
             <div className="p-5 border-b border-surface-container flex items-center justify-between">
-              <h3 className="text-base font-bold text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">description</span>CV preview</h3>
-              <button onClick={() => setPreviewCv(null)} className="text-on-surface-variant hover:text-on-surface p-1"><span className="material-symbols-outlined">close</span></button>
+              <h3 className="text-base font-bold text-on-surface flex items-center gap-2"><Icon name="description" className="text-primary" />CV preview</h3>
+              <button onClick={() => setPreviewCv(null)} className="text-on-surface-variant hover:text-on-surface p-1"><Icon name="close" /></button>
             </div>
             <div className="overflow-y-auto p-6 flex-1 bg-surface-container-low/40"><CVPreview cv={previewCv} /></div>
           </div>
@@ -633,8 +634,8 @@ export default function MyApplicationsPage() {
       {needCv && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setNeedCv(false)} />
-          <div className="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 text-center auth-pop">
-            <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-4"><span className="material-symbols-outlined text-2xl">description</span></div>
+          <div className="relative z-10 w-full max-w-sm bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl p-6 text-center auth-pop">
+            <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-500/15 text-amber-600 dark:text-amber-300 flex items-center justify-center mx-auto mb-4"><Icon name="description" className="text-2xl" /></div>
             <h3 className="text-lg font-bold text-on-surface mb-1">Generate a CV first</h3>
             <p className="text-sm text-on-surface-variant mb-5">Applying sends your CV to the recruiter, so you need at least one saved CV. It only takes a click in the CV Generator.</p>
             <div className="flex gap-3">
@@ -653,11 +654,15 @@ function CompanyLogo({ name, size = 'w-14 h-14', rounded = 'rounded-2xl', text =
   if (err || !name) return <div className={`${size} ${rounded} flex items-center justify-center flex-shrink-0 ${text} font-black ${avatarColor(name || '?')}`}>{(name || '?').charAt(0).toUpperCase()}</div>
   const bg = LOGO_BG[hashIdx(name, LOGO_BG.length)]
   const url = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${bg}&color=fff&bold=true&format=svg`
+  // Stays a plain <img>: ui-avatars.com is not in next.config's remotePatterns, and
+  // it returns an SVG, which next/image refuses to optimize without dangerouslyAllowSVG.
+  // The payload is a few hundred bytes anyway, so there is nothing to optimize.
+  // eslint-disable-next-line @next/next/no-img-element
   return <img src={url} onError={() => setErr(true)} alt={name} className={`${size} ${rounded} object-cover flex-shrink-0 border border-surface-container`} />
 }
 
 function Pill({ icon, text, cls }: { icon: string; text: string; cls?: string }) {
-  return <span className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1.5 ${cls || 'bg-surface-container-low text-on-surface-variant'}`}><span className="material-symbols-outlined text-sm">{icon}</span>{text}</span>
+  return <span className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1.5 ${cls || 'bg-surface-container-low text-on-surface-variant'}`}><Icon name={icon} className="text-sm" />{text}</span>
 }
 
 function Loader({ label }: { label: string }) {
@@ -675,19 +680,19 @@ function Loader({ label }: { label: string }) {
 
 function ErrorState({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-      <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
+    <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
+      <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-5"><Icon name="cloud_off" className="text-3xl" /></div>
       <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn’t load jobs</h2>
       <p className="text-sm text-on-surface-variant max-w-md mb-4">Something went wrong reaching the server. Check your connection and try again.</p>
-      <button onClick={onRetry} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>
+      <button onClick={onRetry} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><Icon name="refresh" className="text-base" />Retry</button>
     </div>
   )
 }
 
 function EmptyState({ icon, title, text, action }: { icon: string; title: string; text: string; action?: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-      <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-5"><span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span></div>
+    <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
+      <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-5"><Icon name={icon} className="text-3xl" solid /></div>
       <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">{title}</h2>
       <p className="text-sm text-on-surface-variant max-w-md">{text}</p>
       {action}

@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import ThemeToggle from '@/components/shared/ThemeToggle'
+import { Icon } from '@/components/ui/icon'
 
 type Interview = {
   id: string; job_title: string | null; candidate_name: string | null
@@ -21,6 +23,35 @@ const ICE_SERVERS: RTCIceServer[] = [
 const fmtWhen = (iso: string | null) => iso ? new Date(iso).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Now'
 const initial = (s: string) => (s || '?').charAt(0).toUpperCase()
 
+/**
+ * The room is only live for a confirmed interview.
+ *
+ * Being a participant was previously the ONLY check, so either side could walk into
+ * the room of an interview that was declined, or had already finished, just by
+ * holding the URL. The Join link is only ever surfaced at stage 'accepted', so the
+ * route now enforces the same rule instead of trusting the UI to hide it.
+ *
+ * Returns null when the stage is joinable, otherwise the reason to show.
+ */
+function stageBlockReason(stage: string): string | null {
+  switch (stage) {
+    case 'accepted':
+      return null
+    case 'proposed':
+      return 'This interview hasn’t been confirmed yet. The room opens once both sides accept the time.'
+    case 'declined':
+      return 'This interview was declined, so its room is closed.'
+    case 'cancelled':
+      return 'This interview was cancelled, so its room is closed.'
+    case 'completed':
+    case 'offer':
+    case 'rejected':
+      return 'This interview has already finished. Its room is closed.'
+    default:
+      return 'This interview room isn’t open.'
+  }
+}
+
 export default function InterviewRoomPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
@@ -28,6 +59,8 @@ export default function InterviewRoomPage() {
 
   const [loading, setLoading] = useState(true)
   const [denied, setDenied] = useState(false)
+  /** Set when the caller IS a participant but the interview's stage isn't joinable. */
+  const [closedReason, setClosedReason] = useState<string | null>(null)
   const [iv, setIv] = useState<Interview | null>(null)
   const [isRecruiter, setIsRecruiter] = useState(false)
   const [me, setMe] = useState('You')
@@ -39,6 +72,10 @@ export default function InterviewRoomPage() {
   const [remoteActive, setRemoteActive] = useState(false)
   const [mediaError, setMediaError] = useState<string | null>(null)
   const [elapsed, setElapsed] = useState(0)
+  /** Bumping this tears the peer connection down and rebuilds it - the Retry button. */
+  const [retryKey, setRetryKey] = useState(0)
+  /** Peer is in the room but negotiation has been dragging on far too long. */
+  const [stalled, setStalled] = useState(false)
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
@@ -59,6 +96,11 @@ export default function InterviewRoomPage() {
       if (user.id !== row.recruiter_id && user.id !== row.candidate_id) { setDenied(true); setLoading(false); return }
       const rec = user.id === row.recruiter_id
       setIsRecruiter(rec); setIv(row)
+
+      // Participant, but is the interview actually live? Bail out before touching
+      // the camera or opening a signalling channel.
+      const blocked = stageBlockReason(row.stage)
+      if (blocked) { setClosedReason(blocked); setLoading(false); return }
       idsRef.current = { me: user.id, other: rec ? row.candidate_id : row.recruiter_id }
       const { data: prof } = await supabase.from('profiles').select('full_name, company_name').eq('id', user.id).single()
       setMe(prof?.full_name || prof?.company_name || 'You')
@@ -74,7 +116,7 @@ export default function InterviewRoomPage() {
 
   // ── WebRTC setup once identities are known ───────────────────────────────────
   useEffect(() => {
-    if (loading || denied || !iv) return
+    if (loading || denied || closedReason || !iv) return
     const { me: myId, other: otherId } = idsRef.current
     if (!myId || !otherId) return
     const isInitiator = myId < otherId
@@ -102,14 +144,14 @@ export default function InterviewRoomPage() {
     }
 
     const setup = async () => {
-      // 1) local media (best-effort — room still works audio/placeholder if denied)
+      // 1) local media (best-effort - room still works audio/placeholder if denied)
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
         if (cancelled) { stream.getTracks().forEach((t) => t.stop()); return }
         localStreamRef.current = stream
         if (localVideoRef.current) localVideoRef.current.srcObject = stream
       } catch {
-        setMediaError('We couldn’t access your camera/mic. Check browser permissions — you can still see the other participant.')
+        setMediaError('We couldn’t access your camera/mic. Check browser permissions - you can still see the other participant.')
       }
       if (cancelled) return
 
@@ -162,7 +204,7 @@ export default function InterviewRoomPage() {
       pendingIce.current = []; offeredRef.current = false
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, denied, iv])
+  }, [loading, denied, closedReason, iv, retryKey])
 
   // call timer once connected
   useEffect(() => {
@@ -170,6 +212,32 @@ export default function InterviewRoomPage() {
     const t = setInterval(() => setElapsed((e) => e + 1), 1000)
     return () => clearInterval(t)
   }, [connState])
+
+  /**
+   * Watchdog for the silent-hang case.
+   *
+   * We only use public STUN servers - no TURN - so when the two peers sit behind
+   * networks that won't let them reach each other directly (symmetric NAT, mobile
+   * data, locked-down campus Wi-Fi) ICE simply never completes. The connection state
+   * can sit on 'connecting' indefinitely without ever reaching 'failed', which used
+   * to leave the user staring at "Connecting…" forever with nothing to act on.
+   */
+  useEffect(() => {
+    if (!peerPresent || connState === 'connected' || connState === 'failed') {
+      setStalled(false)
+      return
+    }
+    const t = setTimeout(() => setStalled(true), 20000)
+    return () => clearTimeout(t)
+  }, [peerPresent, connState, retryKey])
+
+  const retryConnection = () => {
+    setStalled(false)
+    setRemoteActive(false)
+    setConnState('new')
+    offeredRef.current = false
+    setRetryKey((k) => k + 1) // re-runs the WebRTC effect; its cleanup closes the old pc
+  }
 
   const toggleMic = () => {
     const track = localStreamRef.current?.getAudioTracks()[0]
@@ -182,7 +250,14 @@ export default function InterviewRoomPage() {
 
   const backHref = isRecruiter ? '/recruiter/interviews' : '/candidate/interviews'
   const mmss = `${String(Math.floor(elapsed / 60)).padStart(2, '0')}:${String(elapsed % 60).padStart(2, '0')}`
-  const statusText = connState === 'connected' ? `Connected · ${mmss}` : peerPresent ? 'Connecting…' : `Waiting for ${other}…`
+  const failed = connState === 'failed'
+  const statusText = failed
+    ? 'Connection failed'
+    : connState === 'connected'
+      ? `Connected · ${mmss}`
+      : peerPresent
+        ? 'Connecting…'
+        : `Waiting for ${other}…`
 
   if (loading) {
     return <div className="min-h-screen bg-[#0d0d12] flex items-center justify-center"><div className="flex gap-1.5"><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce"></div><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></div><div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></div></div></div>
@@ -190,10 +265,22 @@ export default function InterviewRoomPage() {
   if (denied || !iv) {
     return (
       <div className="min-h-screen bg-[#0d0d12] flex flex-col items-center justify-center text-center p-6">
-        <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center text-white mb-5"><span className="material-symbols-outlined text-3xl">lock</span></div>
+        <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center text-white mb-5"><Icon name="lock" className="text-3xl" /></div>
         <h1 className="text-xl font-bold text-white mb-2">Room not available</h1>
-        <p className="text-white/60 text-sm max-w-sm mb-5">This interview room doesn’t exist or you don’t have access to it.</p>
+        <p className="text-white/60 text-sm max-w-sm mb-5">This interview room doesn&apos;t exist or you don&apos;t have access to it.</p>
         <Link href="/" className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm">Go home</Link>
+      </div>
+    )
+  }
+  if (closedReason) {
+    return (
+      <div className="min-h-screen bg-[#0d0d12] flex flex-col items-center justify-center text-center p-6">
+        <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center text-white mb-5"><Icon name="event_busy" className="text-3xl" /></div>
+        <h1 className="text-xl font-bold text-white mb-2">Room is closed</h1>
+        <p className="text-white/60 text-sm max-w-sm mb-5">{closedReason}</p>
+        <Link href={isRecruiter ? '/recruiter/interviews' : '/candidate/interviews'} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm">
+          Back to interviews
+        </Link>
       </div>
     )
   }
@@ -203,28 +290,51 @@ export default function InterviewRoomPage() {
       {/* Top bar */}
       <header className="flex items-center justify-between px-4 md:px-6 h-16 border-b border-white/10 flex-shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 premium-gradient rounded-lg flex items-center justify-center text-white flex-shrink-0"><span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>videocam</span></div>
+          <div className="w-9 h-9 premium-gradient rounded-lg flex items-center justify-center text-white flex-shrink-0"><Icon name="videocam" className="text-base" solid /></div>
           <div className="min-w-0">
             <p className="text-sm font-bold text-white truncate">{iv.job_title || 'Interview'}</p>
             <p className="text-[11px] text-white/50">{fmtWhen(iv.scheduled_at)} · {iv.duration_min} min</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 text-white/80 text-xs font-bold"><span className={`w-2 h-2 rounded-full ${connState === 'connected' ? 'bg-green-400' : 'bg-amber-400 animate-pulse'}`} />{statusText}</span>
-          <Link href={backHref} className="px-3 py-2 rounded-xl bg-white/10 text-white font-bold text-xs hover:bg-white/20 transition-colors flex items-center gap-1.5"><span className="material-symbols-outlined text-base">close</span>Leave</Link>
+          <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 text-white/80 text-xs font-bold"><span className={`w-2 h-2 rounded-full ${connState === 'connected' ? 'bg-green-400' : failed ? 'bg-red-400' : 'bg-amber-400 animate-pulse'}`} />{statusText}</span>
+          <ThemeToggle className="h-9 w-9 rounded-full flex items-center justify-center bg-white/10 text-white hover:bg-white/20 transition-colors" />
+          <Link href={backHref} className="px-3 py-2 rounded-xl bg-white/10 text-white font-bold text-xs hover:bg-white/20 transition-colors flex items-center gap-1.5"><Icon name="close" className="text-base" />Leave</Link>
         </div>
       </header>
 
       {mediaError && (
         <div className="px-4 md:px-6 pt-3 flex-shrink-0">
-          <div className="max-w-3xl mx-auto flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-200 text-xs"><span className="material-symbols-outlined text-base">videocam_off</span>{mediaError}</div>
+          <div className="max-w-3xl mx-auto flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-200 text-xs"><Icon name="videocam_off" className="text-base" />{mediaError}</div>
+        </div>
+      )}
+
+      {/* Negotiation never completing used to be invisible - the pill just said
+          "Connecting…" forever. Surface it, explain the likely cause, and give the
+          user something to press. */}
+      {(failed || stalled) && (
+        <div className="px-4 md:px-6 pt-3 flex-shrink-0">
+          <div className={`max-w-3xl mx-auto flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 px-4 py-2.5 rounded-xl border text-xs ${failed ? 'bg-red-500/15 border-red-500/30 text-red-200' : 'bg-amber-500/15 border-amber-500/30 text-amber-200'}`}>
+            <Icon name={failed ? 'wifi_off' : 'sync_problem'} className="text-base flex-shrink-0" />
+            <span className="flex-1">
+              {failed
+                ? `Couldn’t connect to ${other}. This usually means the two networks can’t reach each other directly.`
+                : `Still connecting to ${other}. If this doesn’t clear, one of you may be on a network that blocks a direct connection - try a different Wi-Fi.`}
+            </span>
+            <button
+              onClick={retryConnection}
+              className="self-start sm:self-auto flex-shrink-0 px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold transition-colors flex items-center gap-1.5"
+            >
+              <Icon name="refresh" className="text-sm" />Retry
+            </button>
+          </div>
         </div>
       )}
 
       {/* Stage */}
       <div className="flex-1 p-3 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 min-h-0">
         {/* Remote */}
-        <Tile name={other} tag={isRecruiter ? 'Candidate' : 'Interviewer'} waiting={!remoteActive} waitLabel={peerPresent ? 'Connecting…' : 'Waiting to join…'}>
+        <Tile name={other} tag={isRecruiter ? 'Candidate' : 'Interviewer'} waiting={!remoteActive} waitLabel={failed ? 'Connection failed' : peerPresent ? 'Connecting…' : 'Waiting to join…'}>
           <video ref={remoteVideoRef} autoPlay playsInline className={`w-full h-full object-cover ${remoteActive ? '' : 'hidden'}`} />
         </Tile>
         {/* Local */}
@@ -238,7 +348,7 @@ export default function InterviewRoomPage() {
         <div className="flex items-center justify-center gap-3">
           <Ctrl on={micOn} onClick={toggleMic} onIcon="mic" offIcon="mic_off" />
           <Ctrl on={camOn} onClick={toggleCam} onIcon="videocam" offIcon="videocam_off" />
-          <Link href={backHref} className="w-14 h-12 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors" title="Leave"><span className="material-symbols-outlined">call_end</span></Link>
+          <Link href={backHref} className="w-14 h-12 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors" title="Leave"><Icon name="call_end" /></Link>
         </div>
       </footer>
     </div>
@@ -253,13 +363,13 @@ function Tile({ name, tag, muted, camOff, waiting, waitLabel, children }: { name
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
           <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white text-4xl font-black">{initial(name)}</div>
           {waiting && <p className="text-white/50 text-xs font-semibold">{waitLabel}</p>}
-          {camOff && !waiting && <span className="material-symbols-outlined text-white/40 text-2xl">videocam_off</span>}
+          {camOff && !waiting && <Icon name="videocam_off" className="text-white/40 text-2xl" />}
         </div>
       )}
       <div className="absolute bottom-3 left-3 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 backdrop-blur">
         <span className="text-sm font-bold text-white">{name}</span>
         <span className="text-[10px] font-bold text-white/60 uppercase tracking-wide">{tag}</span>
-        {muted && <span className="material-symbols-outlined text-red-400 text-base">mic_off</span>}
+        {muted && <Icon name="mic_off" className="text-red-400 text-base" />}
       </div>
     </div>
   )
@@ -268,7 +378,7 @@ function Tile({ name, tag, muted, camOff, waiting, waitLabel, children }: { name
 function Ctrl({ on, onClick, onIcon, offIcon }: { on: boolean; onClick: () => void; onIcon: string; offIcon: string }) {
   return (
     <button onClick={onClick} className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${on ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-red-500 text-white hover:bg-red-600'}`}>
-      <span className="material-symbols-outlined">{on ? onIcon : offIcon}</span>
+      <Icon name={on ? onIcon : offIcon} />
     </button>
   )
 }

@@ -3,17 +3,22 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Icon } from '@/components/ui/icon'
 
 type Notif = { id: string; type: string; title: string; body: string | null; link: string | null; is_read: boolean; created_at: string }
 
 const ICON: Record<string, { icon: string; cls: string }> = {
-  applied: { icon: 'send', cls: 'text-indigo-600 bg-indigo-100' },
-  applicant: { icon: 'person_add', cls: 'text-purple-600 bg-purple-100' },
-  status: { icon: 'campaign', cls: 'text-amber-600 bg-amber-100' },
-  interview: { icon: 'videocam', cls: 'text-sky-600 bg-sky-100' },
-  offer: { icon: 'workspace_premium', cls: 'text-green-600 bg-green-100' },
+  applied: { icon: 'send', cls: 'text-indigo-600 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-500/15' },
+  applicant: { icon: 'person_add', cls: 'text-purple-600 dark:text-purple-300 bg-purple-100 dark:bg-purple-500/15' },
+  status: { icon: 'campaign', cls: 'text-amber-600 dark:text-amber-300 bg-amber-100 dark:bg-amber-500/15' },
+  interview: { icon: 'videocam', cls: 'text-sky-600 dark:text-sky-300 bg-sky-100 dark:bg-sky-500/15' },
+  offer: { icon: 'workspace_premium', cls: 'text-green-600 dark:text-green-300 bg-green-100 dark:bg-green-500/15' },
   message: { icon: 'forum', cls: 'text-primary bg-primary/10' },
-  info: { icon: 'notifications', cls: 'text-sky-600 bg-sky-100' },
+  follow: { icon: 'group_add', cls: 'text-pink-600 dark:text-pink-300 bg-pink-100 dark:bg-pink-500/15' },
+  like: { icon: 'favorite', cls: 'text-rose-600 dark:text-rose-300 bg-rose-100 dark:bg-rose-500/15' },
+  comment: { icon: 'chat_bubble', cls: 'text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-500/15' },
+  repost: { icon: 'repeat', cls: 'text-emerald-600 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/15' },
+  info: { icon: 'notifications', cls: 'text-sky-600 dark:text-sky-300 bg-sky-100 dark:bg-sky-500/15' },
 }
 const meta = (t: string) => ICON[t] || ICON.info
 
@@ -99,7 +104,7 @@ export default function RecruiterNotificationsPage() {
         </div>
         {unreadCount > 0 && (
           <button onClick={markAllRead} className="px-4 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-bold text-xs hover:bg-surface-container transition-colors flex items-center gap-1.5 flex-shrink-0">
-            <span className="material-symbols-outlined text-base">done_all</span><span className="hidden sm:inline">Mark all read</span>
+            <Icon name="done_all" className="text-base" /><span className="hidden sm:inline">Mark all read</span>
           </button>
         )}
       </header>
@@ -107,7 +112,7 @@ export default function RecruiterNotificationsPage() {
       <div className="flex items-center gap-2 mb-5">
         <div className="flex bg-surface-container-low rounded-2xl p-1">
           {TABS.map((t) => (
-            <button key={t.v} onClick={() => setFilter(t.v)} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${filter === t.v ? 'bg-white shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>{t.label}</button>
+            <button key={t.v} onClick={() => setFilter(t.v)} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${filter === t.v ? 'bg-white dark:bg-[#2c2c2e] shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>{t.label}</button>
           ))}
         </div>
       </div>
@@ -122,15 +127,15 @@ export default function RecruiterNotificationsPage() {
           <p className="text-xs font-black text-primary tracking-widest uppercase">Loading notifications...</p>
         </div>
       ) : loadError ? (
-        <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
-          <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn’t load notifications</h2>
+        <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 mb-5"><Icon name="cloud_off" className="text-3xl" /></div>
+          <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">Couldn't load notifications</h2>
           <p className="text-sm text-on-surface-variant max-w-md mb-4">Something went wrong. Please try again.</p>
-          <button onClick={load} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>
+          <button onClick={load} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><Icon name="refresh" className="text-base" />Retry</button>
         </div>
       ) : shown.length === 0 ? (
-        <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-5"><span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>notifications</span></div>
+        <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-10 md:p-16 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-5"><Icon name="notifications" className="text-3xl" solid /></div>
           <h2 className="text-lg md:text-xl font-bold text-on-surface mb-2">{filter === 'unread' ? 'No unread notifications' : filter === 'read' ? 'No read notifications' : 'No notifications yet'}</h2>
           <p className="text-sm text-on-surface-variant max-w-md">You&apos;ll get an alert here whenever a candidate applies to one of your jobs.</p>
         </div>
@@ -139,8 +144,8 @@ export default function RecruiterNotificationsPage() {
           {shown.map((n) => {
             const m = meta(n.type)
             return (
-              <div key={n.id} className={`group flex items-start gap-3 p-4 rounded-2xl border transition-colors ${n.is_read ? 'bg-white border-surface-container' : 'bg-primary/5 border-primary/20'}`}>
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${m.cls}`}><span className="material-symbols-outlined">{m.icon}</span></div>
+              <div key={n.id} className={`group flex items-start gap-3 p-4 rounded-2xl border transition-colors ${n.is_read ? 'bg-white dark:bg-[#2c2c2e] border-surface-container' : 'bg-primary/5 border-primary/20'}`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${m.cls}`}><Icon name={m.icon} /></div>
                 <button onClick={() => openNotif(n)} className="flex-1 min-w-0 text-left">
                   <p className="text-sm font-bold text-on-surface">{n.title}</p>
                   {n.body && <p className="text-sm text-on-surface-variant mt-0.5">{n.body}</p>}
@@ -148,8 +153,8 @@ export default function RecruiterNotificationsPage() {
                 </button>
                 {!n.is_read && <span className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0 mt-1" />}
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <button onClick={() => toggleRead(n)} title={n.is_read ? 'Mark unread' : 'Mark read'} className="text-on-surface-variant hover:text-primary p-1.5 rounded-lg hover:bg-primary/5 opacity-0 group-hover:opacity-100 transition"><span className="material-symbols-outlined text-base">{n.is_read ? 'mark_email_unread' : 'mark_email_read'}</span></button>
-                  <button onClick={() => remove(n)} title="Delete" className="text-on-surface-variant hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 opacity-0 group-hover:opacity-100 transition"><span className="material-symbols-outlined text-base">delete</span></button>
+                  <button onClick={() => toggleRead(n)} title={n.is_read ? 'Mark unread' : 'Mark read'} className="text-on-surface-variant hover:text-primary p-1.5 rounded-lg hover:bg-primary/5 opacity-0 group-hover:opacity-100 transition"><Icon name={n.is_read ? 'mark_email_unread' : 'mark_email_read'} className="text-base" /></button>
+                  <button onClick={() => remove(n)} title="Delete" className="text-on-surface-variant hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15 opacity-0 group-hover:opacity-100 transition"><Icon name="delete" className="text-base" /></button>
                 </div>
               </div>
             )

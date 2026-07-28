@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { geminiGenerate } from '@/lib/gemini'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -44,7 +45,9 @@ Produce:
 - "red_flags": 3-5 warning signs to watch for in this role.
 - "closing_tip": one practical tip for the interviewer.
 
-Tailor everything to the specific role, seniority, and required skills. Be concrete and useful — not generic.`
+Tailor everything to the specific role, seniority, and required skills. Be concrete and useful - not generic.
+
+WRITING STYLE: Never use em-dash or en-dash characters in any text field. Use a comma, a period, or a spaced hyphen ( - ) instead.`
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}))
@@ -55,14 +58,17 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'You must be signed in.' }, { status: 401 })
 
+  const limited = await rateLimit(supabase, 'interview-kit')
+  if (!limited.ok) return limited.response
+
   const { data: job } = await supabase.from('jobs').select('title, company, location, skills, description, recruiter_id').eq('id', jobId).single()
   if (!job) return NextResponse.json({ error: 'Job not found.' }, { status: 404 })
   if (job.recruiter_id !== user.id) return NextResponse.json({ error: 'Not your job.' }, { status: 403 })
 
   const userPrompt = `ROLE: ${job.title} at ${job.company}
-Location: ${job.location || '—'}
-Required skills: ${(job.skills ?? []).join(', ') || '—'}
-Description: ${job.description || '—'}`
+Location: ${job.location || '-'}
+Required skills: ${(job.skills ?? []).join(', ') || '-'}
+Description: ${job.description || '-'}`
 
   try {
     const text = await geminiGenerate({

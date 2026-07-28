@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { Icon } from '@/components/ui/icon'
 
 type AppStatus = 'applied' | 'screening' | 'interview' | 'offer' | 'rejected' | 'withdrawn'
 type App = { status: AppStatus; match_score: number | null; applied_at: string; job_id: string }
@@ -86,14 +87,14 @@ export default function AnalyticsPage() {
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
       <header className="mb-5 md:mb-7">
-        <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-[2.25rem] font-bold tracking-tight text-on-surface leading-tight flex items-center gap-2"><span className="material-symbols-outlined text-primary text-3xl">monitoring</span>Analytics</h1>
+        <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-[2.25rem] font-bold tracking-tight text-on-surface leading-tight flex items-center gap-2"><Icon name="monitoring" className="text-primary text-3xl" />Analytics</h1>
         <p className="text-on-surface-variant text-xs sm:text-sm md:text-base mt-1 sm:mt-2">Insights into your hiring funnel and applicant quality.</p>
       </header>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mb-6">
         {stats.map((s) => (
           <div key={s.label} className={`p-4 md:p-6 rounded-[1.5rem] ${s.bg} shadow-sm`}>
-            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/70 flex items-center justify-center mb-3"><span className={`material-symbols-outlined ${s.text}`} style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span></div>
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/70 dark:bg-white/10 flex items-center justify-center mb-3"><Icon name={s.icon} className={s.text} solid /></div>
             <h3 className={`text-2xl md:text-3xl font-black ${s.text}`}>{s.value}</h3>
             <p className="font-bold uppercase tracking-wider text-[0.6rem] md:text-[0.7rem] mt-1 text-on-surface-variant">{s.label}</p>
           </div>
@@ -102,7 +103,7 @@ export default function AnalyticsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Applications over time */}
-        <Card title="Applications — last 14 days" icon="bar_chart">
+        <Card title="Applications - last 14 days" icon="bar_chart">
           <div className="flex items-end gap-1.5 h-40">
             {daily.map((d, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
@@ -164,8 +165,8 @@ export default function AnalyticsPage() {
 
 function Card({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white p-5 md:p-6 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
-      <h3 className="text-sm font-black text-on-surface mb-4 flex items-center gap-2"><span className="material-symbols-outlined text-primary text-lg">{icon}</span>{title}</h3>
+    <div className="bg-white dark:bg-[#2c2c2e] p-5 md:p-6 rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container">
+      <h3 className="text-sm font-black text-on-surface mb-4 flex items-center gap-2"><Icon name={icon} className="text-primary text-lg" />{title}</h3>
       {children}
     </div>
   )
@@ -187,10 +188,10 @@ function Loader() {
 function ErrorBox({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="p-8 max-w-3xl mx-auto">
-      <div className="bg-white rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-12 flex flex-col items-center text-center">
-        <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 mb-5"><span className="material-symbols-outlined text-3xl">cloud_off</span></div>
-        <h2 className="text-lg font-bold text-on-surface mb-2">Couldn’t load analytics</h2>
-        <button onClick={onRetry} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><span className="material-symbols-outlined text-base">refresh</span>Retry</button>
+      <div className="bg-white dark:bg-[#2c2c2e] rounded-[1.5rem] shadow-[0_12px_40px_-12px_rgba(25,28,30,0.08)] border border-surface-container p-12 flex flex-col items-center text-center">
+        <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-500 dark:text-red-300 mb-5"><Icon name="cloud_off" className="text-3xl" /></div>
+        <h2 className="text-lg font-bold text-on-surface mb-2">Couldn't load analytics</h2>
+        <button onClick={onRetry} className="px-5 py-2.5 rounded-xl premium-gradient text-white font-bold text-sm flex items-center gap-2"><Icon name="refresh" className="text-base" />Retry</button>
       </div>
     </div>
   )

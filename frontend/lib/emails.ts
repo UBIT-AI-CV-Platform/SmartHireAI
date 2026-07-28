@@ -37,7 +37,7 @@ const shell = (innerHtml: string) => `
 </table>`
 
 export function applicationConfirmationEmail(o: ApplicationOpts) {
-  const subject = `Application sent — ${o.jobTitle} at ${o.company}`
+  const subject = `Application sent - ${o.jobTitle} at ${o.company}`
   const meta = [o.location, o.matchScore != null ? `${o.matchScore}% skills match` : null].filter(Boolean).join(' • ')
   const inner = `
     <tr><td style="padding:36px 36px 8px 36px;text-align:center;">
@@ -89,7 +89,7 @@ const ctaRow = (label: string, href: string, note?: string) => `
 // A recruiter messaged the candidate (or vice-versa). CTA → open the chat.
 export function newMessageEmail(o: { name: string; fromName: string; preview: string; basePath: string; role: 'recruiter' | 'candidate' }) {
   const who = o.role === 'recruiter' ? 'candidate' : 'recruiter'
-  const subject = `New message from ${o.fromName} — SmartHire AI`
+  const subject = `New message from ${o.fromName} - SmartHire AI`
   const inner =
     hero('&#128172;', '#eef0ff', `${o.fromName} sent you a message`,
       `Hi ${escapeHtml(o.name) || 'there'}, you have a new message from a ${who} on SmartHire AI.`) +
@@ -100,22 +100,22 @@ export function newMessageEmail(o: { name: string; fromName: string; preview: st
 
 // Interview scheduled by the recruiter. CTA → candidate inbox to confirm.
 export function interviewScheduledEmail(o: { name: string; jobTitle: string; company: string; whenText: string; durationMin?: number; notes?: string | null }) {
-  const subject = `Interview invitation — ${o.jobTitle} at ${o.company}`
+  const subject = `Interview invitation - ${o.jobTitle} at ${o.company}`
   const meta = [o.whenText, o.durationMin ? `${o.durationMin} min` : null].filter(Boolean).join(' • ')
   const inner =
     hero('&#128197;', '#e6f3ff', 'You have an interview! 🎉',
       `Hi ${escapeHtml(o.name) || 'there'}, ${escapeHtml(o.company)} would like to interview you for the role below. Please confirm your availability.`) +
     infoCard(o.jobTitle, o.company, meta) +
     (o.notes ? `<tr><td style="padding:14px 36px 0 36px;"><p style="margin:0;font-size:13px;line-height:20px;color:#5b5b6b;"><b style="color:#33333f;">Note from the recruiter:</b> ${escapeHtml(o.notes)}</p></td></tr>` : '') +
-    ctaRow('Confirm in your inbox', `${appUrl()}/candidate/inbox`, 'Accept or decline and join the video room — all from SmartHire AI.')
+    ctaRow('Confirm in your inbox', `${appUrl()}/candidate/inbox`, 'Accept or decline and join the video room - all from SmartHire AI.')
   return { subject, html: shell(inner) }
 }
 
 // Candidate received an offer. CTA → candidate inbox to respond.
 export function offerEmail(o: { name: string; jobTitle: string; company: string }) {
-  const subject = `Great news — an offer for ${o.jobTitle} at ${o.company}`
+  const subject = `Great news - an offer for ${o.jobTitle} at ${o.company}`
   const inner =
-    hero('&#127881;', '#e8fff1', 'Congratulations — you got an offer!',
+    hero('&#127881;', '#e8fff1', 'Congratulations - you got an offer!',
       `Hi ${escapeHtml(o.name) || 'there'}, ${escapeHtml(o.company)} would like to offer you the role below. We can&rsquo;t wait to hear back from you.`) +
     infoCard(o.jobTitle, o.company) +
     ctaRow('Review your offer', `${appUrl()}/candidate/inbox`, 'Accept or decline your offer directly in SmartHire AI.')
@@ -124,11 +124,11 @@ export function offerEmail(o: { name: string; jobTitle: string; company: string 
 
 // Candidate was not selected. Kind + brief. CTA → keep applying.
 export function rejectionEmail(o: { name: string; jobTitle: string; company: string }) {
-  const subject = `Update on your application — ${o.jobTitle}`
+  const subject = `Update on your application - ${o.jobTitle}`
   const inner =
     hero('&#128075;', '#fff4e6', 'An update on your application',
       `Hi ${escapeHtml(o.name) || 'there'}, thank you for your interest in the <b>${escapeHtml(o.jobTitle)}</b> role at ${escapeHtml(o.company)}. After careful consideration, the team won&rsquo;t be moving forward this time.`) +
-    `<tr><td style="padding:6px 36px 0 36px;text-align:center;"><p style="margin:0;font-size:13px;line-height:20px;color:#777587;">This isn&rsquo;t a reflection of your potential — keep going. Plenty of great roles are waiting for you on SmartHire AI.</p></td></tr>` +
+    `<tr><td style="padding:6px 36px 0 36px;text-align:center;"><p style="margin:0;font-size:13px;line-height:20px;color:#777587;">This isn&rsquo;t a reflection of your potential - keep going. Plenty of great roles are waiting for you on SmartHire AI.</p></td></tr>` +
     ctaRow('Browse more jobs', `${appUrl()}/candidate/my-applications`, 'Your AI Interview Coach is always ready to help you prepare.')
   return { subject, html: shell(inner) }
 }

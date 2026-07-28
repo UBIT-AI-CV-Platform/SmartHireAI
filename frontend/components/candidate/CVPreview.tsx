@@ -27,7 +27,7 @@ const credLine = (c: { name: string; issuer?: string; provider?: string; date?: 
   return (
     <li key={i} className="text-sm text-on-surface">
       <span className="font-bold">{c.name}</span>
-      {sub ? <span className="text-on-surface-variant"> — {sub}</span> : null}
+      {sub ? <span className="text-on-surface-variant"> - {sub}</span> : null}
     </li>
   )
 }

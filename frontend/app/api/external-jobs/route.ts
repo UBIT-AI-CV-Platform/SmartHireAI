@@ -43,35 +43,7 @@ async function fromJooble(q: string, location: string, page: number): Promise<Ex
   }))
 }
 
-// ── Adzuna (free app id + key, no card) ──────────────────────────────────────
-async function fromAdzuna(q: string, location: string, page: number): Promise<ExtJob[]> {
-  const id = process.env.ADZUNA_APP_ID
-  const key = process.env.ADZUNA_APP_KEY
-  if (!id || !key) return []
-  const country = process.env.ADZUNA_COUNTRY || 'us'
-  const params = new URLSearchParams({ app_id: id, app_key: key, results_per_page: String(PAGE_SIZE), what: q || 'developer', where: location || '', 'content-type': 'application/json' })
-  const res = await fetch(`https://api.adzuna.com/v1/api/jobs/${country}/search/${page}?${params.toString()}`)
-  if (!res.ok) return []
-  const data = await res.json()
-  return ((data?.results ?? []) as Record<string, unknown>[]).map((j, i) => {
-    const min = j.salary_min as number | undefined
-    const max = j.salary_max as number | undefined
-    const salary = min || max ? `${min ? `$${Math.round(min / 1000)}k` : ''}${min && max ? ' – ' : ''}${max ? `$${Math.round(max / 1000)}k` : ''}` : null
-    return {
-      id: `adzuna-${page}-${(j.id as string) || i}`,
-      title: (j.title as string) || 'Job',
-      company: ((j.company as { display_name?: string })?.display_name) || '',
-      location: ((j.location as { display_name?: string })?.display_name) || '',
-      salary,
-      source: 'Adzuna',
-      url: (j.redirect_url as string) || '#',
-      snippet: strip((j.description as string) || ''),
-      updated: (j.created as string) || null,
-    }
-  })
-}
-
-// ── Demo fallback (no key needed — realistic sample external jobs) ────────────
+// ── Demo fallback (no key needed - realistic sample external jobs) ────────────
 const DEMO: ExtJob[] = [
   { id: 'demo-1', title: 'Senior Frontend Engineer', company: 'Stripe', location: 'Remote', salary: '$140k – $190k', source: 'LinkedIn', url: 'https://www.linkedin.com/jobs/', snippet: 'Build delightful, high-performance UIs with React and TypeScript for millions of users.', updated: null },
   { id: 'demo-2', title: 'Backend Developer (Node.js)', company: 'Shopify', location: 'Remote', salary: '$120k – $160k', source: 'Indeed', url: 'https://www.indeed.com/', snippet: 'Design scalable APIs and services powering commerce for millions of merchants.', updated: null },
@@ -96,22 +68,78 @@ function demoFiltered(q: string, location: string): ExtJob[] {
   )
 }
 
+// ── Cache ────────────────────────────────────────────────────────────────────
+// Job boards change on the order of hours, but a user re-hits this route on every
+// search. Without a cache each one burned a Jooble call (a rate-limited free tier)
+// and cost the user a 1-2s wait.
+//
+// Two layers:
+//   1. This in-process Map - absorbs repeats hitting the same warm instance.
+//   2. The Cache-Control header - lets Vercel's CDN serve the response outright,
+//      so repeats never even reach our function. stale-while-revalidate means a
+//      slightly-stale hit is served instantly while a fresh one is fetched behind it.
+const TTL_MS = 10 * 60 * 1000
+const MAX_ENTRIES = 200
+
+type Payload = { jobs: ExtJob[]; provider: string; page: number; hasMore: boolean }
+const cache = new Map<string, { at: number; payload: Payload }>()
+
+function cacheGet(key: string): Payload | null {
+  const hit = cache.get(key)
+  if (!hit) return null
+  if (Date.now() - hit.at > TTL_MS) {
+    cache.delete(key)
+    return null
+  }
+  // refresh recency for the LRU eviction below
+  cache.delete(key)
+  cache.set(key, hit)
+  return hit.payload
+}
+
+function cacheSet(key: string, payload: Payload) {
+  if (cache.size >= MAX_ENTRIES) {
+    // Map preserves insertion order, so the first key is the least recently used.
+    const oldest = cache.keys().next().value
+    if (oldest !== undefined) cache.delete(oldest)
+  }
+  cache.set(key, { at: Date.now(), payload })
+}
+
+const CACHE_HEADERS = {
+  'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1800',
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const q = searchParams.get('q') || ''
   const location = searchParams.get('location') || ''
   const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
 
+  const key = `${q.toLowerCase().trim()}|${location.toLowerCase().trim()}|${page}`
+  const cached = cacheGet(key)
+  if (cached) {
+    return NextResponse.json(cached, { headers: { ...CACHE_HEADERS, 'X-Cache': 'HIT' } })
+  }
+
   try {
+    // Live listings come from Jooble. If it has nothing for this query (or no key is
+    // configured), the first page falls back to the sample set - which the UI labels
+    // as sample results, so it never passes them off as real listings.
     let jobs = await fromJooble(q, location, page)
     let provider = 'jooble'
-    if (jobs.length === 0 && page === 1) { jobs = await fromAdzuna(q, location, page); provider = 'adzuna' }
-    else if (provider === 'jooble' && jobs.length === 0) { jobs = await fromAdzuna(q, location, page); provider = 'adzuna' }
-    if (jobs.length === 0 && page === 1) { jobs = demoFiltered(q, location); provider = 'demo' }
+    if (jobs.length === 0 && page === 1) {
+      jobs = demoFiltered(q, location)
+      provider = 'demo'
+    }
     // hasMore: a provider page came back full → there's likely another page
     const hasMore = provider !== 'demo' && jobs.length >= PAGE_SIZE
-    return NextResponse.json({ jobs, provider, page, hasMore })
+
+    const payload: Payload = { jobs, provider, page, hasMore }
+    cacheSet(key, payload)
+    return NextResponse.json(payload, { headers: { ...CACHE_HEADERS, 'X-Cache': 'MISS' } })
   } catch {
+    // Don't cache failures - the next request should get a real attempt.
     return NextResponse.json({ jobs: page === 1 ? demoFiltered(q, location) : [], provider: 'demo', page, hasMore: false })
   }
 }
