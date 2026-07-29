@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Icon } from '@/components/ui/icon'
 
-const WORDS = ['Matched', 'Noticed', 'Hired', 'Ahead']
+const PHRASES = ['Get Matched', 'Get Noticed', 'Get Hired', 'Get Ahead']
 
 function Bar({ className = '' }: { className?: string }) {
   return <div className={`rounded-full bg-black/10 dark:bg-white/15 ${className}`} />
@@ -135,7 +135,7 @@ export default function HeroSection() {
   const [role, setRole] = useState<'candidate' | 'recruiter'>('candidate')
 
   useEffect(() => {
-    const id = setInterval(() => setWi((w) => (w + 1) % WORDS.length), 2600)
+    const id = setInterval(() => setWi((w) => (w + 1) % PHRASES.length), 2600)
     return () => clearInterval(id)
   }, [])
 
@@ -162,12 +162,11 @@ export default function HeroSection() {
           </span>
 
           <h1 style={{ animationDelay: '0.15s' }} className="auth-fade-up font-heading mt-4 text-[2.6rem] font-black leading-[1.05] tracking-tighter text-on-surface sm:mt-5 sm:text-6xl md:text-7xl lg:text-6xl xl:text-7xl">
-            Get Hired, Get
+            Smart Recruitment,
             <br />
             <span key={wi} className="hiw-reveal inline-block bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">
-              {WORDS[wi]}
-            </span>{' '}
-            <span className="inline-block"></span>
+              {PHRASES[wi]}
+            </span>
           </h1>
 
           <p style={{ animationDelay: '0.25s' }} className="auth-fade-up mt-5 max-w-lg text-sm leading-relaxed text-on-surface-variant sm:text-base md:max-w-xl md:text-lg">
