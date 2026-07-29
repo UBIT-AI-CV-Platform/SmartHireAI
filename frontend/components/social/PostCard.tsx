@@ -45,6 +45,8 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
   const [content, setContent] = useState(post.content)
   const [showEdit, setShowEdit] = useState(false)
 
+  const [replyingTo, setReplyingTo] = useState<{ id: string; username: string } | null>(null)
+
   const profileLink = useProfileLink()
   const authorHref = profileLink(post.author_username)
   const isOwn = me?.id === post.author_id
@@ -89,13 +91,15 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
         author_username: me.username,
         author_photo: me.photo,
         content: newComment.trim(),
-      })
+        parent_id: replyingTo?.id ?? null,
+      } as any)
       .select('*')
       .single()
     if (!error && data) {
       setComments((c) => [...(c ?? []), data as PostComment])
       setCommentCount((n) => n + 1)
       setNewComment('')
+      setReplyingTo(null)
     }
     setSending(false)
   }
@@ -104,7 +108,7 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
     const supabase = createClient()
     const { error } = await supabase.from('post_comments').delete().eq('id', id)
     if (!error) {
-      setComments((c) => (c ?? []).filter((x) => x.id !== id))
+      setComments((c) => (c ?? []).filter((x) => x.id !== id && (x as any).parent_id !== id))
       setCommentCount((n) => Math.max(n - 1, 0))
     }
   }
@@ -125,6 +129,9 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
   }
 
   if (deleted || hidden) return null
+
+  const topComments = (comments ?? []).filter((c) => !(c as any).parent_id)
+  const getReplies = (parentId: string) => (comments ?? []).filter((c) => (c as any).parent_id === parentId)
 
   return (
     <article className="bg-white dark:bg-[#1c1c1e] rounded-3xl border border-slate-200/70 dark:border-white/10 shadow-sm overflow-hidden">
@@ -183,14 +190,13 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
         )}
       </div>
 
-      {/* Content (markdown: bold/italic/links) */}
+      {/* Content */}
       {content && (
         <div className="px-4 md:px-5 pb-3 text-sm text-slate-700 dark:text-slate-200 leading-relaxed break-words [&_strong]:font-bold [&_em]:italic [&_a]:text-primary [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_p:last-child]:mb-0">
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: ({ ...p }) => <a {...p} target="_blank" rel="noopener noreferrer" /> }}>{content}</ReactMarkdown>
         </div>
       )}
       {repost ? (
-        /* Embedded reposted original */
         <Link href={`/post/${repost.post_id}`} className="block mx-4 md:mx-5 mb-3 rounded-2xl border border-slate-200/70 dark:border-white/10 overflow-hidden hover:border-slate-300 dark:hover:border-white/20 transition-colors">
           <div className="flex items-center gap-2 p-3 pb-1.5">
             <div className="h-7 w-7 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -262,21 +268,31 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
       {expanded && (
         <div className="px-4 md:px-5 py-4 border-t border-slate-100 dark:border-white/5 space-y-4">
           {me && (
-            <div className="flex gap-2.5">
-              <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {me.photo ? <AvatarImage src={me.photo} alt="You" /> : <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{initials(me.name)}</span>}
-              </div>
-              <div className="flex-1 flex items-end gap-2">
-                <input
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addComment() } }}
-                  placeholder="Add a comment…"
-                  className="flex-1 bg-slate-100 dark:bg-white/5 rounded-full px-4 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary/30"
-                />
-                <button onClick={addComment} disabled={!newComment.trim() || sending} className="h-9 w-9 rounded-full premium-gradient text-white flex items-center justify-center disabled:opacity-50 flex-shrink-0">
-                  <Icon name="send" className="text-[18px]" />
-                </button>
+            <div className="space-y-2">
+              {replyingTo && (
+                <div className="flex items-center justify-between rounded-xl bg-indigo-50/80 px-3 py-1.5 dark:bg-indigo-500/10 text-xs font-semibold text-indigo-600 dark:text-indigo-300">
+                  <span>Replying to <strong className="font-bold">@{replyingTo.username}</strong></span>
+                  <button type="button" onClick={() => setReplyingTo(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <Icon name="close" className="text-sm" />
+                  </button>
+                </div>
+              )}
+              <div className="flex gap-2.5">
+                <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {me.photo ? <AvatarImage src={me.photo} alt="You" /> : <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{initials(me.name)}</span>}
+                </div>
+                <div className="flex-1 flex items-end gap-2">
+                  <input
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addComment() } }}
+                    placeholder={replyingTo ? `Reply to @${replyingTo.username}…` : 'Add a comment…'}
+                    className="flex-1 bg-slate-100 dark:bg-white/5 rounded-full px-4 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                  <button onClick={addComment} disabled={!newComment.trim() || sending} className="h-9 w-9 rounded-full premium-gradient text-white flex items-center justify-center disabled:opacity-50 flex-shrink-0">
+                    <Icon name="send" className="text-[18px]" />
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -284,36 +300,36 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
           {loadingComments ? (
             <p className="text-xs text-slate-400 text-center py-2">Loading comments…</p>
           ) : (
-            (comments ?? []).map((c) => {
-              const canDelete = me?.id === c.author_id || isOwn
+            topComments.map((c) => {
+              const replies = getReplies(c.id)
               return (
-                <div key={c.id} className="flex gap-2.5 group">
-                  <Link href={profileLink(c.author_username)} className="flex-shrink-0">
-                    <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden">
-                      {c.author_photo ? <AvatarImage src={c.author_photo} alt={c.author_name ?? ''} /> : <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{initials(c.author_name)}</span>}
+                <div key={c.id} className="space-y-2">
+                  <CommentItem
+                    comment={c}
+                    me={me}
+                    isOwnPost={isOwn}
+                    onReply={(cmt) => setReplyingTo({ id: cmt.id, username: cmt.author_username || cmt.author_name || 'user' })}
+                    onReport={(cmt) => setReport({ type: 'comment', id: cmt.id, label: cmt.author_name || 'this comment' })}
+                    onDelete={(id) => deleteComment(id)}
+                    profileLink={profileLink}
+                  />
+                  {replies.length > 0 && (
+                    <div className="ml-7 pl-3 border-l-2 border-indigo-500/20 dark:border-indigo-400/20 space-y-2">
+                      {replies.map((reply) => (
+                        <CommentItem
+                          key={reply.id}
+                          comment={reply}
+                          me={me}
+                          isOwnPost={isOwn}
+                          isReply
+                          onReply={(cmt) => setReplyingTo({ id: c.id, username: cmt.author_username || cmt.author_name || 'user' })}
+                          onReport={(cmt) => setReport({ type: 'comment', id: cmt.id, label: cmt.author_name || 'this comment' })}
+                          onDelete={(id) => deleteComment(id)}
+                          profileLink={profileLink}
+                        />
+                      ))}
                     </div>
-                  </Link>
-                  <div className="min-w-0 flex-1">
-                    <div className="bg-slate-100 dark:bg-white/5 rounded-2xl px-3.5 py-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <Link href={profileLink(c.author_username)} className="font-bold text-xs text-slate-900 dark:text-slate-100 hover:underline truncate">{c.author_name || 'User'}</Link>
-                        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {me && me.id !== c.author_id && (
-                            <button onClick={() => setReport({ type: 'comment', id: c.id, label: c.author_name || 'this comment' })} title="Report comment" className="text-slate-400 hover:text-amber-500">
-                              <Icon name="flag" className="text-[15px]" />
-                            </button>
-                          )}
-                          {canDelete && (
-                            <button onClick={() => deleteComment(c.id)} title="Delete comment" className="text-slate-400 hover:text-red-500">
-                              <Icon name="delete" className="text-[15px]" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line">{c.content}</p>
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-0.5 ml-1">{relativeTime(c.created_at)}</p>
-                  </div>
+                  )}
                 </div>
               )
             })
@@ -324,6 +340,66 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
         </div>
       )}
     </article>
+  )
+}
+
+function CommentItem({
+  comment,
+  me,
+  isOwnPost,
+  isReply = false,
+  onReply,
+  onReport,
+  onDelete,
+  profileLink,
+}: {
+  comment: PostComment
+  me: MeSnapshot | null
+  isOwnPost: boolean
+  isReply?: boolean
+  onReply: (c: PostComment) => void
+  onReport: (c: PostComment) => void
+  onDelete: (id: string) => void
+  profileLink: (u: string | null | undefined) => string
+}) {
+  const canDelete = me?.id === comment.author_id || isOwnPost
+
+  return (
+    <div className="flex gap-2.5 group">
+      <Link href={profileLink(comment.author_username)} className="flex-shrink-0">
+        <div className={`${isReply ? 'h-7 w-7' : 'h-8 w-8'} rounded-full bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center overflow-hidden`}>
+          {comment.author_photo ? <AvatarImage src={comment.author_photo} alt={comment.author_name ?? ''} /> : <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{initials(comment.author_name)}</span>}
+        </div>
+      </Link>
+      <div className="min-w-0 flex-1">
+        <div className="bg-slate-100 dark:bg-white/5 rounded-2xl px-3.5 py-2">
+          <div className="flex items-center justify-between gap-2">
+            <Link href={profileLink(comment.author_username)} className="font-bold text-xs text-slate-900 dark:text-slate-100 hover:underline truncate">{comment.author_name || 'User'}</Link>
+            <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              {me && me.id !== comment.author_id && (
+                <button onClick={() => onReport(comment)} title="Report comment" className="text-slate-400 hover:text-amber-500">
+                  <Icon name="flag" className="text-[15px]" />
+                </button>
+              )}
+              {canDelete && (
+                <button onClick={() => onDelete(comment.id)} title="Delete comment" className="text-slate-400 hover:text-red-500">
+                  <Icon name="delete" className="text-[15px]" />
+                </button>
+              )}
+            </div>
+          </div>
+          <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line">{comment.content}</p>
+        </div>
+        <div className="flex items-center gap-3 mt-0.5 ml-1 text-[10px] text-slate-400">
+          <span>{relativeTime(comment.created_at)}</span>
+          {me && (
+            <button type="button" onClick={() => onReply(comment)} className="font-bold text-indigo-600 hover:underline dark:text-indigo-400">
+              Reply
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }
 
