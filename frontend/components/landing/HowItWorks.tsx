@@ -314,6 +314,11 @@ export default function HowItWorks() {
     setProgress(0)
   }
 
+  const handleMouseEnter = (i: number) => {
+    select(i)
+    setPaused(true)
+  }
+
   const current = steps[active]
 
   return (
@@ -337,7 +342,7 @@ export default function HowItWorks() {
                 key={s.n}
                 type="button"
                 onClick={() => select(i)}
-                onMouseEnter={() => { if (isActive) setPaused(true) }}
+                onMouseEnter={() => handleMouseEnter(i)}
                 onMouseLeave={() => setPaused(false)}
                 aria-current={isActive}
                 className={`w-full text-left rounded-2xl border p-3.5 sm:p-4 transition-all duration-300 ${
@@ -420,6 +425,8 @@ export default function HowItWorks() {
                 key={s.n}
                 type="button"
                 onClick={() => select(i)}
+                onMouseEnter={() => handleMouseEnter(i)}
+                onMouseLeave={() => setPaused(false)}
                 aria-label={`Go to step ${s.n}`}
                 className={`h-2 rounded-full transition-all duration-300 ${i === active ? `w-6 ${s.bar}` : 'w-2 bg-black/15 dark:bg-white/20 hover:bg-black/25'}`}
               />
