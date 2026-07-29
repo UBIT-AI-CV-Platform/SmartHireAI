@@ -108,7 +108,7 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
     const supabase = createClient()
     const { error } = await supabase.from('post_comments').delete().eq('id', id)
     if (!error) {
-      setComments((c) => (c ?? []).filter((x) => x.id !== id && x.parent_id !== id))
+      setComments((c) => (c ?? []).filter((x) => x.id !== id && (x as any).parent_id !== id))
       setCommentCount((n) => Math.max(n - 1, 0))
     }
   }
@@ -130,8 +130,8 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
 
   if (deleted || hidden) return null
 
-  const topComments = (comments ?? []).filter((c) => !c.parent_id)
-  const getReplies = (parentId: string) => (comments ?? []).filter((c) => c.parent_id === parentId)
+  const topComments = (comments ?? []).filter((c) => !(c as any).parent_id)
+  const getReplies = (parentId: string) => (comments ?? []).filter((c) => (c as any).parent_id === parentId)
 
   return (
     <article className="bg-white dark:bg-[#1c1c1e] rounded-3xl border border-slate-200/70 dark:border-white/10 shadow-sm overflow-hidden">
@@ -269,7 +269,6 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
         <div className="px-4 md:px-5 py-4 border-t border-slate-100 dark:border-white/5 space-y-4">
           {me && (
             <div className="space-y-2">
-              {/* 🔹 Replying To Banner */}
               {replyingTo && (
                 <div className="flex items-center justify-between rounded-xl bg-indigo-50/80 px-3 py-1.5 dark:bg-indigo-500/10 text-xs font-semibold text-indigo-600 dark:text-indigo-300">
                   <span>Replying to <strong className="font-bold">@{replyingTo.username}</strong></span>
@@ -314,7 +313,6 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
                     onDelete={(id) => deleteComment(id)}
                     profileLink={profileLink}
                   />
-                  {/* 🔹 Nested Replies List */}
                   {replies.length > 0 && (
                     <div className="ml-7 pl-3 border-l-2 border-indigo-500/20 dark:border-indigo-400/20 space-y-2">
                       {replies.map((reply) => (
