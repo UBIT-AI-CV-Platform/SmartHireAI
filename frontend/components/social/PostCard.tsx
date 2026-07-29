@@ -92,7 +92,7 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
         author_photo: me.photo,
         content: newComment.trim(),
         parent_id: replyingTo?.id ?? null,
-      })
+      } as any)
       .select('*')
       .single()
     if (!error && data) {
