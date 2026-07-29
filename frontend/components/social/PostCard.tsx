@@ -130,7 +130,10 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
 
   if (deleted || hidden) return null
 
-  const topComments = (comments ?? []).filter((c) => !(c as any).parent_id)
+  const topComments = (comments ?? []).filter((c) => {
+    const pid = (c as any).parent_id
+    return !pid || pid === null || pid === 'null' || pid === ''
+  })
   const getReplies = (parentId: string) => (comments ?? []).filter((c) => (c as any).parent_id === parentId)
 
   return (
@@ -390,13 +393,15 @@ function CommentItem({
           </div>
           <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line">{comment.content}</p>
         </div>
-        <div className="flex items-center gap-3 mt-0.5 ml-1 text-[10px] text-slate-400">
+        <div className="flex items-center gap-3 mt-1 ml-2 text-[11px] text-slate-400">
           <span>{relativeTime(comment.created_at)}</span>
-          {me && (
-            <button type="button" onClick={() => onReply(comment)} className="font-bold text-indigo-600 hover:underline dark:text-indigo-400">
-              Reply
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => onReply(comment)}
+            className="font-bold text-indigo-600 hover:underline dark:text-indigo-400 cursor-pointer"
+          >
+            Reply
+          </button>
         </div>
       </div>
     </div>
