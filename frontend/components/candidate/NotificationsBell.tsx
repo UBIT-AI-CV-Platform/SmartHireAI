@@ -54,16 +54,20 @@ export default function NotificationsBell({ basePath = '/candidate' }: { basePat
   useEffect(() => {
     const supabase = createClient()
     let id = ''
+    let cancelled = false
     let channel: ReturnType<typeof supabase.channel> | null = null
 
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return
+      if (cancelled || !user) return
       id = user.id
       setUid(user.id)
       fetchNotifs(user.id)
       // Realtime: refresh instantly when a notification is inserted/updated for me
+      // Unique channel name per mount so React StrictMode's double-invoke doesn't
+      // reuse an already-subscribed channel (which throws "cannot add callbacks
+      // after subscribe()"). RLS still scopes what each user receives.
       channel = supabase
-        .channel(`notifications:${user.id}`)
+        .channel(`notifications:${user.id}:${Math.random().toString(36).slice(2)}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `profile_id=eq.${user.id}` }, () => fetchNotifs(user.id))
         .subscribe()
     })
@@ -74,10 +78,11 @@ export default function NotificationsBell({ basePath = '/candidate' }: { basePat
     window.addEventListener('focus', onFocus)
     window.addEventListener('shai:refresh-notifs', onRefresh)
     return () => {
+      cancelled = true
       window.removeEventListener('focus', onFocus)
       window.removeEventListener('shai:refresh-notifs', onRefresh)
       clearInterval(interval)
-      if (channel) channel.unsubscribe()
+      if (channel) supabase.removeChannel(channel)
     }
   }, [])
 

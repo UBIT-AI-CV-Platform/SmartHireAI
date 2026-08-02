@@ -29,6 +29,23 @@ export default function SelectRolePage() {
         router.replace(data.role === 'recruiter' ? '/recruiter' : '/candidate')
         return
       }
+
+      // The email signup form already collected a role and stored it on the auth
+      // user. Never ask a second time - adopt that choice and move on. Only a
+      // fresh OAuth user (no role in metadata) actually needs this screen.
+      const signupRole = user.user_metadata?.role
+      if (signupRole === 'candidate' || signupRole === 'recruiter') {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ role: signupRole, role_selected: true })
+          .eq('id', user.id)
+        if (!error) {
+          router.replace(signupRole === 'recruiter' ? '/recruiter' : '/candidate')
+          router.refresh()
+          return
+        }
+      }
+
       setChecking(false)
     })
   }, [router])

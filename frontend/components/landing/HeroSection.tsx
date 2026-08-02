@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Icon } from '@/components/ui/icon'
 
 const PHRASES = ['Get Matched', 'Get Noticed', 'Get Hired', 'Get Ahead']
@@ -130,14 +130,38 @@ function CircleVisual({ screen }: { screen: number }) {
   )
 }
 
+type RoleKey = 'candidate' | 'recruiter'
+
+const ROLES: { key: RoleKey; label: string; icon: string; blurb: string }[] = [
+  { key: 'candidate', label: 'Candidate', icon: 'person', blurb: 'Find my next job' },
+  { key: 'recruiter', label: 'Recruiter', icon: 'work', blurb: 'Hire top talent' },
+]
+
 export default function HeroSection() {
   const [wi, setWi] = useState(0)
-  const [role, setRole] = useState<'candidate' | 'recruiter'>('candidate')
+  const [role, setRole] = useState<RoleKey>('candidate')
+  const [roleOpen, setRoleOpen] = useState(false)
+  const roleRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const id = setInterval(() => setWi((w) => (w + 1) % PHRASES.length), 2600)
     return () => clearInterval(id)
   }, [])
+
+  // Close the role dropdown on an outside click or Escape
+  useEffect(() => {
+    if (!roleOpen) return
+    const onDown = (e: MouseEvent) => {
+      if (roleRef.current && !roleRef.current.contains(e.target as Node)) setRoleOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setRoleOpen(false) }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [roleOpen])
 
   const isCand = role === 'candidate'
 
@@ -173,23 +197,55 @@ export default function HeroSection() {
             AI-optimized CVs, real job matches, mock interviews, and a professional network that gets you noticed - the whole hiring journey in one place.
           </p>
 
-          {/* Action bar with a role toggle. Below `sm` the three cells stack into
+          {/* Action bar with a role dropdown. Below `sm` the three cells stack into
               a card so nothing has to truncate; from `sm` up it's the one-line bar. */}
           <div style={{ animationDelay: '0.35s' }} className="auth-fade-up mt-6 flex max-w-xl flex-col gap-1.5 rounded-2xl border border-black/5 bg-white/90 p-2 shadow-xl backdrop-blur dark:border-white/10 dark:bg-[#232325]/90 sm:mt-8 sm:flex-row sm:items-center">
-            <button
-              type="button"
-              onClick={() => setRole(isCand ? 'recruiter' : 'candidate')}
-              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.06] sm:w-auto"
-            >
-              <Icon name={isCand ? 'person' : 'work'} solid className="shrink-0 text-xl text-indigo-500" />
-              <div>
-                <div className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">I&apos;m a</div>
-                <div className="flex items-center gap-0.5 text-sm font-black text-on-surface">
-                  {isCand ? 'Candidate' : 'Recruiter'}
-                  <Icon name="expand_more" className="text-base text-on-surface-variant" />
+            <div ref={roleRef} className="relative w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => setRoleOpen((o) => !o)}
+                aria-haspopup="listbox"
+                aria-expanded={roleOpen}
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.06] sm:w-auto"
+              >
+                <Icon name={isCand ? 'person' : 'work'} solid className="shrink-0 text-xl text-indigo-500" />
+                <div>
+                  <div className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">I&apos;m a</div>
+                  <div className="flex items-center gap-0.5 text-sm font-black text-on-surface">
+                    {isCand ? 'Candidate' : 'Recruiter'}
+                    <Icon
+                      name="expand_more"
+                      className={`text-base text-on-surface-variant transition-transform ${roleOpen ? 'rotate-180' : ''}`}
+                    />
+                  </div>
                 </div>
-              </div>
-            </button>
+              </button>
+
+              {roleOpen && (
+                <div
+                  role="listbox"
+                  className="absolute left-0 top-full z-30 mt-2 w-full min-w-[13rem] overflow-hidden rounded-xl border border-black/5 bg-white shadow-2xl dark:border-white/10 dark:bg-[#232325] sm:w-56"
+                >
+                  {ROLES.map((r) => (
+                    <button
+                      key={r.key}
+                      type="button"
+                      role="option"
+                      aria-selected={role === r.key}
+                      onClick={() => { setRole(r.key); setRoleOpen(false) }}
+                      className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+                    >
+                      <Icon name={r.icon} solid className="shrink-0 text-xl text-indigo-500" />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-black text-on-surface">{r.label}</div>
+                        <div className="truncate text-[11px] font-medium text-on-surface-variant">{r.blurb}</div>
+                      </div>
+                      {role === r.key && <Icon name="check" className="shrink-0 text-base text-indigo-500" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <div className="h-px w-full shrink-0 bg-black/10 dark:bg-white/10 sm:h-9 sm:w-px" />
 
@@ -211,7 +267,7 @@ export default function HeroSection() {
           </div>
 
           {/* trust row */}
-          <div style={{ animationDelay: '0.45s' }} className="auth-fade-up mt-6 flex items-center gap-3">
+          <div style={{ animationDelay: '0.45s' }} className="auth-fade-up mt-30 flex items-center gap-3">
             <div className="flex -space-x-2">
               {['from-pink-400 to-rose-500', 'from-sky-400 to-blue-500', 'from-amber-400 to-orange-500', 'from-emerald-400 to-teal-500'].map((g, i) => (
                 <div key={i} className={`h-7 w-7 rounded-full border-2 border-white bg-gradient-to-br dark:border-[#1c1c1e] ${g}`} />
