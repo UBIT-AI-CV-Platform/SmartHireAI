@@ -74,6 +74,44 @@ export default function CVGeneratorPage() {
   const [error, setError] = useState<string | null>(null)
   const [cv, setCv] = useState<CV | null>(null)
 
+  // Upload an existing CV (PDF / Word / txt) instead of generating one.
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const uploadCV = async (file: File) => {
+    setUploadError(null)
+    setUploading(true)
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '')
+        reader.onerror = () => reject(new Error('Could not read the file.'))
+        reader.readAsDataURL(file)
+      })
+      const res = await fetch('/api/upload-cv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: file.name, mimeType: file.type, fileData: base64, targetRole }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setUploadError(data.error || 'Upload failed. Please try again.'); return }
+      setCv(data.cv)
+      setCvId(data.id ?? null)
+      setEditing(false)
+    } catch {
+      setUploadError('Could not read the file. Please try again.')
+    } finally {
+      setUploading(false)
+    }
+  }
+  const onFileChosen = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    if (file.size > 6 * 1024 * 1024) { setUploadError('That file is too large. Please upload a CV under ~6 MB.'); return }
+    uploadCV(file)
+  }
+
   // Documents history (CVs + cover letters)
   const [showHistory, setShowHistory] = useState(false)
   const [history, setHistory] = useState<CVHistoryRow[]>([])
@@ -467,7 +505,7 @@ export default function CVGeneratorPage() {
           <div className="w-full md:w-auto">
             <button
               onClick={generate}
-              disabled={loading}
+              disabled={loading || uploading}
               className="h-[56px] w-full md:w-auto justify-center px-10 rounded-2xl premium-gradient text-white font-bold flex items-center gap-2 shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:hover:scale-100"
             >
               <Icon name={loading ? 'hourglass_top' : 'magic_button'} />
@@ -505,6 +543,28 @@ export default function CVGeneratorPage() {
             placeholder="Paste a job posting here. The AI will tailor your CV to it, score the match, and list missing keywords."
           />
         </div>
+
+        {/* Upload an existing CV instead of generating */}
+        <div className="mt-5 pt-5 border-t border-surface-container flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-1 flex items-center gap-1.5">
+              <Icon name="attach_file" className="text-primary text-base" />Or upload an existing CV
+            </p>
+            <p className="text-xs text-on-surface-variant">PDF, Word, or text. It's analyzed and converted to the same editable format, and its skills are used for job matching.</p>
+          </div>
+          <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.rtf,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" className="hidden" onChange={onFileChosen} />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading || loading}
+            className="h-[50px] w-full sm:w-auto justify-center px-6 rounded-2xl border-2 border-dashed border-primary/40 text-primary font-bold text-sm flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all disabled:opacity-60 disabled:hover:bg-transparent"
+          >
+            <Icon name={uploading ? 'hourglass_top' : 'attach_file'} />
+            {uploading ? 'Analyzing...' : 'Upload CV'}
+          </button>
+        </div>
+        {uploadError && (
+          <p className="mt-3 text-xs text-red-500 font-medium">{uploadError}</p>
+        )}
       </section>
 
       {/* Customize (layout / photo / colour / font / sections) */}
@@ -606,14 +666,14 @@ export default function CVGeneratorPage() {
         {/* CV preview */}
         <div className="col-span-12 lg:col-span-8 order-1">
           <div ref={previewRef} style={{ fontFamily: FONTS[font] }} className="bg-white rounded-[2rem] cv-preview-shadow overflow-hidden lg:min-h-[800px] flex flex-col border border-surface-container">
-            {loading || restoring ? (
+            {loading || uploading || restoring ? (
               <div className="flex-1 flex flex-col items-center justify-center gap-4 p-16 min-h-[600px]">
                 <div className="flex gap-2">
                   <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce"></div>
                   <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></div>
                   <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></div>
                 </div>
-                <p className="text-xs font-black text-primary tracking-widest uppercase">{loading ? 'AI is crafting your CV...' : 'Loading your CV...'}</p>
+                <p className="text-xs font-black text-primary tracking-widest uppercase">{loading ? 'AI is crafting your CV...' : uploading ? 'Analyzing your uploaded CV...' : 'Loading your CV...'}</p>
               </div>
             ) : !cv ? (
               <div className="flex-1 flex flex-col items-center justify-center gap-3 p-16 min-h-[600px] text-center">
@@ -621,7 +681,7 @@ export default function CVGeneratorPage() {
                   <Icon name="description" className="text-3xl" />
                 </div>
                 <h3 className="text-lg font-bold text-on-surface">Your CV will appear here</h3>
-                <p className="text-sm text-on-surface-variant max-w-sm">Enter a target role, set your options, and click <span className="font-semibold text-primary">Generate CV</span>. Make sure your profile is filled in first.</p>
+                <p className="text-sm text-on-surface-variant max-w-sm">Enter a target role and click <span className="font-semibold text-primary">Generate CV</span>, or upload your existing CV. Make sure your profile is filled in first.</p>
                 <Link href="/candidate/build-profile" className="mt-2 text-sm font-bold text-primary hover:underline">Go to Build Profile →</Link>
               </div>
             ) : (
@@ -770,7 +830,7 @@ export default function CVGeneratorPage() {
                 <Icon name="person" className="text-lg" />
                 Edit Profile
               </Link>
-              <button onClick={generate} disabled={loading} className="flex-1 px-4 py-3.5 rounded-2xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-on-surface font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all disabled:opacity-60">
+              <button onClick={generate} disabled={loading || uploading} className="flex-1 px-4 py-3.5 rounded-2xl bg-white dark:bg-[#2c2c2e] border border-surface-container text-on-surface font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all disabled:opacity-60">
                 <Icon name="refresh" className="text-lg" />
                 Regenerate
               </button>

@@ -15,6 +15,10 @@ import { Icon } from '@/components/ui/icon'
 
 const PAGE = 20
 
+// How many people to show in the Following / suggestions lists before a
+// "Show more" expander kicks in.
+const PREVIEW_COUNT = 5
+
 // `networkHref` is kept in the props for backward compat with callers, but the
 // following empty state now loads suggestions in-place instead of linking away.
 export default function Feed({ embedded = false }: { networkHref: string; embedded?: boolean }) {
@@ -40,6 +44,10 @@ export default function Feed({ embedded = false }: { networkHref: string; embedd
   // Following tab (no posts there; those live on Discover/Trending / profiles).
   const [followingProfiles, setFollowingProfiles] = useState<PublicProfile[]>([])
 
+  // Expand/collapse for the "latest 5" previews in the Following tab.
+  const [showAllFollows, setShowAllFollows] = useState(false)
+  const [showAllSuggestions, setShowAllSuggestions] = useState(false)
+
   // bootstrap: me + who I follow
   useEffect(() => {
     const supabase = createClient()
@@ -48,7 +56,7 @@ export default function Feed({ embedded = false }: { networkHref: string; embedd
       if (!user) return
       const [{ data: prof }, { data: follows }] = await Promise.all([
         supabase.from('profiles').select('full_name, username, photo_url, role').eq('id', user.id).maybeSingle(),
-        supabase.from('follows').select('following_id').eq('follower_id', user.id),
+        supabase.from('follows').select('following_id').eq('follower_id', user.id).order('created_at', { ascending: false }),
       ])
       setMe({
         id: user.id,
@@ -111,9 +119,8 @@ export default function Feed({ embedded = false }: { networkHref: string; embedd
     const handler = (e: Event) => {
       const { targetId, following: isNow } = (e as CustomEvent).detail as { targetId: string; following: boolean }
       setFollowingIds((ids) => {
-        const set = new Set(ids)
-        if (isNow) set.add(targetId); else set.delete(targetId)
-        return Array.from(set)
+        if (isNow) return [targetId, ...ids.filter((id) => id !== targetId)] // newest first
+        return ids.filter((id) => id !== targetId)
       })
     }
     window.addEventListener('shai:follow-changed', handler)
@@ -218,7 +225,12 @@ export default function Feed({ embedded = false }: { networkHref: string; embedd
           .from('public_profiles')
           .select('id, username, full_name, headline, desired_role, role, photo_url, company_name, followers_count')
           .in('id', followingIds)
-        if (!cancelled) setFollowingProfiles(((data ?? []) as PublicProfile[]))
+        // `.in()` does not preserve order - sort back to `followingIds` order so
+        // the list always shows the most recently followed people first.
+        const ordered = ((data ?? []) as PublicProfile[]).slice().sort(
+          (a, b) => followingIds.indexOf(a.id ?? '') - followingIds.indexOf(b.id ?? '')
+        )
+        if (!cancelled) setFollowingProfiles(ordered)
       } catch { /* ignore */ }
     })()
     return () => { cancelled = true }
@@ -298,11 +310,22 @@ export default function Feed({ embedded = false }: { networkHref: string; embedd
                 <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">People you follow will show up here. Open a profile to see their posts.</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {followingProfiles.map((p) => (
-                  <FollowingRow key={p.id} person={p} viewerId={me.id} />
-                ))}
-              </div>
+              <>
+                <div className="space-y-3">
+                  {followingProfiles.slice(0, showAllFollows ? followingProfiles.length : PREVIEW_COUNT).map((p) => (
+                    <FollowingRow key={p.id} person={p} viewerId={me.id} />
+                  ))}
+                </div>
+                {followingProfiles.length > PREVIEW_COUNT && (
+                  <button
+                    onClick={() => setShowAllFollows((v) => !v)}
+                    className="mt-3 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 transition-colors"
+                  >
+                    <Icon name="expand_more" className={`text-base transition-transform ${showAllFollows ? 'rotate-180' : ''}`} />
+                    {showAllFollows ? 'Show less' : `Show more (${followingProfiles.length - PREVIEW_COUNT})`}
+                  </button>
+                )}
+              </>
             )}
           </section>
 
@@ -333,11 +356,22 @@ export default function Feed({ embedded = false }: { networkHref: string; embedd
                 <p className="text-xs text-slate-400">No one to suggest right now. Check back later.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {suggestions.map((p) => (
-                  <PersonCard key={p.id} person={p} viewerId={me.id} isFollowing={false} />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {suggestions.slice(0, showAllSuggestions ? suggestions.length : PREVIEW_COUNT).map((p) => (
+                    <PersonCard key={p.id} person={p} viewerId={me.id} isFollowing={false} />
+                  ))}
+                </div>
+                {suggestions.length > PREVIEW_COUNT && (
+                  <button
+                    onClick={() => setShowAllSuggestions((v) => !v)}
+                    className="mt-3 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 transition-colors"
+                  >
+                    <Icon name="expand_more" className={`text-base transition-transform ${showAllSuggestions ? 'rotate-180' : ''}`} />
+                    {showAllSuggestions ? 'Show less' : `Show more (${suggestions.length - PREVIEW_COUNT})`}
+                  </button>
+                )}
+              </>
             )}
           </section>
         </div>
