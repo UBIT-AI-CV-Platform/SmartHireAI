@@ -3,6 +3,7 @@
 import LegalLink from '@/components/shared/LegalModal'
 import { Icon } from '@/components/ui/icon'
 import BrandLogo from '@/components/shared/BrandLogo'
+import Link from 'next/link'
 
 export default function Footer() {
   return (
@@ -52,14 +53,14 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a className="hover:text-indigo-400" href="/auth">
+                <Link className="hover:text-indigo-400" href="/auth">
                   For Candidates
-                </a>
+                </Link>
               </li>
               <li>
-                <a className="hover:text-indigo-400" href="/auth">
+                <Link className="hover:text-indigo-400" href="/auth">
                   For Recruiters
-                </a>
+                </Link>
               </li>
               <li>
                 <a className="hover:text-indigo-400" href="#faq" onClick={(e) => {
@@ -79,9 +80,9 @@ export default function Footer() {
             </h4>
             <ul className="space-y-1.5 sm:space-y-2 text-[11px] sm:text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">
               <li>
-                <a className="hover:text-indigo-400" href="/#about">
+                <Link className="hover:text-indigo-400" href="/#about">
                   About Us
-                </a>
+                </Link>
               </li>
               <li>
                 <a
@@ -109,12 +110,12 @@ export default function Footer() {
           {/* CTA Buttons */}
           <div className="lg:col-span-4 flex flex-col items-start lg:items-end h-full justify-center">
             <div className="flex flex-col gap-2 sm:gap-3 w-full max-w-xs items-end justify-center">
-              <a href="/auth" className="premium-gradient text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm shadow-xl border-2 border-transparent transition-all hover:bg-none hover:bg-[#6366f1] hover:border-[#6366f1] hover:-translate-y-1 text-center w-full block">
+              <Link href="/auth" className="premium-gradient text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm shadow-xl border-2 border-transparent transition-all hover:bg-none hover:bg-[#6366f1] hover:border-[#6366f1] hover:-translate-y-1 text-center w-full block">
                 Sign Up Free
-              </a>
-              <a href="/auth" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-indigo-500/50 transition-all text-center w-full block">
+              </Link>
+              <Link href="/auth" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-indigo-500/50 transition-all text-center w-full block">
                 Login
-              </a>
+              </Link>
             </div>
           </div>
         </div>

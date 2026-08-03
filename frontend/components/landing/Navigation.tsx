@@ -6,6 +6,7 @@ import ThemeToggle from '@/components/shared/ThemeToggle'
 import { Icon } from '@/components/ui/icon'
 import { AvatarImage } from '@/components/ui/optimized-image'
 import BrandLogo from '@/components/shared/BrandLogo'
+import Link from 'next/link'
 
 /** Who the landing nav should greet, once we know. */
 type NavUser = {
@@ -115,9 +116,9 @@ export default function Navigation() {
       <div className="relative w-full px-4 sm:px-6 lg:px-10">
         <div className="flex items-center justify-between h-16 md:h-17">
           {/* Left: logo */}
-          <a href="/" className="shrink-0" aria-label="SmartHire AI home">
+          <Link href="/" className="shrink-0" aria-label="SmartHire AI home">
             <BrandLogo size={30} />
-          </a>
+          </Link>
 
           {/* Center: nav options. Only from xl - at lg the six links cram into the
               centred column and wrap onto two lines, so tablets get the hamburger. */}
@@ -143,7 +144,7 @@ export default function Navigation() {
               // Same footprint as the two real states, so nothing jumps when it resolves.
               <div className="hidden sm:block h-10 w-32 rounded-full bg-black/5 dark:bg-white/10 animate-pulse" />
             ) : navUser ? (
-              <a
+              <Link
                 href={navUser.href}
                 title={`Go to your ${navUser.label === 'Recruiter' ? 'recruiter' : 'candidate'} dashboard`}
                 className="hidden sm:flex items-center gap-2.5 rounded-full border border-black/5 bg-white/70 py-1 pl-1 pr-4 backdrop-blur transition-colors hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
@@ -161,14 +162,14 @@ export default function Navigation() {
                   </span>
                   <span className="block text-[10px] font-medium text-slate-400">{navUser.label}</span>
                 </span>
-              </a>
+              </Link>
             ) : (
-              <a
+              <Link
                 href="/auth"
                 className="hidden sm:inline-block premium-gradient text-white px-5 md:px-6 py-2 rounded-full text-sm font-semibold shadow-lg shadow-primary/20 border-2 border-transparent transition-all hover:bg-none hover:bg-[#6366f1] hover:border-[#6366f1]"
               >
                 Sign Up
-              </a>
+              </Link>
             )}
 
             {/* Mobile toggle */}
@@ -204,7 +205,7 @@ export default function Navigation() {
             <div className="w-full h-px bg-slate-100 dark:bg-white/10 my-2" />
 
             {navUser ? (
-              <a
+              <Link
                 href={navUser.href}
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex w-full max-w-xs items-center gap-3 rounded-2xl border border-black/5 bg-black/[0.02] p-2.5 text-left transition-colors hover:bg-black/[0.04] dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
@@ -221,14 +222,14 @@ export default function Navigation() {
                   <span className="block text-[11px] font-medium text-slate-400">{navUser.label}</span>
                 </span>
                 <Icon name="chevron_right" className="shrink-0 text-lg text-slate-400" />
-              </a>
+              </Link>
             ) : (
-              <a
+              <Link
                 href="/auth"
                 className="w-full max-w-xs premium-gradient text-white py-2.5 rounded-full font-semibold shadow-lg shadow-primary/20 transition-all border-2 border-transparent hover:bg-none hover:bg-[#6366f1] hover:border-[#6366f1] text-center text-sm"
               >
                 Sign Up
-              </a>
+              </Link>
             )}
           </div>
         </div>
