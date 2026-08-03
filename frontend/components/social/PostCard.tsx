@@ -1,13 +1,13 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { createClient } from '@/lib/supabase/client'
 import { AvatarImage, ContentImage } from '@/components/ui/optimized-image'
 import { useProfileLink } from '@/lib/useProfileLink'
-import { initials, relativeTime, roleLabel, type Post, type PostComment } from '@/lib/social'
+import { hiddenPostIds, initials, relativeTime, roleLabel, setPostHidden, type Post, type PostComment } from '@/lib/social'
 import type { MeSnapshot } from './CreatePost'
 import SharePostModal from './SharePostModal'
 import RepostModal from './RepostModal'
@@ -23,10 +23,12 @@ interface PostCardProps {
   defaultExpanded?: boolean
   onDeleted?: (id: string) => void
   onReposted?: (p: Post) => void
+  onHidden?: (id: string) => void
 }
 
-export default function PostCard({ post, me, initialLiked, defaultExpanded = false, onDeleted, onReposted }: PostCardProps) {
+export default function PostCard({ post, me, initialLiked, defaultExpanded = false, onDeleted, onReposted, onHidden }: PostCardProps) {
   const [liked, setLiked] = useState(initialLiked)
+  const [likePending, setLikePending] = useState(false)
   const [likeCount, setLikeCount] = useState(post.like_count)
   const [commentCount, setCommentCount] = useState(post.comment_count)
   const [expanded, setExpanded] = useState(defaultExpanded)
@@ -41,6 +43,7 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
   const [showRepost, setShowRepost] = useState(false)
   const [deleted, setDeleted] = useState(false)
   const [hidden, setHidden] = useState(false)
+  const [hideDismissed, setHideDismissed] = useState(false)
   const [report, setReport] = useState<{ type: 'post' | 'comment'; id: string; label?: string } | null>(null)
   const [content, setContent] = useState(post.content)
   const [showEdit, setShowEdit] = useState(false)
@@ -52,16 +55,46 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
   const isOwn = me?.id === post.author_id
   const repost: Snapshot | null = post.repost_of && post.repost_snapshot ? (post.repost_snapshot as Snapshot) : null
 
+  // Callers resolve "did I like this?" in a second round-trip that lands after
+  // this card has already mounted, so the initial value has to be adopted when
+  // it arrives - otherwise an already-liked post renders as unliked and the
+  // first tap tries to insert a duplicate like.
+  useEffect(() => { setLiked(initialLiked) }, [initialLiked])
+
+  // Adopt a hide the user made in an earlier session (e.g. on a profile page,
+  // where the feed-level filter does not apply).
+  useEffect(() => {
+    if (me && hiddenPostIds(me.id).includes(post.id)) setHidden(true)
+  }, [me, post.id])
+
+  const hidePost = () => {
+    setMenuOpen(false)
+    setHidden(true)
+    setPostHidden(me?.id, post.id, true)
+    onHidden?.(post.id)
+  }
+
+  const unhidePost = () => {
+    setHidden(false)
+    setPostHidden(me?.id, post.id, false)
+  }
+
   const toggleLike = async () => {
-    if (!me) return
+    if (!me || likePending) return
     const next = !liked
+    setLikePending(true)
     setLiked(next)
-    setLikeCount((c) => c + (next ? 1 : -1))
+    setLikeCount((c) => Math.max(c + (next ? 1 : -1), 0))
     const supabase = createClient()
+    // upsert + ignoreDuplicates keeps a re-like idempotent: no row is written,
+    // so the like_count trigger cannot double-count.
     const { error } = next
-      ? await supabase.from('post_likes').insert({ post_id: post.id, user_id: me.id })
+      ? await supabase
+          .from('post_likes')
+          .upsert({ post_id: post.id, user_id: me.id }, { onConflict: 'post_id,user_id', ignoreDuplicates: true })
       : await supabase.from('post_likes').delete().eq('post_id', post.id).eq('user_id', me.id)
-    if (error) { setLiked(!next); setLikeCount((c) => c + (next ? -1 : 1)) }
+    setLikePending(false)
+    if (error) { setLiked(!next); setLikeCount((c) => Math.max(c + (next ? -1 : 1), 0)) }
   }
 
   const loadComments = async () => {
@@ -128,7 +161,29 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
     if (!error) { setDeleted(true); onDeleted?.(post.id) }
   }
 
-  if (deleted || hidden) return null
+  if (deleted) return null
+
+  // A hidden post collapses to an undo strip rather than vanishing with no
+  // trace; dismissing that strip removes it for the rest of the session.
+  if (hidden) {
+    if (hideDismissed) return null
+    return (
+      <div className="flex items-center justify-between gap-3 rounded-3xl border border-slate-200/70 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-4 md:px-5 py-3.5">
+        <p className="text-sm text-slate-500 dark:text-slate-400 min-w-0">
+          <Icon name="visibility_off" className="text-[17px] align-middle mr-1.5" />
+          Post hidden. You&apos;ll see fewer posts like this.
+        </p>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <button onClick={unhidePost} className="px-3 py-1.5 rounded-full text-sm font-semibold text-primary hover:bg-primary/10">
+            Undo
+          </button>
+          <button onClick={() => setHideDismissed(true)} aria-label="Dismiss" className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-200/70 dark:hover:bg-white/10">
+            <Icon name="close" className="text-[18px]" />
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   const topComments = (comments ?? []).filter((c) => {
     const pid = (c as any).parent_id
@@ -181,7 +236,7 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
                       <button onClick={() => { setMenuOpen(false); setReport({ type: 'post', id: post.id, label: post.author_name || 'this post' }) }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10">
                         <Icon name="flag" className="text-[18px]" /> Report post
                       </button>
-                      <button onClick={() => { setMenuOpen(false); setHidden(true) }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10">
+                      <button onClick={hidePost} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10">
                         <Icon name="visibility_off" className="text-[18px]" /> Hide post
                       </button>
                     </>
@@ -239,7 +294,7 @@ export default function PostCard({ post, me, initialLiked, defaultExpanded = fal
 
       {/* Action bar */}
       <div className="flex items-center gap-1 px-2 md:px-3 py-1.5 mt-1 border-t border-slate-100 dark:border-white/5">
-        <ActionBtn active={liked} onClick={toggleLike} icon="favorite" label="Like" activeCls="bg-gradient-to-r from-[#7f1d1d] via-[#b91c1c] to-[#e11d48] bg-clip-text text-transparent" />
+        <ActionBtn active={liked} onClick={toggleLike} icon="favorite" label="Like" activeCls="bg-gradient-to-r from-[#7f1d1d] via-[#b91c1c] to-[#e11d48] bg-clip-text text-transparent" activeIconCls="text-[#e11d48] dark:text-rose-400" />
         <ActionBtn onClick={toggleComments} icon="chat_bubble" label="Comment" />
         <ActionBtn onClick={() => me && setShowRepost(true)} icon="repeat" label="Repost" />
         <div className="flex-1 relative">
@@ -447,14 +502,14 @@ function EditPostModal({ postId, initial, onClose, onSaved }: { postId: string; 
   )
 }
 
-function ActionBtn({ icon, label, onClick, active = false, activeCls = 'text-primary' }: { icon: string; label: string; onClick: () => void; active?: boolean; activeCls?: string }) {
+function ActionBtn({ icon, label, onClick, active = false, activeCls = 'text-primary', activeIconCls }: { icon: string; label: string; onClick: () => void; active?: boolean; activeCls?: string; activeIconCls?: string }) {
   return (
     <button
       onClick={onClick}
       className="flex-1 inline-flex items-center justify-center py-2 rounded-xl text-sm font-semibold transition-colors hover:bg-slate-100 dark:hover:bg-white/10"
     >
       <span className={`inline-flex items-center gap-1.5 ${active ? activeCls : 'text-slate-500 dark:text-slate-400'}`}>
-        <Icon name={icon} className="text-[19px]" solid={active} />
+        <Icon name={icon} className={`text-[19px] ${active && activeIconCls ? activeIconCls : ''}`} solid={active} />
         {label}
       </span>
     </button>

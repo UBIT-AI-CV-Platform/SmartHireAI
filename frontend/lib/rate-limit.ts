@@ -20,6 +20,7 @@ import type { Database } from '@/lib/supabase/database.types'
 export const LIMITS = {
   // Gemini-backed routes - these cost money and take seconds, so keep them tight.
   'generate-cv': { limit: 10, windowSeconds: 60 * 10 },
+  'upload-cv': { limit: 10, windowSeconds: 60 * 10 },
   'generate-cover-letter': { limit: 10, windowSeconds: 60 * 10 },
   'screen-applicants': { limit: 10, windowSeconds: 60 * 10 },
   'interview-kit': { limit: 15, windowSeconds: 60 * 10 },

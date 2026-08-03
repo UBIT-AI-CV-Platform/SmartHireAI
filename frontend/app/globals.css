@@ -45,6 +45,16 @@ html {
   font-family: var(--font-display);
 }
 
+/* Hide scrollbars on horizontal strips (e.g. the Following avatar row) while
+   keeping them scrollable via touch / shift+wheel. */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }

@@ -33,7 +33,7 @@ export default function PersonCard({ person, viewerId, isFollowing, onFollowChan
 
       <Link href={href} onClick={onNavigate} className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <p className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">{displayName(person)}</p>
+          <p className="font-bold text-sm text-slate-900 dark:text-slate-100 leading-snug line-clamp-2">{displayName(person)}</p>
           <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
             person.role === 'recruiter'
               ? 'bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300'

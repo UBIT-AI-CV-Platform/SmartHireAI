@@ -47,3 +47,40 @@ export function roleLabel(role?: string | null): string {
 export function displayName(p: Partial<PublicProfile>): string {
   return p.full_name?.trim() || (p.username ? '@' + p.username : 'SmartHire user')
 }
+
+/* ── Hidden posts ────────────────────────────────────────────────────────────
+   "Hide post" is a local, per-user preference - there is no server-side table
+   for it - so it lives in localStorage keyed by user id. Without this a hidden
+   post came straight back on the next feed load or tab switch. */
+
+const HIDDEN_KEY = (userId: string) => `shai:hidden-posts:${userId}`
+
+export function hiddenPostIds(userId?: string | null): string[] {
+  if (!userId || typeof window === 'undefined') return []
+  try {
+    const raw = window.localStorage.getItem(HIDDEN_KEY(userId))
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === 'string') : []
+  } catch { return [] }
+}
+
+/** Hide (or un-hide) a post for this user. */
+export function setPostHidden(userId: string | null | undefined, postId: string, hidden: boolean): void {
+  if (!userId || typeof window === 'undefined') return
+  const next = new Set(hiddenPostIds(userId))
+  if (hidden) next.add(postId); else next.delete(postId)
+  try {
+    window.localStorage.setItem(HIDDEN_KEY(userId), JSON.stringify(Array.from(next)))
+  } catch { /* quota / private mode - the in-session state still applies */ }
+}
+
+/** Crude markdown → plain text, for snippets in compact lists (e.g. hidden posts). */
+export function plainText(md?: string | null): string {
+  if (!md) return ''
+  return md
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/[#*`>_~]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}

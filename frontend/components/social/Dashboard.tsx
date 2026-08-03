@@ -29,8 +29,10 @@ export default function Dashboard({ role }: { role: Role }) {
           <Feed networkHref={base} embedded />
         </div>
 
-        {/* RIGHT ~40% - profile + details (top-aligned with the search) */}
-        <div className="lg:col-span-2 space-y-4">
+        {/* RIGHT ~40% - profile + details (top-aligned with the search).
+            Sticks below the fixed 4rem header instead of scrolling with the
+            feed; scrolls internally only when the rail outgrows the viewport. */}
+        <div className="lg:col-span-2 space-y-4 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pb-2">
           <ProfileMiniCard base={base} />
           {role === 'candidate' ? <CandidateRail /> : <RecruiterRail />}
           <WhoToFollow />
