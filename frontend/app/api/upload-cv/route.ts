@@ -209,16 +209,44 @@ export async function POST(request: Request) {
   } else if (mime === 'application/pdf') {
     parts = [{ inlineData: { mimeType: mime, data: fileData } }, { text: userPrompt }]
   } else {
-    const form = new FormData()
-    form.append('file', new Blob([bytes], { type: mime }), 'resume')
-    form.append('metadata', JSON.stringify({ file: { display_name: 'resume', displayName: 'resume' } }))
-    const upRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files`, {
+    // The Gemini Files API does NOT accept a plain multipart/form-data POST.
+    // It requires the two-step "resumable" upload protocol:
+    //   1) POST to start the upload and get an upload URL back in a response header
+    //   2) PUT the raw bytes to that upload URL with upload+finalize commands
+    // https://ai.google.dev/gemini-api/docs/files
+    const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files`, {
       method: 'POST',
-      headers: { 'x-goog-api-key': apiKey },
-      body: form,
+      headers: {
+        'x-goog-api-key': apiKey,
+        'X-Goog-Upload-Protocol': 'resumable',
+        'X-Goog-Upload-Command': 'start',
+        'X-Goog-Upload-Header-Content-Length': String(bytes.length),
+        'X-Goog-Upload-Header-Content-Type': mime,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ file: { display_name: 'resume' } }),
+    })
+    if (!startRes.ok) {
+      console.error('Gemini Files upload (start) error:', (await startRes.text()).slice(0, 400))
+      return NextResponse.json({ error: 'Could not process that file format. Please try a PDF.' }, { status: 422 })
+    }
+    const uploadUrl = startRes.headers.get('x-goog-upload-url')
+    if (!uploadUrl) {
+      console.error('Gemini Files upload (start) error: missing x-goog-upload-url header')
+      return NextResponse.json({ error: 'Could not process that file format. Please try a PDF.' }, { status: 422 })
+    }
+
+    const upRes = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Length': String(bytes.length),
+        'X-Goog-Upload-Offset': '0',
+        'X-Goog-Upload-Command': 'upload, finalize',
+      },
+      body: bytes,
     })
     if (!upRes.ok) {
-      console.error('Gemini Files upload error:', (await upRes.text()).slice(0, 400))
+      console.error('Gemini Files upload (bytes) error:', (await upRes.text()).slice(0, 400))
       return NextResponse.json({ error: 'Could not process that file format. Please try a PDF.' }, { status: 422 })
     }
     const upData = await upRes.json()
@@ -226,11 +254,17 @@ export async function POST(request: Request) {
     if (!file?.uri) return NextResponse.json({ error: 'Could not process that file. Please try again.' }, { status: 502 })
 
     // Wait for the uploaded file to finish processing (usually instant).
+    // NOTE: file.uri is already a full URL - the status endpoint needs the
+    // short relative resource id, which is file.name (e.g. "files/abc123").
     for (let i = 0; i < 10; i++) {
-      const stRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${file.uri}`, {
+      const stRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${file.name}`, {
         headers: { 'x-goog-api-key': apiKey },
       })
-      const stData = await stRes.json()
+      const stData = await stRes.json().catch(() => null)
+      if (!stRes.ok || !stData) {
+        console.error('Gemini Files status-check error:', stRes.status, JSON.stringify(stData).slice(0, 300))
+        return NextResponse.json({ error: 'Could not process that file. Please try again.' }, { status: 502 })
+      }
       if (stData?.file?.state === 'ACTIVE') break
       if (stData?.file?.state === 'FAILED') {
         return NextResponse.json({ error: 'Could not process that file. Please try again.' }, { status: 422 })
