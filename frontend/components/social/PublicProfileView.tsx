@@ -130,6 +130,13 @@ export default function PublicProfileView({ username, embedded = false }: { user
           <ThemeToggle />
         </header>
       )}
+      {embedded && (
+        <div className="max-w-5xl mx-auto px-4 md:px-6 pt-4">
+          <button onClick={() => router.back()} className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+            <Icon name="arrow_back" className="text-[20px]" /><span className="hidden sm:inline">Back</span>
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-40 gap-1.5">
