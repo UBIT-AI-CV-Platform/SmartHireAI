@@ -63,3 +63,4 @@ desktop.ini
 
 # Stray root lockfile only - the real lockfile lives in frontend/ and MUST be committed
 /package-lock.json
+frontend/SmartHireAI/
