@@ -152,6 +152,30 @@ SCORING RULES (be authentic and realistic - most real CVs score 55-85):
 
 WRITING STYLE: Never use em-dash or en-dash characters anywhere in your output (summary, bullet points, suggestions, or any text field). Use a comma, a period, or a spaced hyphen ( - ) instead.`
 
+/**
+ * Try `fn` with each configured Gemini key in turn until one succeeds.
+ * A single dead/denied key in the pool must not take the feature down, and
+ * `pickGeminiKey()` starts at index 0 on every cold start.
+ */
+async function firstOkKey(fn: (key: string) => Promise<Response>): Promise<{ res: Response | null; status: number; err: string }> {
+  let status = 0
+  let err = ''
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const key = pickGeminiKey()
+    if (!key) break
+    try {
+      const res = await fn(key)
+      if (res.ok) return { res, status: 0, err: '' }
+      status = res.status
+      err = (await res.text()).slice(0, 300)
+    } catch (e) {
+      status = 0
+      err = e instanceof Error ? e.message : 'network error'
+    }
+  }
+  return { res: null, status, err }
+}
+
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}))
   const fileName: string = (body.fileName || 'resume').slice(0, 200)
@@ -187,8 +211,7 @@ export async function POST(request: Request) {
   const limited = await rateLimit(supabase, 'upload-cv')
   if (!limited.ok) return limited.response
 
-  const apiKey = pickGeminiKey()
-  if (!apiKey) {
+  if (!pickGeminiKey()) {
     return NextResponse.json(
       { error: 'AI is not configured yet. Add GEMINI_API_KEY or GEMINI_API_KEYS to .env.local.' },
       { status: 500 }
@@ -212,13 +235,15 @@ export async function POST(request: Request) {
     const form = new FormData()
     form.append('file', new Blob([bytes], { type: mime }), 'resume')
     form.append('metadata', JSON.stringify({ file: { display_name: 'resume', displayName: 'resume' } }))
-    const upRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files`, {
-      method: 'POST',
-      headers: { 'x-goog-api-key': apiKey },
-      body: form,
-    })
-    if (!upRes.ok) {
-      console.error('Gemini Files upload error:', (await upRes.text()).slice(0, 400))
+    const { res: upRes, err: upErr } = await firstOkKey((key) =>
+      fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files`, {
+        method: 'POST',
+        headers: { 'x-goog-api-key': key },
+        body: form,
+      })
+    )
+    if (!upRes) {
+      console.error('Gemini Files upload error:', upErr)
       return NextResponse.json({ error: 'Could not process that file format. Please try a PDF.' }, { status: 422 })
     }
     const upData = await upRes.json()
@@ -228,7 +253,7 @@ export async function POST(request: Request) {
     // Wait for the uploaded file to finish processing (usually instant).
     for (let i = 0; i < 10; i++) {
       const stRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${file.uri}`, {
-        headers: { 'x-goog-api-key': apiKey },
+        headers: { 'x-goog-api-key': (pickGeminiKey()) },
       })
       const stData = await stRes.json()
       if (stData?.file?.state === 'ACTIVE') break
@@ -241,12 +266,13 @@ export async function POST(request: Request) {
     parts = [{ fileData: { mimeType: file.mimeType, fileUri: file.uri } }, { text: userPrompt }]
   }
 
-  try {
-    const res = await fetch(
+  // Call Gemini, rotating keys until one works (handles a dead key in the pool).
+  const { res, status, err } = await firstOkKey((key) =>
+    fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
         body: JSON.stringify({
           system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
           contents: [{ role: 'user', parts }],
@@ -258,13 +284,19 @@ export async function POST(request: Request) {
         }),
       }
     )
-
-    if (!res.ok) {
-      const errText = await res.text()
-      console.error('Gemini API error (upload-cv):', errText.slice(0, 500))
-      return NextResponse.json({ error: 'Something went wrong analyzing your CV. Please try again.' }, { status: 502 })
+  )
+  if (!res) {
+    console.error('Gemini API error (upload-cv):', err)
+    if (status === 403) {
+      return NextResponse.json(
+        { error: 'AI access was denied for your configured Gemini key. Check GEMINI_API_KEYS in .env.local and remove any invalid keys.' },
+        { status: 502 }
+      )
     }
+    return NextResponse.json({ error: 'Something went wrong analyzing your CV. Please try again.' }, { status: 502 })
+  }
 
+  try {
     const data = await res.json()
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
     if (!text) return NextResponse.json({ error: 'AI returned an empty response. Please try again.' }, { status: 502 })
