@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { pickGeminiKey } from '@/lib/gemini'
 import { rateLimit } from '@/lib/rate-limit'
+import { extractCvText } from '@/lib/extractCvText'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -222,48 +223,22 @@ export async function POST(request: Request) {
     ? `Target role to score the CV against: ${targetRole}\n\nAnalyze the uploaded resume document and return the structured CV JSON.`
     : `Analyze the uploaded resume document and return the structured CV JSON.`
 
-  // Gemini inlineData supports PDF but NOT Word/RTF, so non-PDF docs go through
-  // the Gemini Files API (upload once, reference by fileUri) and plain text goes
-  // straight into a text part.
+  // Gemini inlineData supports PDF but NOT Word/RTF. PDFs go as binary
+  // inlineData; every other format is reduced to plain text server-side and
+  // sent as a text part, which Gemini always accepts.
   const bytes = Buffer.from(fileData, 'base64')
   let parts: Record<string, unknown>[]
-  if (mime === 'text/plain') {
-    parts = [{ text: bytes.toString('utf8') }, { text: userPrompt }]
-  } else if (mime === 'application/pdf') {
+  if (mime === 'application/pdf') {
     parts = [{ inlineData: { mimeType: mime, data: fileData } }, { text: userPrompt }]
   } else {
-    const form = new FormData()
-    form.append('file', new Blob([bytes], { type: mime }), 'resume')
-    form.append('metadata', JSON.stringify({ file: { display_name: 'resume', displayName: 'resume' } }))
-    const { res: upRes, err: upErr } = await firstOkKey((key) =>
-      fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files`, {
-        method: 'POST',
-        headers: { 'x-goog-api-key': key },
-        body: form,
-      })
-    )
-    if (!upRes) {
-      console.error('Gemini Files upload error:', upErr)
-      return NextResponse.json({ error: 'Could not process that file format. Please try a PDF.' }, { status: 422 })
+    let text: string
+    try {
+      text = await extractCvText(bytes, mime)
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Could not read that file.'
+      return NextResponse.json({ error: message }, { status: 422 })
     }
-    const upData = await upRes.json()
-    const file = upData?.file
-    if (!file?.uri) return NextResponse.json({ error: 'Could not process that file. Please try again.' }, { status: 502 })
-
-    // Wait for the uploaded file to finish processing (usually instant).
-    for (let i = 0; i < 10; i++) {
-      const stRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${file.uri}`, {
-        headers: { 'x-goog-api-key': (pickGeminiKey()) },
-      })
-      const stData = await stRes.json()
-      if (stData?.file?.state === 'ACTIVE') break
-      if (stData?.file?.state === 'FAILED') {
-        return NextResponse.json({ error: 'Could not process that file. Please try again.' }, { status: 422 })
-      }
-      await new Promise((r) => setTimeout(r, 500))
-    }
-
-    parts = [{ fileData: { mimeType: file.mimeType, fileUri: file.uri } }, { text: userPrompt }]
+    parts = [{ text }, { text: userPrompt }]
   }
 
   // Call Gemini, rotating keys until one works (handles a dead key in the pool).
