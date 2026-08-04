@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import BrandingSide from '@/components/auth/BrandingSide';
 import LoginForm from '@/components/auth/LoginForm';
 import SignupForm from '@/components/auth/SignupForm';
@@ -14,13 +15,13 @@ export default function AuthPage() {
   return (
     <div className="relative min-h-screen bg-[#f7f9fb] dark:bg-[#1c1c1e] flex items-center justify-center p-3 sm:p-4 md:p-6 lg:p-8">
       {/* Back Button - Top Left of Main Container */}
-      <a
+      <Link
         href="/"
         className="absolute top-4 left-4 md:top-6 md:left-6 lg:top-8 lg:left-8 z-50 flex items-center justify-center w-10 h-10 rounded-full bg-white/60 dark:bg-white/10 backdrop-blur-md border border-white/70 dark:border-white/10 text-gray-700 dark:text-slate-300 hover:bg-white dark:hover:bg-white/20 hover:text-primary transition-all duration-300 shadow-lg group"
         aria-label="Go back"
       >
         <Icon name="west" className="text-xl transition-transform duration-300 group-hover:-translate-x-0.5" />
-      </a>
+      </Link>
 
       {/* Main Content Container */}
       <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-0 rounded-2xl overflow-hidden shadow-2xl min-h-[90vh] lg:h-[90vh] auth-fade-up">
