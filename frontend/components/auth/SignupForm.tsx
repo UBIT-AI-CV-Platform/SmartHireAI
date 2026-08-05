@@ -22,6 +22,14 @@ export default function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
+  // Strict regex patterns
+  const nameRegex = /^[a-zA-Zà-öø-ÿÀ-ÖØ-ß\s'-]+$/;
+  const strictEmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  // Validation states
+  const isNameValid = fullName.trim().length >= 2 && nameRegex.test(fullName);
+  const isEmailValid = strictEmailRegex.test(email);
+
   // Strong-password conditions
   const conditions = {
     hasMinLength: password.length >= 8,
@@ -42,13 +50,25 @@ export default function SignupForm() {
     e.preventDefault();
     setError(null);
     setInfo(null);
+
+    // Guard checks matching the friend's feedback
+    if (!nameRegex.test(fullName)) {
+      setError('Full name can only contain letters, spaces, hyphens, and apostrophes (no emojis or symbols).');
+      return;
+    }
+
+    if (!strictEmailRegex.test(email)) {
+      setError('Please provide a valid email address with a proper domain extension (e.g., .com, .net, .pk).');
+      return;
+    }
+
     setIsLoading(true);
 
     const supabase = createClient();
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName, role } },
+      options: { data: { full_name: fullName.trim(), role } },
     });
 
     if (signUpError) {
@@ -202,7 +222,16 @@ export default function SignupForm() {
         </div>
 
         <FormInput label="Full Name" icon="person" type="text" placeholder="John Doe" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+
+        {fullName.length > 0 && !isNameValid && (
+          <p className="text-[10px] text-red-500 font-medium pl-1">Names cannot contain emojis or special symbols.</p>
+        )}
+
         <FormInput label="Email Address" icon="mail" type="email" placeholder="name@company.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+
+        {email.length > 0 && !isEmailValid && (
+          <p className="text-[10px] text-red-500 font-medium pl-1">Please enter a fully-qualified email domain (e.g. name@domain.com).</p>
+        )}
 
         {/* Password Field */}
         <div>
@@ -227,7 +256,7 @@ export default function SignupForm() {
 
         <button
           type="submit"
-          disabled={isLoading || !allConditionsMet || !fullName || !email}
+          disabled={isLoading || !allConditionsMet || !isNameValid || !isEmailValid}
           className="w-full bg-gradient-to-r from-[#3525cd] to-[#712ae2] text-white py-2 md:py-2.5 rounded-xl font-bold text-xs md:text-sm shadow-lg hover:shadow-xl hover:shadow-indigo-200/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? 'Creating account...' : 'Sign Up'}
@@ -255,9 +284,8 @@ function RoleOption({ label, icon, value, isSelected, onChange }: RoleOptionProp
     <label className="relative cursor-pointer">
       <input type="radio" name="role" value={value} checked={isSelected} onChange={onChange} className="sr-only" />
       <div
-        className={`p-2.5 md:p-3 rounded-lg border-2 transition-all duration-300 flex flex-col items-center text-center gap-1.5 ${
-          isSelected ? 'border-indigo-300 bg-indigo-100/60 dark:bg-indigo-500/15 scale-[1.02]' : 'border-indigo-200/40 dark:border-white/10 bg-white/50 dark:bg-white/5 hover:bg-white/70 dark:hover:bg-white/10'
-        }`}
+        className={`p-2.5 md:p-3 rounded-lg border-2 transition-all duration-300 flex flex-col items-center text-center gap-1.5 ${isSelected ? 'border-indigo-300 bg-indigo-100/60 dark:bg-indigo-500/15 scale-[1.02]' : 'border-indigo-200/40 dark:border-white/10 bg-white/50 dark:bg-white/5 hover:bg-white/70 dark:hover:bg-white/10'
+          }`}
       >
         <Icon name={icon} className={`text-lg md:text-2xl transition-colors ${isSelected ? 'text-primary' : 'text-gray-600 dark:text-slate-400'}`} />
         <span className="text-[8px] md:text-[9px] font-bold text-gray-900 dark:text-slate-100 uppercase tracking-tighter">{label}</span>
