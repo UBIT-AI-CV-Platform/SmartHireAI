@@ -34,7 +34,7 @@ The candidate home page (`/candidate`) merges the social **feed** and the person
 **Left column (~60%) - the social feed**
 - **People search bar** at the top - find any user by name, `@handle`, or company with a live results dropdown
 - **Post composer** - a "Start a post" bar that opens a popup to write an update (with **bold/italic** formatting), attach a **photo** or a **document/PDF**, and publish
-- **Feed tabs:** **Following** (people you follow + yourself), **Discover** (the whole community), **Trending** (most-liked/commented posts of the last 30 days)
+- **Feed tabs:** **Following** (a people directory of everyone you follow - open a profile to see their posts), **Discover** (the whole community's posts), **Trending** (most-liked/commented posts of the last 30 days)
 - Infinite "Load more" pagination
 
 **Right column (~40%) - your details**
@@ -123,6 +123,11 @@ The flagship feature - generates a complete, professional CV from the user's pro
 - **PDF export** - print-to-PDF via browser
 - **Word export** - downloads a formatted `.docx` file
 - **AI Cover Letter** - opens a modal with a company name input, generates a tailored letter, allows re-draft, manual editing, copy, download, and favourite toggle
+
+**CV Upload**
+- Already have a resume? Upload it instead of generating one from scratch - supports PDF, `.docx`, `.doc`, `.rtf`, and `.txt` files up to ~6 MB
+- PDFs are sent to Gemini directly; Word, RTF, and text documents are converted to plain text server-side first (via `mammoth` for `.docx`), since Gemini's document API only accepts PDF and plain-text input
+- The uploaded CV is parsed into the same structured format as a generated one, complete with an ATS score, category breakdown, and suggestions - so it drops straight into the same preview, editing, and export flow
 
 **My CVs Library**
 - Full history of all generated CVs and cover letters
@@ -518,7 +523,7 @@ A LinkedIn-style professional layer that both candidates and recruiters share. V
 - **Share** menu: **Copy link** to the post's permalink (`/post/[id]`), or **Send in a message** to anyone (lands as a shared-post card in their inbox)
 - **Edit** or **Delete** your own posts; **Hide** or **Report** others' posts
 - Documents render as a downloadable chip; reposts embed the original post inline
-- **Feed tabs:** Following · Discover · Trending (most-engaged in the last 30 days)
+- **Feed tabs:** Following (a directory of the people you follow) · Discover (everyone's posts) · Trending (most-engaged in the last 30 days)
 
 ### Public Profiles (`/u/<handle>`)
 Every user gets an auto-generated `@username` and a public profile that renders **inside the portal shell** (sidebar + topbar):
@@ -532,6 +537,7 @@ Every user gets an auto-generated `@username` and a public profile that renders 
 - **Follow** anyone; followers/following are public and open in a list modal
 - **People search** (top of the Dashboard) with a live results dropdown
 - **Who to follow** suggestions (excludes people you already follow)
+- The **Following** feed tab doubles as a browsable directory of everyone you follow - open any of them to see their posts on their profile
 - A **new follower** notification is sent on each follow
 
 ### Moderation
@@ -580,7 +586,7 @@ A peer-to-peer video call room built directly into the platform, no third-party 
 | Analytics | Vercel Analytics |
 | Image Optimization | `next/image` with AVIF/WebP auto-conversion |
 | Social | Public profiles, feed, follows, posts/likes/comments, reposts, sharing, moderation (Supabase tables + RLS + `public_profiles` view) |
-| Libraries | `@supabase/ssr`, `react-easy-crop`, `react-to-print`, `docx`, `react-markdown`, `remark-gfm`, `date-fns` |
+| Libraries | `@supabase/ssr`, `react-easy-crop`, `react-to-print`, `docx`, `mammoth`, `react-markdown`, `remark-gfm`, `date-fns` |
 
 ---
 
@@ -610,7 +616,7 @@ SmartHireAI/
 │   │   │   ├── page.tsx               # Dashboard (social feed + overview)
 │   │   │   ├── u/[username]/          # Public profile (rendered in portal shell)
 │   │   │   ├── build-profile/         # Profile builder
-│   │   │   ├── cv-generator/          # AI CV + Cover Letter generator
+│   │   │   ├── cv-generator/          # AI CV + Cover Letter generator (+ CV upload/parsing)
 │   │   │   ├── my-applications/       # Jobs, saved, applications, web jobs
 │   │   │   ├── inbox/                 # Unified inbox (Messages + Interviews tabs)
 │   │   │   ├── ai-coach/              # AI interview coach
@@ -640,6 +646,7 @@ SmartHireAI/
 │   │   └── api/                       # Next.js server-side routes
 │   │       ├── generate-cv/           # AI CV generation
 │   │       ├── generate-cover-letter/ # AI cover letter generation
+│   │       ├── upload-cv/             # CV upload & parsing (PDF, docx, doc, rtf, txt)
 │   │       ├── interview-coach/       # AI coach (streaming)
 │   │       ├── apply/                 # Job application submission + email
 │   │       ├── external-jobs/         # Jooble API proxy
@@ -667,6 +674,7 @@ SmartHireAI/
 │   │   ├── social.ts                  # Social types + helpers (relativeTime, tagline, initials…)
 │   │   ├── useProfileLink.ts          # Portal-aware profile URL hook
 │   │   ├── gemini.ts                  # Multi-key Gemini caller with rotation + model fallback
+│   │   ├── extractCvText.ts           # Local text extraction for uploaded Word/RTF/text CVs
 │   │   └── emails.ts                  # Nodemailer email sending
 │   │
 │   ├── proxy.ts                       # Auth/session middleware (Next 16 "proxy") + route protection
@@ -678,6 +686,7 @@ SmartHireAI/
     ├── social-phase1.sql … social-phase5.sql  # Social layer deltas (profiles+follows, feed,
     │                                  #   sharing/unified-inbox, moderation, post file attachments)
     ├── social-fixes.sql               # Follow-up fixes (idempotent)
+    ├── performance.sql                # Rate-limiting table + trigram GIN search indexes
     ├── seed-social.sql                # Optional demo data - posts, jobs, profile details
     ├── cleanup-recruiter-details.sql  # Removes fake recruiter profile sections (run once)
     └── email-templates/
@@ -774,7 +783,9 @@ This creates:
 
 > The social layer is also available as incremental deltas (`social-phase1.sql` … `social-phase5.sql` + `social-fixes.sql`) for upgrading an existing DB. Running the full `schema.sql` once is equivalent.
 
-The script is idempotent - safe to re-run.
+Optionally, also run **`backend/performance.sql`** to add rate-limiting infrastructure (protecting Gemini-backed routes from abuse) and trigram GIN search indexes for faster text search as data grows.
+
+The scripts are idempotent - safe to re-run.
 
 ### 1b. (Optional) Seed demo data
 For a lively feed and sample jobs, run **`backend/seed-social.sql`** in the SQL Editor. It adds varied posts (text / image / CV / document) at past timestamps, dummy jobs for recruiters, candidate profile sections, and headline/location/bio/company details - only for users who are missing them (safe + idempotent). Recruiters intentionally do **not** get personal sections (they manage Company details instead). `cleanup-recruiter-details.sql` removes any such fake recruiter sections if they were seeded earlier.
@@ -818,6 +829,7 @@ In the Supabase dashboard → **Authentication**:
 
 ### AI Features Checklist
 - [ ] CV Generator: generate with a pasted job description and check ATS score + missing keywords
+- [ ] CV Upload: upload an existing PDF, .docx, .rtf, or .txt resume and confirm it parses into the same preview/ATS flow
 - [ ] AI Coach: set role to the applied job, set difficulty to Hard, run a mock interview
 - [ ] AI Screening: rank all applicants after 2+ candidates apply
 - [ ] Interview Kit: generate a full kit for any posted job
@@ -830,7 +842,7 @@ In the Supabase dashboard → **Authentication**:
 3. Use the **search bar** to find a person → open their profile → **Follow** and **Message** them.
 4. **Share** a post → **Send in a message** (it lands in their inbox as a card) or **Copy link** (`/post/[id]`).
 5. Click your name at the bottom of the sidebar → your **public profile** → **Edit profile** (headline, bio, photo).
-6. Switch to the **Following** tab - posts from people you now follow show up live.
+6. Switch to the **Following** tab - see everyone you follow listed as a people directory; open any of their profiles to see their posts.
 
 > Tip: run the optional seed scripts (see Database Setup → 1b) first so the feed already has content to scroll.
 
