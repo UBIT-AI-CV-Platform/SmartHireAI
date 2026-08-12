@@ -49,6 +49,19 @@ const RESPONSE_SCHEMA = {
           name: { type: 'STRING' },
           issuer: { type: 'STRING' },
           date: { type: 'STRING' },
+          link: { type: 'STRING' },
+        },
+        required: ['name'],
+      },
+    },
+    projects: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          name: { type: 'STRING' },
+          description: { type: 'STRING' },
+          link: { type: 'STRING' },
         },
         required: ['name'],
       },
@@ -57,7 +70,7 @@ const RESPONSE_SCHEMA = {
       type: 'ARRAY',
       items: {
         type: 'OBJECT',
-        properties: { name: { type: 'STRING' }, provider: { type: 'STRING' }, date: { type: 'STRING' } },
+        properties: { name: { type: 'STRING' }, provider: { type: 'STRING' }, date: { type: 'STRING' }, link: { type: 'STRING' } },
         required: ['name'],
       },
     },
@@ -65,7 +78,7 @@ const RESPONSE_SCHEMA = {
       type: 'ARRAY',
       items: {
         type: 'OBJECT',
-        properties: { name: { type: 'STRING' }, issuer: { type: 'STRING' }, date: { type: 'STRING' } },
+        properties: { name: { type: 'STRING' }, issuer: { type: 'STRING' }, date: { type: 'STRING' }, link: { type: 'STRING' } },
         required: ['name'],
       },
     },
@@ -79,7 +92,7 @@ const RESPONSE_SCHEMA = {
             type: 'ARRAY',
             items: {
               type: 'OBJECT',
-              properties: { title: { type: 'STRING' }, description: { type: 'STRING' } },
+              properties: { title: { type: 'STRING' }, description: { type: 'STRING' }, link: { type: 'STRING' } },
               required: ['title'],
             },
           },
@@ -118,8 +131,10 @@ CONTENT RULES:
 - "skills" should be the most relevant skills for the target role, ordered by relevance.
 - experience "period": use the candidate's real dates if present. If a date/year is NOT in the profile, leave "period" as an EMPTY STRING "" - never write "Date not specified", "N/A", or "Present" unless the profile actually says so.
 - certifications, courses, awards: you MUST include EVERY item the candidate listed in the profile - never drop or skip any of them. Each is an object { name, issuer/provider, date }; copy the name accurately and use issuer/provider/date only if present (else empty string). Do NOT invent issuers or dates.
+- projects: you MUST include EVERY project from the profile as { name, description, link }. Preserve its full URL in link, even if it is also used to inform an experience entry.
+- LINKS: preserve EVERY URL provided in the profile. If a project, certification, course, award, or custom-section entry has an associated link (repo, portfolio, credential, etc.), include the FULL URL in that entry's "link" field (empty string if none). Never drop, truncate, or rewrite URLs.
 - Do NOT output a contact section - it is filled in separately from the verified profile.
-- custom_sections: if the candidate provided custom sections, include them in "custom_sections" - keep each heading, and turn each entry into { title, description } with polished wording (never invent entries).
+- custom_sections: if the candidate provided custom sections, include them in "custom_sections" - keep each heading, and turn each entry into { title, description, link } with polished wording (never invent entries).
 - If a TARGET JOB DESCRIPTION is provided: tailor the summary, skills ordering, and bullet wording to match it, naturally weaving in the job's important keywords that the candidate genuinely has.
 
 JOB-MATCH RULES (only when a job description is provided):
@@ -170,9 +185,9 @@ function buildProfileText(p: Record<string, unknown>, sections: Record<string, u
   lines.push('\nProjects:')
   projects.forEach((pr) => lines.push(`- ${pr.name}: ${pr.description || ''} ${pr.link ? `(${pr.link})` : ''}`))
 
-  const certifications = sections.certifications as { name: string; issuer: string; issue_date: string }[]
+  const certifications = sections.certifications as { name: string; issuer: string; issue_date: string; link: string }[]
   lines.push('\nCertifications:')
-  certifications.forEach((c) => lines.push(`- ${c.name}${c.issuer ? `, ${c.issuer}` : ''}${c.issue_date ? ` (${c.issue_date})` : ''}`))
+  certifications.forEach((c) => lines.push(`- ${c.name}${c.issuer ? `, ${c.issuer}` : ''}${c.issue_date ? ` (${c.issue_date})` : ''}${c.link ? ` (${c.link})` : ''}`))
 
   const courses = sections.courses as { name: string; provider: string }[]
   lines.push('\nCourses:')

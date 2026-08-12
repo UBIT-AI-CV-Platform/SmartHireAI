@@ -121,6 +121,7 @@ export type Database = {
           id: number
           issue_date: string | null
           issuer: string | null
+          link: string | null
           name: string
           profile_id: string
         }
@@ -129,6 +130,7 @@ export type Database = {
           id?: never
           issue_date?: string | null
           issuer?: string | null
+          link?: string | null
           name: string
           profile_id: string
         }
@@ -137,6 +139,7 @@ export type Database = {
           id?: never
           issue_date?: string | null
           issuer?: string | null
+          link?: string | null
           name?: string
           profile_id?: string
         }

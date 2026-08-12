@@ -22,6 +22,65 @@ const ALLOWED_MIME = new Set([
   'text/plain',
 ])
 
+// PDF hyperlinks live in annotations and are often invisible to text extraction
+// (the PDF only contains a clickable label). Pull their URI targets out so they
+// can be supplied to the model alongside the visual PDF.
+function pdfString(value: string) {
+  return value.replace(/\\([()\\])/g, '$1').replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\\t/g, '\t')
+}
+
+function normaliseUrl(value: string) {
+  const url = value.trim().replace(/[),.;\]}]+$/g, '')
+  return /^(?:https?:\/\/|www\.)/i.test(url) ? (url.startsWith('www.') ? `https://${url}` : url) : ''
+}
+
+function urlsIn(value: string) {
+  return [...value.matchAll(/(?:https?:\/\/|www\.)[^\s<>{}"']+/gi)]
+    .map((match) => normaliseUrl(match[0]))
+    .filter(Boolean)
+}
+
+function extractPdfLinks(bytes: Buffer) {
+  const raw = bytes.toString('latin1')
+  const urls = urlsIn(raw)
+  const uri = /\/URI\s*(?:\(((?:\\.|[^\\)])*)\)|<([0-9a-fA-F]+)>)/g
+  for (const match of raw.matchAll(uri)) {
+    const literal = match[1] ? pdfString(match[1]) : Buffer.from(match[2] || '', 'hex').toString('utf8')
+    const url = normaliseUrl(literal)
+    if (url) urls.push(url)
+  }
+  return [...new Map(urls.map((url) => [url.toLowerCase(), url])).values()]
+}
+
+type LinkableEntry = { name?: string; title?: string; description?: string; link?: string }
+
+// The model normally maps the supplied URLs itself. These small fallbacks cover
+// PDFs whose annotation labels cannot be read by the model: first promote a URL
+// that made it into an entry's text, then assign unmistakable project/credential
+// URLs to the matching missing entries.
+function recoverEntryLinks(cv: Record<string, unknown>, documentUrls: string[]) {
+  const entries = (key: string) => Array.isArray(cv[key]) ? cv[key] as LinkableEntry[] : []
+  const groups = [entries('projects'), entries('certifications'), entries('courses'), entries('awards')]
+  const used = new Set<string>()
+  for (const group of groups) {
+    for (const entry of group) {
+      const ownUrl = normaliseUrl(String(entry.link || '')) || urlsIn(`${entry.name || ''} ${entry.title || ''} ${entry.description || ''}`)[0]
+      if (ownUrl) { entry.link = ownUrl; used.add(ownUrl.toLowerCase()) }
+    }
+  }
+
+  const remaining = documentUrls.filter((url) => !used.has(url.toLowerCase()))
+  const projectUrls = remaining.filter((url) => /github|gitlab|bitbucket|vercel|netlify|devpost|replit|behance|dribbble|portfolio|demo/i.test(url))
+  const credentialUrls = remaining.filter((url) => /credly|coursera|udemy|edx|credential|certificate|certification|linkedin\.com\/learning|aws\.amazon|learn\.microsoft|skillsoft/i.test(url))
+  const fill = (items: LinkableEntry[], urls: string[]) => {
+    for (const entry of items) {
+      if (!entry.link && urls.length) entry.link = urls.shift()
+    }
+  }
+  fill(entries('projects'), projectUrls)
+  fill(entries('certifications'), credentialUrls)
+}
+
 // Same structured CV shape the generator returns, plus a `contact` object, so a
 // parsed upload drops straight into the existing preview / edit / apply flows.
 const RESPONSE_SCHEMA = {
@@ -72,7 +131,16 @@ const RESPONSE_SCHEMA = {
           name: { type: 'STRING' },
           issuer: { type: 'STRING' },
           date: { type: 'STRING' },
+          link: { type: 'STRING' },
         },
+        required: ['name'],
+      },
+    },
+    projects: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: { name: { type: 'STRING' }, description: { type: 'STRING' }, link: { type: 'STRING' } },
         required: ['name'],
       },
     },
@@ -80,7 +148,7 @@ const RESPONSE_SCHEMA = {
       type: 'ARRAY',
       items: {
         type: 'OBJECT',
-        properties: { name: { type: 'STRING' }, provider: { type: 'STRING' }, date: { type: 'STRING' } },
+        properties: { name: { type: 'STRING' }, provider: { type: 'STRING' }, date: { type: 'STRING' }, link: { type: 'STRING' } },
         required: ['name'],
       },
     },
@@ -88,7 +156,7 @@ const RESPONSE_SCHEMA = {
       type: 'ARRAY',
       items: {
         type: 'OBJECT',
-        properties: { name: { type: 'STRING' }, issuer: { type: 'STRING' }, date: { type: 'STRING' } },
+        properties: { name: { type: 'STRING' }, issuer: { type: 'STRING' }, date: { type: 'STRING' }, link: { type: 'STRING' } },
         required: ['name'],
       },
     },
@@ -102,7 +170,7 @@ const RESPONSE_SCHEMA = {
             type: 'ARRAY',
             items: {
               type: 'OBJECT',
-              properties: { title: { type: 'STRING' }, description: { type: 'STRING' } },
+              properties: { title: { type: 'STRING' }, description: { type: 'STRING' }, link: { type: 'STRING' } },
               required: ['title'],
             },
           },
@@ -140,7 +208,10 @@ CONTENT RULES:
 - "summary": the professional summary/objective from the document if present; otherwise write a 2-3 sentence summary using ONLY facts present in the document.
 - experience "period" / education "period": copy the dates exactly as written. If a date is absent, use an EMPTY STRING "" - never write "Date not specified", "N/A", or "Present" unless the document says so.
 - certifications, courses, awards: include EVERY item listed in the document, with issuer/provider/date exactly as written (empty string if absent). Never drop or invent any.
-- custom_sections: any other titled section (Languages, Volunteering, Interests, Publications, Projects, etc.) goes under its original heading with each entry as { title, description }.
+- LINKS: extract and preserve EVERY hyperlink / URL in the document. If a certification, course, award, or custom-section entry has an associated link (credential URL, portfolio link, project link, repository URL, etc.), put the FULL URL in that entry's "link" field (empty string if there is none). Keep "link" in custom_sections entries as well. Do not drop, truncate, or rewrite URLs.
+- A separate list of hyperlink targets may be supplied with the document. Treat each target as a real clickable link from the CV, match it to its nearby certificate/project label, and return it in that entry's "link" field.
+- projects: extract every item from a Projects / Personal Projects section as { name, description, link }. Put the associated repository, demo, or portfolio URL in link. Do not put Projects under custom_sections.
+- custom_sections: any other titled section (Languages, Volunteering, Interests, Publications, etc.) goes under its original heading with each entry as { title, description, link }.
 - contact: extract email, phone, location, and any LinkedIn / GitHub / portfolio URLs from the document if clearly present; leave fields empty otherwise. Never guess an email or phone.
 
 SCORING RULES (be authentic and realistic - most real CVs score 55-85):
@@ -227,9 +298,15 @@ export async function POST(request: Request) {
   // inlineData; every other format is reduced to plain text server-side and
   // sent as a text part, which Gemini always accepts.
   const bytes = Buffer.from(fileData, 'base64')
+  let documentUrls: string[] = []
   let parts: Record<string, unknown>[]
   if (mime === 'application/pdf') {
-    parts = [{ inlineData: { mimeType: mime, data: fileData } }, { text: userPrompt }]
+    documentUrls = extractPdfLinks(bytes)
+    parts = [
+      { inlineData: { mimeType: mime, data: fileData } },
+      ...(documentUrls.length ? [{ text: `Clickable hyperlink targets embedded in this CV: ${documentUrls.join(' | ')}` }] : []),
+      { text: userPrompt },
+    ]
   } else {
     let text: string
     try {
@@ -238,6 +315,7 @@ export async function POST(request: Request) {
       const message = e instanceof Error ? e.message : 'Could not read that file.'
       return NextResponse.json({ error: message }, { status: 422 })
     }
+    documentUrls = urlsIn(text)
     parts = [{ text }, { text: userPrompt }]
   }
 
@@ -277,6 +355,7 @@ export async function POST(request: Request) {
     if (!text) return NextResponse.json({ error: 'AI returned an empty response. Please try again.' }, { status: 502 })
 
     const cv = JSON.parse(text)
+    recoverEntryLinks(cv, documentUrls)
 
     // Photo + any contact gaps fall back to the verified profile.
     const { data: prof } = await supabase.from('profiles').select('photo_url, email, phone, location, linkedin, linkedin_url, github, github_url').eq('id', user.id).maybeSingle()

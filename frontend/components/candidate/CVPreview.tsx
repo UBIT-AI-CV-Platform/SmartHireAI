@@ -8,9 +8,11 @@ export type CVContent = {
   experience?: { role: string; organization: string; period: string; bullets: string[] }[]
   education?: { degree: string; institute: string; period: string }[]
   skills?: string[]
-  certifications?: { name: string; issuer?: string; date?: string }[]
-  courses?: { name: string; provider?: string; date?: string }[]
-  awards?: { name: string; issuer?: string; date?: string }[]
+  certifications?: { name: string; issuer?: string; date?: string; link?: string }[]
+  courses?: { name: string; provider?: string; date?: string; link?: string }[]
+  awards?: { name: string; issuer?: string; date?: string; link?: string }[]
+  projects?: { name: string; description?: string; link?: string }[]
+  custom_sections?: { heading: string; items: { title: string; description?: string; link?: string }[] }[]
 }
 
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
@@ -22,11 +24,23 @@ function Block({ title, children }: { title: string; children: React.ReactNode }
   )
 }
 
-const credLine = (c: { name: string; issuer?: string; provider?: string; date?: string }, i: number) => {
+const normalizeUrl = (value: string) => (/^[a-z][a-z0-9+.-]*:\/\//i.test(value) ? value : `https://${value}`)
+
+const LinkLine = ({ value }: { value: string }) => (
+  <a href={normalizeUrl(value)} target="_blank" rel="noopener noreferrer" className="block text-xs text-primary hover:underline break-all mt-0.5">{value}</a>
+)
+
+const LinkedTitle = ({ value, link }: { value: string; link?: string }) => (
+  link
+    ? <a href={normalizeUrl(link)} target="_blank" rel="noopener noreferrer" title={`Open ${value}`} className="font-bold text-primary hover:underline underline-offset-2">{value}</a>
+    : <span className="font-bold">{value}</span>
+)
+
+const credLine = (c: { name: string; issuer?: string; provider?: string; date?: string; link?: string }, i: number) => {
   const sub = [c.issuer || c.provider, c.date].filter(Boolean).join(' • ')
   return (
     <li key={i} className="text-sm text-on-surface">
-      <span className="font-bold">{c.name}</span>
+      <LinkedTitle value={c.name} link={c.link} />
       {sub ? <span className="text-on-surface-variant"> - {sub}</span> : null}
     </li>
   )
@@ -92,6 +106,26 @@ export default function CVPreview({ cv }: { cv: CVContent | null }) {
       {cv.certifications && cv.certifications.length > 0 && <Block title="Certifications"><ul className="space-y-1">{cv.certifications.map(credLine)}</ul></Block>}
       {cv.courses && cv.courses.length > 0 && <Block title="Courses"><ul className="space-y-1">{cv.courses.map(credLine)}</ul></Block>}
       {cv.awards && cv.awards.length > 0 && <Block title="Awards"><ul className="space-y-1">{cv.awards.map(credLine)}</ul></Block>}
+      {cv.projects && cv.projects.length > 0 && (
+        <Block title="Projects">
+          <div className="space-y-2">
+            {cv.projects.map((project, i) => <div key={i}><p className="text-sm text-on-surface"><LinkedTitle value={project.name} link={project.link} /></p>{project.description && <p className="text-sm text-on-surface-variant">{project.description}</p>}</div>)}
+          </div>
+        </Block>
+      )}
+
+      {(cv.custom_sections ?? []).filter((s) => s.heading && s.items?.length).map((s, si) => (
+        <Block key={si} title={s.heading}>
+          <div className="space-y-2">
+            {s.items.map((it, ii) => (
+              <div key={ii}>
+                <p className="text-sm text-on-surface"><LinkedTitle value={it.title} link={it.link} /></p>
+                {it.description && <p className="text-sm text-on-surface-variant">{it.description}</p>}
+              </div>
+            ))}
+          </div>
+        </Block>
+      ))}
     </div>
   )
 }
