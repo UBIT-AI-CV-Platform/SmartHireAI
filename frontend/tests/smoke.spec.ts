@@ -23,9 +23,9 @@ test('auth page has login tab and google button', async ({ page }) => {
   await expect(page.getByText('Continue with Google')).toBeVisible();
 });
 
-test('landing page hero text visible', async ({ page }) => {
+test('landing page hero heading visible', async ({ page }) => {
   await page.goto(URL);
-  await expect(page.getByRole('heading', { name: /Get Hired/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Smart Recruitment/ })).toBeVisible();
 });
 
 test('signup form shows candidate and recruiter role options', async ({ page }) => {

@@ -132,8 +132,12 @@ create table if not exists public.certifications (
   name text not null,
   issuer text,
   issue_date text,
+  link text,
   created_at timestamptz not null default now()
 );
+
+-- Keep existing deployments in sync with the definition above.
+alter table public.certifications add column if not exists link text;
 
 create table if not exists public.courses (
   id bigint generated always as identity primary key,
