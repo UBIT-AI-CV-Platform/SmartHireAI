@@ -9,10 +9,11 @@ type CVLike = {
   experience?: { role: string; organization: string; period: string; bullets: string[] }[]
   education?: { degree: string; institute: string; period: string }[]
   skills?: string[]
-  certifications?: { name: string; issuer?: string; date?: string }[]
-  courses?: { name: string; provider?: string; date?: string }[]
-  awards?: { name: string; issuer?: string; date?: string }[]
-  custom_sections?: { heading: string; items: { title: string; description?: string }[] }[]
+  certifications?: { name: string; issuer?: string; date?: string; link?: string }[]
+  courses?: { name: string; provider?: string; date?: string; link?: string }[]
+  awards?: { name: string; issuer?: string; date?: string; link?: string }[]
+  projects?: { name: string; description?: string; link?: string }[]
+  custom_sections?: { heading: string; items: { title: string; description?: string; link?: string }[] }[]
 }
 
 const ACCENT = '3525CD'
@@ -83,7 +84,7 @@ export async function cvToDocxBlob(cv: CVLike): Promise<Blob> {
     children.push(new Paragraph({ children: [new TextRun({ text: cv.skills.join('  •  '), size: 20 })] }))
   }
 
-  const credList = (title: string, items?: { name: string; issuer?: string; provider?: string; date?: string }[]) => {
+  const credList = (title: string, items?: { name: string; issuer?: string; provider?: string; date?: string; link?: string }[]) => {
     if (!items?.length) return
     children.push(heading(title))
     for (const c of items) {
@@ -93,11 +94,21 @@ export async function cvToDocxBlob(cv: CVLike): Promise<Blob> {
         spacing: { after: 20 },
         children: [new TextRun({ text: c.name, bold: true, size: 20 }), ...(sub ? [new TextRun({ text: `  (${sub})`, size: 18, color: MUTED })] : [])],
       }))
+      if (c.link) children.push(new Paragraph({ indent: { left: 360 }, children: [new TextRun({ text: c.link, size: 18, color: ACCENT })] }))
     }
   }
   credList('Certifications', cv.certifications)
   credList('Courses', cv.courses)
   credList('Awards', cv.awards)
+
+  if (cv.projects?.length) {
+    children.push(heading('Projects'))
+    for (const project of cv.projects) {
+      children.push(new Paragraph({ spacing: { before: 60 }, children: [new TextRun({ text: project.name, bold: true, size: 20 })] }))
+      if (project.description) children.push(new Paragraph({ children: [new TextRun({ text: project.description, size: 20 })] }))
+      if (project.link) children.push(new Paragraph({ children: [new TextRun({ text: project.link, size: 18, color: ACCENT })] }))
+    }
+  }
 
   for (const s of cv.custom_sections || []) {
     if (!s.heading || !s.items?.length) continue
@@ -105,6 +116,7 @@ export async function cvToDocxBlob(cv: CVLike): Promise<Blob> {
     for (const it of s.items) {
       children.push(new Paragraph({ spacing: { before: 60 }, children: [new TextRun({ text: it.title, bold: true, size: 20 })] }))
       if (it.description) children.push(new Paragraph({ children: [new TextRun({ text: it.description, size: 20 })] }))
+      if (it.link) children.push(new Paragraph({ children: [new TextRun({ text: it.link, size: 18, color: ACCENT })] }))
     }
   }
 

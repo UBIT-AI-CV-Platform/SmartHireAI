@@ -1,3 +1,4 @@
+
 -- ============================================================================
 --  SmartHireAI - CLEANUP: remove fake recruiter profile sections
 --  Recruiters have NO UI to add skills/languages/education/projects/etc., so any

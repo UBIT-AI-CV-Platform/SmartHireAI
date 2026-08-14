@@ -521,6 +521,7 @@ export default function BuildProfilePage() {
             { key: 'name', label: 'Certificate Name', placeholder: 'e.g. AWS Solutions Architect' },
             { key: 'issuer', label: 'Issuer', placeholder: 'e.g. Amazon Web Services' },
             { key: 'issue_date', label: 'Date Earned', placeholder: 'Month YYYY', full: true },
+            { key: 'link', label: 'Credential Link (optional)', placeholder: 'https://credential.example.com', full: true },
           ]}
           requiredKeys={['name']}
           emptyTitle="No certifications added yet" emptyHint="Showcase your professional credentials."
@@ -529,6 +530,7 @@ export default function BuildProfilePage() {
               <h3 className="font-bold text-on-surface text-sm md:text-base">{item.name as string}</h3>
               {(item.issuer as string) && <p className="text-xs md:text-sm text-on-surface-variant">{item.issuer as string}</p>}
               {(item.issue_date as string) && <p className="text-xs text-on-surface-variant/70 mt-1">{item.issue_date as string}</p>}
+              {(item.link as string) && <a href={item.link as string} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline mt-2 inline-block break-all">{item.link as string}</a>}
             </>
           )}
         />
