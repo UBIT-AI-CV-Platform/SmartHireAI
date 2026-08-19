@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { pickGeminiKey } from '@/lib/gemini'
+import { geminiGenerate, hasGeminiKeys } from '@/lib/gemini'
 import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
 
 // Free Google Gemini model. Change here if you want a different one.
-// Options (all have a free tier): gemini-2.5-flash, gemini-2.0-flash, gemini-flash-latest
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 
 // The structured CV shape we ask Gemini to return (OpenAPI subset).
 const RESPONSE_SCHEMA = {
@@ -214,8 +212,7 @@ export async function POST(request: Request) {
   const limited = await rateLimit(supabase, 'generate-cv')
   if (!limited.ok) return limited.response
 
-  const apiKey = pickGeminiKey()
-  if (!apiKey) {
+  if (!hasGeminiKeys()) {
     return NextResponse.json(
       { error: 'AI is not configured yet. Add GEMINI_API_KEY or GEMINI_API_KEYS to .env.local.' },
       { status: 500 }
@@ -258,32 +255,15 @@ ${customText ? `\nAdditional custom sections provided by the candidate (include 
 
   // Call Gemini (REST)
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-          generationConfig: {
-            temperature: 0.7,
-            responseMimeType: 'application/json',
-            responseSchema: RESPONSE_SCHEMA,
-          },
-        }),
-      }
-    )
-
-    if (!res.ok) {
-      const errText = await res.text()
-      console.error('Gemini API error (generate-cv):', errText.slice(0, 500))
-      return NextResponse.json({ error: 'Something went wrong generating your CV. Please try again.' }, { status: 502 })
-    }
-
-    const data = await res.json()
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!text) return NextResponse.json({ error: 'AI returned an empty response. Please try again.' }, { status: 502 })
+    const text = await geminiGenerate({
+      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+      generationConfig: {
+        temperature: 0.7,
+        responseMimeType: 'application/json',
+        responseSchema: RESPONSE_SCHEMA,
+      },
+    })
 
     const cv = JSON.parse(text)
 

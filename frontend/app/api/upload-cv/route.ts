@@ -1,15 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { pickGeminiKey } from '@/lib/gemini'
+import { geminiGenerate, hasGeminiKeys } from '@/lib/gemini'
 import { rateLimit } from '@/lib/rate-limit'
 import { extractCvText } from '@/lib/extractCvText'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
-
-// Free Google Gemini model. Change here if you want a different one.
-// Options (all have a free tier): gemini-2.5-flash, gemini-2.0-flash, gemini-flash-latest
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 
 // Keep uploads sensible: base64 of a ~6 MB file is ~8 MB of text.
 const MAX_FILE_B64 = 9 * 1024 * 1024
@@ -224,30 +220,6 @@ SCORING RULES (be authentic and realistic - most real CVs score 55-85):
 
 WRITING STYLE: Never use em-dash or en-dash characters anywhere in your output (summary, bullet points, suggestions, or any text field). Use a comma, a period, or a spaced hyphen ( - ) instead.`
 
-/**
- * Try `fn` with each configured Gemini key in turn until one succeeds.
- * A single dead/denied key in the pool must not take the feature down, and
- * `pickGeminiKey()` starts at index 0 on every cold start.
- */
-async function firstOkKey(fn: (key: string) => Promise<Response>): Promise<{ res: Response | null; status: number; err: string }> {
-  let status = 0
-  let err = ''
-  for (let attempt = 0; attempt < 4; attempt++) {
-    const key = pickGeminiKey()
-    if (!key) break
-    try {
-      const res = await fn(key)
-      if (res.ok) return { res, status: 0, err: '' }
-      status = res.status
-      err = (await res.text()).slice(0, 300)
-    } catch (e) {
-      status = 0
-      err = e instanceof Error ? e.message : 'network error'
-    }
-  }
-  return { res: null, status, err }
-}
-
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}))
   const fileName: string = (body.fileName || 'resume').slice(0, 200)
@@ -283,7 +255,7 @@ export async function POST(request: Request) {
   const limited = await rateLimit(supabase, 'upload-cv')
   if (!limited.ok) return limited.response
 
-  if (!pickGeminiKey()) {
+  if (!hasGeminiKeys()) {
     return NextResponse.json(
       { error: 'AI is not configured yet. Add GEMINI_API_KEY or GEMINI_API_KEYS to .env.local.' },
       { status: 500 }
@@ -319,42 +291,27 @@ export async function POST(request: Request) {
     parts = [{ text }, { text: userPrompt }]
   }
 
-  // Call Gemini, rotating keys until one works (handles a dead key in the pool).
-  const { res, status, err } = await firstOkKey((key) =>
-    fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: [{ role: 'user', parts }],
-          generationConfig: {
-            temperature: 0.3,
-            responseMimeType: 'application/json',
-            responseSchema: RESPONSE_SCHEMA,
-          },
-        }),
-      }
-    )
-  )
-  if (!res) {
-    console.error('Gemini API error (upload-cv):', err)
-    if (status === 403) {
-      return NextResponse.json(
-        { error: 'AI access was denied for your configured Gemini key. Check GEMINI_API_KEYS in .env.local and remove any invalid keys.' },
-        { status: 502 }
-      )
-    }
-    return NextResponse.json({ error: 'Something went wrong analyzing your CV. Please try again.' }, { status: 502 })
+  // geminiGenerate rotates keys (a dead key must not take the feature down)
+  // and walks the model chain if the primary is slow or overloaded.
+  let aiText: string
+  try {
+    aiText = await geminiGenerate({
+      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: 'user', parts }],
+      generationConfig: {
+        temperature: 0.3,
+        responseMimeType: 'application/json',
+        responseSchema: RESPONSE_SCHEMA,
+      },
+    })
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'Something went wrong analyzing your CV. Please try again.'
+    console.error('Gemini API error (upload-cv):', message)
+    return NextResponse.json({ error: message }, { status: 502 })
   }
 
   try {
-    const data = await res.json()
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!text) return NextResponse.json({ error: 'AI returned an empty response. Please try again.' }, { status: 502 })
-
-    const cv = JSON.parse(text)
+    const cv = JSON.parse(aiText)
     recoverEntryLinks(cv, documentUrls)
 
     // Photo + any contact gaps fall back to the verified profile.

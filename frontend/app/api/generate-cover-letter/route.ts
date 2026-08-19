@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { pickGeminiKey } from '@/lib/gemini'
+import { geminiGenerate, hasGeminiKeys } from '@/lib/gemini'
 import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
-
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 
 const SYSTEM_PROMPT = `You are an expert career writer. Write a professional, compelling cover letter for the candidate.
 
@@ -32,8 +30,7 @@ export async function POST(request: Request) {
   const limited = await rateLimit(supabase, 'generate-cover-letter')
   if (!limited.ok) return limited.response
 
-  const apiKey = pickGeminiKey()
-  if (!apiKey) return NextResponse.json({ error: 'AI is not configured. Add GEMINI_API_KEY or GEMINI_API_KEYS to .env.local.' }, { status: 500 })
+  if (!hasGeminiKeys()) return NextResponse.json({ error: 'AI is not configured. Add GEMINI_API_KEY or GEMINI_API_KEYS to .env.local.' }, { status: 500 })
 
   const [p, sk, ed, pr, ce] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
@@ -63,28 +60,11 @@ Candidate profile:
 ${profileText}`
 
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-          generationConfig: { temperature: 0.8 },
-        }),
-      }
-    )
-    if (!res.ok) {
-      const errText = await res.text()
-      console.error('Gemini API error (generate-cover-letter):', errText.slice(0, 500))
-      return NextResponse.json({ error: 'Something went wrong generating your cover letter. Please try again.' }, { status: 502 })
-    }
-    const data = await res.json()
-    const letter = data?.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!letter) return NextResponse.json({ error: 'AI returned an empty response. Please try again.' }, { status: 502 })
-
-    const trimmed = letter.trim()
+    const trimmed = await geminiGenerate({
+      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+      generationConfig: { temperature: 0.8 },
+    })
     const { data: saved } = await supabase
       .from('cover_letters')
       .insert({
