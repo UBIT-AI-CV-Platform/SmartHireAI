@@ -1,6 +1,18 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   compress: true,
+  // The app lives in frontend/, but a stray empty package-lock.json in the repo
+  // root makes Turbopack pick the root as the workspace and resolve modules
+  // from there - where there is no node_modules, so it panics with
+  // "Next.js package not found" and the dev server serves a page that never
+  // finishes loading. Pin the root to this directory so lockfile placement
+  // above us cannot change module resolution.
+  turbopack: {
+    root: path.dirname(fileURLToPath(import.meta.url)),
+  },
   images: {
     // NOTE: keep this list in sync with OPTIMIZABLE_HOSTS in
     // components/ui/optimized-image.tsx - next/image throws (and takes the whole
