@@ -578,7 +578,7 @@ A peer-to-peer video call room built directly into the platform, no third-party 
 | Framework | Next.js 16 (App Router, Turbopack), React 19, TypeScript 5.7 |
 | Styling | Tailwind CSS v4, Material Symbols Outlined, Inter + Sora via `next/font` |
 | Backend / DB | Supabase (PostgreSQL, Row-Level Security, Auth, Storage, Realtime) |
-| AI | Google Gemini API (`gemini-2.5-flash` with `gemini-2.0-flash` fallback) |
+| AI | Google Gemini API (`gemini-3.1-flash-lite`, falling back to `gemini-3.6-flash` then `gemini-3.5-flash`) |
 | Real-time | Supabase Realtime - broadcast signalling for WebRTC, live messaging |
 | Video | WebRTC (browser-native, peer-to-peer) |
 | Email | Nodemailer via Gmail SMTP (application confirmation emails) |
@@ -752,6 +752,28 @@ GEMINI_API_KEY=your-gemini-key
 # Option B - multiple keys (comma-separated) for higher quota.
 # The app rotates between keys automatically; on a 429 it switches immediately.
 # GEMINI_API_KEYS=key1,key2,key3
+#
+# Model selection. An API key is NOT tied to a model - every key reaches every
+# model your account can see - so changing versions never means a new key.
+# List what a key can reach:
+#   curl -s "https://generativelanguage.googleapis.com/v1beta/models" #     -H "x-goog-api-key: YOUR_KEY" | grep -o '"models/gemini[^"]*"'
+# NOTE: gemini-2.5-flash and gemini-2.0-flash now return 404 ("no longer
+# available to new users") on any recently issued key. Older keys are
+# grandfathered in, new ones are not, so never pin the chain to a 2.x model.
+# Default chain: gemini-3.1-flash-lite -> gemini-3.6-flash -> gemini-3.5-flash
+# The lite model leads on purpose: on the free tier gemini-3.6-flash is
+# queue-starved (~20s median and mostly timing out on structured output, vs
+# ~5s and fully reliable for the lite model), with no drop in output quality.
+# GEMINI_MODEL=gemini-3.6-flash          # primary only, defaults stay as fallbacks
+# GEMINI_MODELS=modelA,modelB,modelC     # replace the whole chain
+#
+# Gemini 3.x thinks before it answers (15-35s is normal, and it 503s under
+# free-tier load), while a Vercel Hobby function is killed at 60s. Each attempt
+# is therefore aborted on its own timeout and retried on the next model.
+# GEMINI_THINKING_LEVEL=low              # 'high' reasons harder but is slower
+# GEMINI_ATTEMPT_TIMEOUT_MS=20000        # per-call abort
+# GEMINI_TOTAL_BUDGET_MS=50000           # whole chain; keep under maxDuration
+# GEMINI_MAX_OUTPUT_TOKENS=8192          # stops a structured-output run away
 
 # ── Email (SMTP) ──────────────────────────────────────────────────────────────
 # Used for application-confirmation emails to candidates.

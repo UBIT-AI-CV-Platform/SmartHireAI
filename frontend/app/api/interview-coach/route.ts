@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { pickGeminiKey } from '@/lib/gemini'
+import { geminiStream, hasGeminiKeys } from '@/lib/gemini'
 import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
-
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 
 type ChatMsg = { role: 'user' | 'assistant'; content: string }
 
@@ -78,8 +76,7 @@ export async function POST(request: Request) {
   const limited = await rateLimit(supabase, 'interview-coach')
   if (!limited.ok) return limited.response
 
-  const apiKey = pickGeminiKey()
-  if (!apiKey) return NextResponse.json({ error: 'AI is not configured. Add GEMINI_API_KEY or GEMINI_API_KEYS to .env.local.' }, { status: 500 })
+  if (!hasGeminiKeys()) return NextResponse.json({ error: 'AI is not configured. Add GEMINI_API_KEY or GEMINI_API_KEYS to .env.local.' }, { status: 500 })
 
   // candidate context
   const [p, sk, ed, pr, ce, cv] = await Promise.all([
@@ -134,31 +131,18 @@ export async function POST(request: Request) {
 
   let geminiRes: Response
   try {
-    geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:streamGenerateContent?alt=sse`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: systemPrompt }] },
-          contents,
-          generationConfig: { temperature: 0.85, topP: 0.95, maxOutputTokens: 2048 },
-        }),
-      }
-    )
+    ;({ res: geminiRes } = await geminiStream({
+      system_instruction: { parts: [{ text: systemPrompt }] },
+      contents,
+      generationConfig: { temperature: 0.85, topP: 0.95, maxOutputTokens: 2048 },
+    }))
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Unknown error'
-    return NextResponse.json({ error: `Could not reach the AI service: ${msg}` }, { status: 500 })
-  }
-
-  if (!geminiRes.ok || !geminiRes.body) {
-    const errText = await geminiRes.text().catch(() => '')
-    console.error('Gemini API error (interview-coach):', errText.slice(0, 500))
-    return NextResponse.json({ error: 'Something went wrong with the interview coach. Please try again.' }, { status: 502 })
+    const msg = e instanceof Error ? e.message : 'Could not reach the AI service.'
+    return NextResponse.json({ error: msg }, { status: 502 })
   }
 
   // Re-stream just the text deltas as plain text
-  const reader = geminiRes.body.getReader()
+  const reader = geminiRes.body!.getReader()
   const decoder = new TextDecoder()
   const encoder = new TextEncoder()
 

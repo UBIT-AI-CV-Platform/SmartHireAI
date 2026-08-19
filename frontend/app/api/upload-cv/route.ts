@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { pickGeminiKey } from '@/lib/gemini'
+import { geminiGenerate, hasGeminiKeys } from '@/lib/gemini'
 import { rateLimit } from '@/lib/rate-limit'
 import { extractCvText } from '@/lib/extractCvText'
+import { extractPdfLinksDetailed } from '@/lib/pdfLinks'
+import type { LabeledPdfLink } from '@/lib/pdfLinks'
+import { cleanCvProjects } from '@/lib/cleanCv'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
-
-// Free Google Gemini model. Change here if you want a different one.
-// Options (all have a free tier): gemini-2.5-flash, gemini-2.0-flash, gemini-flash-latest
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 
 // Keep uploads sensible: base64 of a ~6 MB file is ~8 MB of text.
 const MAX_FILE_B64 = 9 * 1024 * 1024
@@ -22,13 +21,10 @@ const ALLOWED_MIME = new Set([
   'text/plain',
 ])
 
-// PDF hyperlinks live in annotations and are often invisible to text extraction
-// (the PDF only contains a clickable label). Pull their URI targets out so they
-// can be supplied to the model alongside the visual PDF.
-function pdfString(value: string) {
-  return value.replace(/\\([()\\])/g, '$1').replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\\t/g, '\t')
-}
-
+// PDF hyperlinks are read properly via unpdf (see lib/pdfLinks.ts) because most
+// reporters (Chrome, Word, Canva, LaTeX) store annotations in compressed object
+// streams that a raw byte scan can never see. The helpers below are only for
+// the plain-text paths (Word / RTF / txt), which keep raw URLs in the text.
 function normaliseUrl(value: string) {
   const url = value.trim().replace(/[),.;\]}]+$/g, '')
   return /^(?:https?:\/\/|www\.)/i.test(url) ? (url.startsWith('www.') ? `https://${url}` : url) : ''
@@ -40,45 +36,213 @@ function urlsIn(value: string) {
     .filter(Boolean)
 }
 
-function extractPdfLinks(bytes: Buffer) {
-  const raw = bytes.toString('latin1')
-  const urls = urlsIn(raw)
-  const uri = /\/URI\s*(?:\(((?:\\.|[^\\)])*)\)|<([0-9a-fA-F]+)>)/g
-  for (const match of raw.matchAll(uri)) {
-    const literal = match[1] ? pdfString(match[1]) : Buffer.from(match[2] || '', 'hex').toString('utf8')
-    const url = normaliseUrl(literal)
-    if (url) urls.push(url)
-  }
-  return [...new Map(urls.map((url) => [url.toLowerCase(), url])).values()]
-}
-
-type LinkableEntry = { name?: string; title?: string; description?: string; link?: string }
+type NamedLink = { label?: string; url?: string }
+type LinkableEntry = { name?: string; title?: string; description?: string; link?: string; links?: NamedLink[] }
+type ExperienceEntry = { role: string; organization: string; period: string; bullets: string[] }
 
 // The model normally maps the supplied URLs itself. These small fallbacks cover
 // PDFs whose annotation labels cannot be read by the model: first promote a URL
 // that made it into an entry's text, then assign unmistakable project/credential
 // URLs to the matching missing entries.
-function recoverEntryLinks(cv: Record<string, unknown>, documentUrls: string[]) {
+export function recoverEntryLinks(cv: Record<string, unknown>, documentUrls: string[], labeledLinks: LabeledPdfLink[] = []) {
   const entries = (key: string) => Array.isArray(cv[key]) ? cv[key] as LinkableEntry[] : []
+  const expEntries = (key: string) => Array.isArray(cv[key]) ? cv[key] as (LinkableEntry & { role?: string; organization?: string })[] : []
   const groups = [entries('projects'), entries('certifications'), entries('courses'), entries('awards')]
   const used = new Set<string>()
+
+  // Helper: generate a human-readable label for a URL based on domain patterns,
+  // preferring the label unpdf read straight off the PDF (e.g. "Live Demo").
+  const labelFor = (url: string): string => {
+    const labeled = labeledLinks.find((l) => l.url.toLowerCase() === url.toLowerCase())
+    if (labeled?.label) return labeled.label
+    const lower = url.toLowerCase()
+    if (/github\.com/i.test(lower)) return 'GitHub'
+    if (/gitlab\.com/i.test(lower)) return 'GitLab'
+    if (/bitbucket\.org/i.test(lower)) return 'Bitbucket'
+    if (/vercel\.app|vercel\.dev/i.test(lower)) return 'Live Demo'
+    if (/netlify\.app|netlify\.com/i.test(lower)) return 'Live Demo'
+    if (/replit\.com/i.test(lower)) return 'Replit'
+    if (/devpost\.com/i.test(lower)) return 'Devpost'
+    if (/behance\.net/i.test(lower)) return 'Behance'
+    if (/dribbble\.com/i.test(lower)) return 'Dribbble'
+    if (/heroku\.com/i.test(lower)) return 'Live Demo'
+    if (/onrender\.com|render\.com/i.test(lower)) return 'Live Demo'
+    if (/pages\.dev|workers\.dev|azurewebsites\.net|appspot\.com|railway\.app|fly\.dev/i.test(lower)) return 'Live Demo'
+    if (/demo|live|app|site|web/i.test(lower)) return 'Demo'
+    return 'Open link'
+  }
+
+  // Helper: detect if a URL is a project-type link (repo, demo, portfolio)
+  const isProjectUrl = (url: string) =>
+    /github|gitlab|bitbucket|vercel|netlify|devpost|replit|behance|dribbble|portfolio|demo|live|heroku|onrender|render\.com|pages\.dev|workers\.dev|azurewebsites|appspot|railway|fly\.dev/i.test(url)
+
+  // Helper: detect if a URL is a credential/certificate link
+  const isCredentialUrl = (url: string) =>
+    /credly|coursera|udemy|edx|credential|certificate|certification|linkedin\.com\/learning|aws\.amazon|learn\.microsoft|skillsoft|google|meta|microsoft\.com\/cert|comptia|cisco|oracle|pmi|itil|terraform|hashicorp|docker|kubernetes|azure|acloudguru|pluralsight|cloudacademy|kodekloud|linuxfoundation|opengroup|isaca|offensive|sans\.org|cybrary|hackthebox|tryhackme|pwnedlabs/i.test(url)
+
+  // Pass 1: normalise all existing links the model already extracted and mark them used
   for (const group of groups) {
     for (const entry of group) {
       const ownUrl = normaliseUrl(String(entry.link || '')) || urlsIn(`${entry.name || ''} ${entry.title || ''} ${entry.description || ''}`)[0]
       if (ownUrl) { entry.link = ownUrl; used.add(ownUrl.toLowerCase()) }
+      entry.links = Array.isArray(entry.links)
+        ? entry.links.map((item) => ({ label: String(item?.label || '').trim(), url: normaliseUrl(String(item?.url || '')) })).filter((item) => item.url)
+        : []
+      for (const item of entry.links) used.add(item.url!.toLowerCase())
+    }
+  }
+
+  // Also scan experience entries for URLs in text
+  const experience = expEntries('experience')
+  for (const exp of experience) {
+    const ownUrl = normaliseUrl(String(exp.link || ''))
+    if (ownUrl) { exp.link = ownUrl; used.add(ownUrl.toLowerCase()) }
+    const textUrls = urlsIn(`${exp.role || ''} ${exp.organization || ''}`)
+    if (textUrls.length && !exp.link) {
+      exp.link = textUrls[0]
+      used.add(textUrls[0].toLowerCase())
     }
   }
 
   const remaining = documentUrls.filter((url) => !used.has(url.toLowerCase()))
-  const projectUrls = remaining.filter((url) => /github|gitlab|bitbucket|vercel|netlify|devpost|replit|behance|dribbble|portfolio|demo/i.test(url))
-  const credentialUrls = remaining.filter((url) => /credly|coursera|udemy|edx|credential|certificate|certification|linkedin\.com\/learning|aws\.amazon|learn\.microsoft|skillsoft/i.test(url))
+  const projects = entries('projects')
+
+  // ── PROJECT URL ASSIGNMENT ──────────────────────────────────────────────
+  // For every project that has no links at all, find matching project URLs.
+  // Projects with multiple right-side labels (GitHub + Demo) need ALL of them.
+  const projectUrls = remaining.filter(isProjectUrl)
+  const usedProjectUrls = new Set<string>()
+
+  for (const project of projects) {
+    if (project.link && (project.links?.length ?? 0) > 0) continue // already fully linked
+
+    // Find project URLs not yet claimed
+    const available = projectUrls.filter((u) => !usedProjectUrls.has(u.toLowerCase()))
+    if (!available.length) break
+
+    // Try to match by project name appearing in the URL path
+    const projectName = (project.name || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+    const matchedByName = available.filter((u) => {
+      try {
+        const path = new URL(u).pathname.toLowerCase().replace(/[^a-z0-9]/g, '')
+        return projectName.length > 2 && path.includes(projectName)
+      } catch { return false }
+    })
+
+    // Use name-matched URLs first, then fall back to positional assignment
+    const assigned = matchedByName.length > 0 ? matchedByName : available.slice(0, 2) // at most 2 per project (GitHub + Demo)
+
+    const existing = new Set((project.links ?? []).map((item) => item.url!.toLowerCase()))
+    if (project.link) existing.add(project.link.toLowerCase())
+
+    for (const url of assigned) {
+      if (!existing.has(url.toLowerCase())) {
+        const label = labelFor(url)
+        project.links = project.links ?? []
+        project.links.push({ label, url })
+        existing.add(url.toLowerCase())
+        usedProjectUrls.add(url.toLowerCase())
+      }
+    }
+    if (!project.link && project.links?.length) {
+      project.link = project.links[0].url
+    }
+  }
+
+  // For any remaining unassigned project URLs, try to distribute to projects that only have 1 link
+  const leftoverProjectUrls = projectUrls.filter((u) => !usedProjectUrls.has(u.toLowerCase()))
+  if (leftoverProjectUrls.length) {
+    for (const project of projects) {
+      if (!leftoverProjectUrls.length) break
+      const linkCount = project.links?.length ?? 0
+      if (linkCount < 2) {
+        const url = leftoverProjectUrls.shift()!
+        const existing = new Set((project.links ?? []).map((item) => item.url!.toLowerCase()))
+        if (project.link) existing.add(project.link.toLowerCase())
+        if (!existing.has(url.toLowerCase())) {
+          project.links = project.links ?? []
+          project.links.push({ label: labelFor(url), url })
+          if (!project.link) project.link = url
+        }
+      }
+    }
+  }
+
+  // Mark all assigned project URLs as used
+  for (const url of usedProjectUrls) used.add(url.toLowerCase())
+
+  // ── CREDENTIAL / CERTIFICATION URL ASSIGNMENT ───────────────────────────
+  const credentialUrls = remaining.filter((u) => !used.has(u.toLowerCase()) && isCredentialUrl(u))
   const fill = (items: LinkableEntry[], urls: string[]) => {
     for (const entry of items) {
       if (!entry.link && urls.length) entry.link = urls.shift()
     }
   }
-  fill(entries('projects'), projectUrls)
   fill(entries('certifications'), credentialUrls)
+
+  // Label-based credential matching: when unpdf captured the certificate name
+  // as the link label (credentials are usually themselves the clickable text),
+  // pair that URL with the certification whose name is written on the CV.
+  const norm = (s: string) => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '')
+  const certificationEntries = entries('certifications')
+  if (certificationEntries.length && labeledLinks.length) {
+    const labelPool = [...labeledLinks].sort((a, b) => b.label.length - a.label.length)
+    for (const cert of certificationEntries) {
+      if (cert.link) continue
+      const name = norm(cert.name || '')
+      if (name.length < 3) continue
+      const hit = labelPool.find((l) => {
+        if (used.has(l.url.toLowerCase())) return false
+        const ln = norm(l.label)
+        if (ln.length < 3) return false
+        return ln.includes(name) || name.includes(ln)
+      })
+      if (hit) {
+        cert.link = hit.url
+        used.add(hit.url.toLowerCase())
+      }
+    }
+  }
+
+  // ── REMAINING URL DISTRIBUTION ──────────────────────────────────────────
+  // After project and credential URLs are claimed, any remaining embedded CV
+  // hyperlink goes to certifications → courses → awards → experience.
+  const unclaimed = remaining.filter((u) => !used.has(u.toLowerCase()) && !isProjectUrl(u) && !isCredentialUrl(u))
+  fill(entries('certifications'), unclaimed)
+  fill(entries('courses'), unclaimed)
+  fill(entries('awards'), unclaimed)
+  fill(experience, unclaimed)
+}
+
+// Preserve the CV's title / employer / dates / bullets split even if the model
+// sends a malformed experience field. This prevents a full job description
+// from being rendered as one large, bold job title.
+function normalizeExperience(raw: unknown): ExperienceEntry[] {
+  if (!Array.isArray(raw)) return []
+  return raw.map((entry) => {
+    const value = (entry ?? {}) as Partial<ExperienceEntry>
+    let role = typeof value.role === 'string' ? value.role.trim() : ''
+    const bullets = Array.isArray(value.bullets)
+      ? value.bullets.filter((bullet): bullet is string => typeof bullet === 'string' && bullet.trim() !== '').map((bullet) => bullet.trim())
+      : []
+    const split = role.split(/\s*\b(?:bullets?|responsibilities)\s*:/i)
+    if (split.length > 1) {
+      role = split.shift()?.trim() || ''
+      const overflow = split.join(' ').trim()
+      if (overflow) bullets.unshift(overflow)
+    }
+    if (role.length > 100) {
+      bullets.unshift(role)
+      const title = role.split(/\s*[-–—|:]\s*|\s*\(/)[0].trim()
+      role = title && title.length <= 100 ? title : role.slice(0, 100).replace(/\s+\S*$/, '')
+    }
+    return {
+      role,
+      organization: typeof value.organization === 'string' ? value.organization.trim() : '',
+      period: typeof value.period === 'string' ? value.period.trim() : '',
+      bullets,
+    }
+  }).filter((entry) => entry.role || entry.organization || entry.period || entry.bullets.length)
 }
 
 // Same structured CV shape the generator returns, plus a `contact` object, so a
@@ -104,11 +268,14 @@ const RESPONSE_SCHEMA = {
       items: {
         type: 'OBJECT',
         properties: {
-          role: { type: 'STRING' },
-          organization: { type: 'STRING' },
-          period: { type: 'STRING' },
-          bullets: { type: 'ARRAY', items: { type: 'STRING' } },
+          role: { type: 'STRING', description: 'Job title only. Do not include company name, dates, bullets, or a project description.' },
+          organization: { type: 'STRING', description: 'Employer or organization only. Empty string if absent in the uploaded CV.' },
+          period: { type: 'STRING', description: 'Exact date range from the uploaded CV, for example "Jan 2024 - Present". Empty string if absent.' },
+          bullets: { type: 'ARRAY', items: { type: 'STRING' }, description: 'Original responsibility or achievement bullet points only. Do not combine them into the role field.' },
+          link: { type: 'STRING', description: 'If the role title, organization name, or entry has an associated hyperlink, put the FULL URL here. Empty string if there is no link.' },
         },
+        required: ['role', 'organization', 'period', 'bullets'],
+        propertyOrdering: ['role', 'organization', 'period', 'bullets', 'link'],
       },
     },
     education: {
@@ -140,7 +307,21 @@ const RESPONSE_SCHEMA = {
       type: 'ARRAY',
       items: {
         type: 'OBJECT',
-        properties: { name: { type: 'STRING' }, description: { type: 'STRING' }, link: { type: 'STRING' } },
+        properties: {
+          name: { type: 'STRING' },
+          description: { type: 'STRING' },
+          date: { type: 'STRING', description: 'Exact project date or date range as written in the uploaded CV. Empty string if absent.' },
+          link: { type: 'STRING' },
+          links: {
+            type: 'ARRAY',
+            items: {
+              type: 'OBJECT',
+              properties: { label: { type: 'STRING' }, url: { type: 'STRING' } },
+              required: ['label', 'url'],
+            },
+            description: 'Every separate labeled project hyperlink, e.g. { label: "GitHub", url: "https://github.com/..." } and { label: "Demo", url: "https://..." }. Keep all of them.',
+          },
+        },
         required: ['name'],
       },
     },
@@ -202,15 +383,15 @@ const SYSTEM_PROMPT = `You are a resume/CV extraction engine. You will be given 
 
 CONTENT RULES:
 - Extract information as written. Never invent employers, dates, degrees, skills, projects, or achievements that are not in the document.
-- Preserve the document's real structure: experience entries with the actual role / organization / period and the original bullet points; education with real degrees / institutes / periods; skills exactly as written.
+- Preserve the document's real structure: experience entries with the actual role / organization / period and original bullet points. Never merge an experience title, employer, date, or bullet into another field. Keep the entry order exactly as in the uploaded CV.
 - "full_name": the candidate's name as it appears in the document.
 - "title": the most recent or prominent job title (or headline) from the document.
 - "summary": the professional summary/objective from the document if present; otherwise write a 2-3 sentence summary using ONLY facts present in the document.
 - experience "period" / education "period": copy the dates exactly as written. If a date is absent, use an EMPTY STRING "" - never write "Date not specified", "N/A", or "Present" unless the document says so.
-- certifications, courses, awards: include EVERY item listed in the document, with issuer/provider/date exactly as written (empty string if absent). Never drop or invent any.
-- LINKS: extract and preserve EVERY hyperlink / URL in the document. If a certification, course, award, or custom-section entry has an associated link (credential URL, portfolio link, project link, repository URL, etc.), put the FULL URL in that entry's "link" field (empty string if there is none). Keep "link" in custom_sections entries as well. Do not drop, truncate, or rewrite URLs.
-- A separate list of hyperlink targets may be supplied with the document. Treat each target as a real clickable link from the CV, match it to its nearby certificate/project label, and return it in that entry's "link" field.
-- projects: extract every item from a Projects / Personal Projects section as { name, description, link }. Put the associated repository, demo, or portfolio URL in link. Do not put Projects under custom_sections.
+- certifications, courses, awards: include EVERY item listed in the document, with issuer/provider/date exactly as written (empty string if absent). Never drop or invent any. When multiple certificates appear on one line, make a separate item for each certificate. If a certificate name is blue/clickable in the PDF, its item MUST contain the matching full URL in link.
+- LINKS: extract and preserve EVERY hyperlink / URL in the document. If an experience, certification, course, award, or custom-section entry has an associated link (company website, credential URL, portfolio link, project link, repository URL, etc.), put the FULL URL in that entry's "link" field (empty string if there is none). For experience entries, if the job title or company name is clickable/linked, capture that URL. Keep "link" in custom_sections entries as well. Do not drop, truncate, or rewrite URLs.
+- A separate list of hyperlink targets may be supplied with the document. Treat every target as a real clickable PDF link. Match each target to its nearby visible label. IMPORTANT: For projects with right-aligned labels (GitHub, Demo, Live Demo), the URLs appear in top-to-bottom order matching the project order. Match the FIRST project URL to the FIRST project, the SECOND project URL to the SECOND project, etc. When a project has two labels (GitHub + Demo), both URLs belong to the SAME project. For experience entries, if a job title or company name is clickable, match the URL to that entry. For certifications, match credential URLs to the certification they appear near. Never discard a target.
+- projects: extract every item from a Projects / Personal Projects section as { name, description, date, link, links }. Copy a project's exact displayed date or date range into date. CRITICAL: When the document lists multiple projects, each with right-aligned clickable labels (e.g. "GitHub" and "Live Demo" or "Repository" and "Demo"), you MUST match each URL to its CORRECT project by vertical position - the top URL belongs to the top project, the second URL to the second project, and so on. Preserve EVERY clickable label in links as { label, url }; retain the visible label text exactly (e.g. "GitHub", "Live Demo", "Repository", "Case Study") and keep links in their displayed order. If a project has two right-side labels, both URLs go in that single project's links array. link may be the primary URL. Do not put Projects under custom_sections.
 - custom_sections: any other titled section (Languages, Volunteering, Interests, Publications, etc.) goes under its original heading with each entry as { title, description, link }.
 - contact: extract email, phone, location, and any LinkedIn / GitHub / portfolio URLs from the document if clearly present; leave fields empty otherwise. Never guess an email or phone.
 
@@ -223,30 +404,6 @@ SCORING RULES (be authentic and realistic - most real CVs score 55-85):
 - suggestions: exactly 3 clear, complete, actionable sentences specific to THIS CV.
 
 WRITING STYLE: Never use em-dash or en-dash characters anywhere in your output (summary, bullet points, suggestions, or any text field). Use a comma, a period, or a spaced hyphen ( - ) instead.`
-
-/**
- * Try `fn` with each configured Gemini key in turn until one succeeds.
- * A single dead/denied key in the pool must not take the feature down, and
- * `pickGeminiKey()` starts at index 0 on every cold start.
- */
-async function firstOkKey(fn: (key: string) => Promise<Response>): Promise<{ res: Response | null; status: number; err: string }> {
-  let status = 0
-  let err = ''
-  for (let attempt = 0; attempt < 4; attempt++) {
-    const key = pickGeminiKey()
-    if (!key) break
-    try {
-      const res = await fn(key)
-      if (res.ok) return { res, status: 0, err: '' }
-      status = res.status
-      err = (await res.text()).slice(0, 300)
-    } catch (e) {
-      status = 0
-      err = e instanceof Error ? e.message : 'network error'
-    }
-  }
-  return { res: null, status, err }
-}
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}))
@@ -283,7 +440,7 @@ export async function POST(request: Request) {
   const limited = await rateLimit(supabase, 'upload-cv')
   if (!limited.ok) return limited.response
 
-  if (!pickGeminiKey()) {
+  if (!hasGeminiKeys()) {
     return NextResponse.json(
       { error: 'AI is not configured yet. Add GEMINI_API_KEY or GEMINI_API_KEYS to .env.local.' },
       { status: 500 }
@@ -299,12 +456,18 @@ export async function POST(request: Request) {
   // sent as a text part, which Gemini always accepts.
   const bytes = Buffer.from(fileData, 'base64')
   let documentUrls: string[] = []
+  let labeledLinks: LabeledPdfLink[] = []
   let parts: Record<string, unknown>[]
   if (mime === 'application/pdf') {
-    documentUrls = extractPdfLinks(bytes)
+    const pdfLinks = await extractPdfLinksDetailed(new Uint8Array(bytes))
+    documentUrls = pdfLinks.urls
+    labeledLinks = pdfLinks.labeled
+    const linkText = pdfLinks.labeled.length
+      ? `Clickable hyperlink targets embedded in this CV, in reading order (visible label, then URL): ${pdfLinks.labeled.map((l) => `${l.label} -> ${l.url}`).join(' | ')}`
+      : `Clickable hyperlink targets embedded in this CV: ${documentUrls.join(' | ')}`
     parts = [
       { inlineData: { mimeType: mime, data: fileData } },
-      ...(documentUrls.length ? [{ text: `Clickable hyperlink targets embedded in this CV: ${documentUrls.join(' | ')}` }] : []),
+      ...(documentUrls.length ? [{ text: linkText }] : []),
       { text: userPrompt },
     ]
   } else {
@@ -319,43 +482,30 @@ export async function POST(request: Request) {
     parts = [{ text }, { text: userPrompt }]
   }
 
-  // Call Gemini, rotating keys until one works (handles a dead key in the pool).
-  const { res, status, err } = await firstOkKey((key) =>
-    fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: [{ role: 'user', parts }],
-          generationConfig: {
-            temperature: 0.3,
-            responseMimeType: 'application/json',
-            responseSchema: RESPONSE_SCHEMA,
-          },
-        }),
-      }
-    )
-  )
-  if (!res) {
-    console.error('Gemini API error (upload-cv):', err)
-    if (status === 403) {
-      return NextResponse.json(
-        { error: 'AI access was denied for your configured Gemini key. Check GEMINI_API_KEYS in .env.local and remove any invalid keys.' },
-        { status: 502 }
-      )
-    }
-    return NextResponse.json({ error: 'Something went wrong analyzing your CV. Please try again.' }, { status: 502 })
+  // geminiGenerate rotates keys (a dead key must not take the feature down)
+  // and walks the model chain if the primary is slow or overloaded.
+  let aiText: string
+  try {
+    aiText = await geminiGenerate({
+      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: 'user', parts }],
+      generationConfig: {
+        temperature: 0.3,
+        responseMimeType: 'application/json',
+        responseSchema: RESPONSE_SCHEMA,
+      },
+    })
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'Something went wrong analyzing your CV. Please try again.'
+    console.error('Gemini API error (upload-cv):', message)
+    return NextResponse.json({ error: message }, { status: 502 })
   }
 
   try {
-    const data = await res.json()
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!text) return NextResponse.json({ error: 'AI returned an empty response. Please try again.' }, { status: 502 })
-
-    const cv = JSON.parse(text)
-    recoverEntryLinks(cv, documentUrls)
+    const cv = JSON.parse(aiText)
+    cv.experience = normalizeExperience(cv.experience)
+    recoverEntryLinks(cv, documentUrls, labeledLinks)
+    cleanCvProjects(cv)
 
     // Photo + any contact gaps fall back to the verified profile.
     const { data: prof } = await supabase.from('profiles').select('photo_url, email, phone, location, linkedin, linkedin_url, github, github_url').eq('id', user.id).maybeSingle()
