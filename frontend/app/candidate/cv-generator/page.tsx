@@ -774,7 +774,7 @@ export default function CVGeneratorPage() {
       <div className="grid grid-cols-12 gap-4 md:gap-8 items-start">
         {/* CV preview */}
         <div className="col-span-12 lg:col-span-8 order-1">
-          <div ref={previewRef} style={{ fontFamily: FONTS[font] }} className="bg-white rounded-[2rem] cv-preview-shadow overflow-hidden lg:min-h-[800px] flex flex-col border border-surface-container">
+          <div ref={previewRef} style={{ fontFamily: FONTS[font] }} className="cv-paper bg-white rounded-[2rem] cv-preview-shadow overflow-hidden lg:min-h-[800px] flex flex-col border border-surface-container">
             {loading || uploading || restoring ? (
               <div className="flex-1 flex flex-col items-center justify-center gap-4 p-16 min-h-[600px]">
                 <div className="flex gap-2">
@@ -1240,7 +1240,7 @@ function CVQuickView({ cv }: { cv: CV }) {
     )
   }
   return (
-    <div className="bg-white rounded-2xl border border-surface-container p-6 shadow-sm">
+    <div className="cv-paper bg-white rounded-2xl border border-surface-container p-6 shadow-sm">
       <h2 className="text-2xl font-black text-on-surface tracking-tight">{cv.full_name}</h2>
       {cv.title && <p className="text-base font-semibold text-primary mb-2">{cv.title}</p>}
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-on-surface-variant mb-5">

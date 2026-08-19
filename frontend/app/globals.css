@@ -363,6 +363,54 @@ html {
   font-variation-settings: 'FILL' 0, 'wght' 350, 'GRAD' 0, 'opsz' 24;
 }
 
+/* ===== CV paper =====
+   A generated CV is a document, not a UI surface: it renders on white, is sent
+   to react-to-print for the PDF, and is what a recruiter sees. So it must stay
+   light even while the rest of the app is in dark mode.
+
+   The CV markup styles itself entirely with `text-on-surface`,
+   `bg-surface-container` and friends, which the `.dark` block above flips to
+   near-white - white text on white paper, i.e. an invisible CV. Instead of
+   adding a `dark:` variant to every class inside the preview, this re-pins the
+   surface/text tokens to their light values on the container; every utility in
+   the subtree then resolves to paper colors on its own. */
+.cv-paper {
+  --color-background: #f7f9fb;
+  --color-surface: #f7f9fb;
+  --color-surface-bright: #f7f9fb;
+  --color-surface-dim: #d8dadc;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f2f4f6;
+  --color-surface-container: #eceef0;
+  --color-surface-container-high: #e6e8ea;
+  --color-surface-container-highest: #e0e3e5;
+  --color-surface-variant: #e0e3e5;
+
+  --color-on-background: #191c1e;
+  --color-on-surface: #191c1e;
+  --color-on-surface-variant: #464555;
+
+  --color-outline: #777587;
+  --color-outline-variant: #c7c4d8;
+
+  --color-inverse-surface: #2d3133;
+  --color-inverse-on-surface: #eff1f3;
+  --color-inverse-primary: #c3c0ff;
+
+  /* Back to the darker indigo - the dark-mode primary is lifted for contrast
+     against charcoal and washes out on white. */
+  --color-primary: #3525cd;
+  --color-primary-container: #4f46e5;
+
+  color-scheme: light;
+}
+
+/* Material Symbols inside the CV sit on white, so keep the light-mode weight
+   even when the app-level .dark rule above has thinned them. */
+.dark .cv-paper .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
 /* Auth Slide Animation */
 @keyframes slideIn {
   from {

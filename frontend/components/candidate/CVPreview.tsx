@@ -49,7 +49,7 @@ const credLine = (c: { name: string; issuer?: string; provider?: string; date?: 
 export default function CVPreview({ cv }: { cv: CVContent | null }) {
   if (!cv) return <p className="text-sm text-on-surface-variant text-center py-8">This CV has no saved content.</p>
   return (
-    <div className="bg-white rounded-2xl border border-surface-container p-6 shadow-sm">
+    <div className="cv-paper bg-white rounded-2xl border border-surface-container p-6 shadow-sm">
       <h2 className="text-2xl font-black text-on-surface tracking-tight">{cv.full_name}</h2>
       {cv.title && <p className="text-base font-semibold text-primary mb-2">{cv.title}</p>}
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-on-surface-variant mb-5">
