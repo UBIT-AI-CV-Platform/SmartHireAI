@@ -6,13 +6,13 @@ type CVLike = {
   title: string
   contact?: Contact
   summary?: string
-  experience?: { role: string; organization: string; period: string; bullets: string[] }[]
+  experience?: { role: string; organization: string; period: string; bullets: string[]; link?: string }[]
   education?: { degree: string; institute: string; period: string }[]
   skills?: string[]
   certifications?: { name: string; issuer?: string; date?: string; link?: string }[]
   courses?: { name: string; provider?: string; date?: string; link?: string }[]
   awards?: { name: string; issuer?: string; date?: string; link?: string }[]
-  projects?: { name: string; description?: string; link?: string }[]
+  projects?: { name: string; description?: string; date?: string; link?: string; links?: { label: string; url: string }[] }[]
   custom_sections?: { heading: string; items: { title: string; description?: string; link?: string }[] }[]
 }
 
@@ -61,6 +61,7 @@ export async function cvToDocxBlob(cv: CVLike): Promise<Blob> {
         ],
       }))
       if (e.organization) children.push(new Paragraph({ children: [new TextRun({ text: e.organization, size: 20, color: ACCENT, bold: true })] }))
+      if (e.link) children.push(new Paragraph({ indent: { left: 360 }, children: [new TextRun({ text: e.link, size: 18, color: ACCENT })] }))
       for (const b of e.bullets || []) children.push(new Paragraph({ text: b, bullet: { level: 0 }, spacing: { after: 20 } }))
     }
   }
@@ -104,9 +105,11 @@ export async function cvToDocxBlob(cv: CVLike): Promise<Blob> {
   if (cv.projects?.length) {
     children.push(heading('Projects'))
     for (const project of cv.projects) {
-      children.push(new Paragraph({ spacing: { before: 60 }, children: [new TextRun({ text: project.name, bold: true, size: 20 })] }))
+      children.push(new Paragraph({ spacing: { before: 60 }, children: [new TextRun({ text: project.name, bold: true, size: 20 }), ...(project.date ? [new TextRun({ text: `    ${project.date}`, size: 18, color: MUTED })] : [])] }))
       if (project.description) children.push(new Paragraph({ children: [new TextRun({ text: project.description, size: 20 })] }))
-      if (project.link) children.push(new Paragraph({ children: [new TextRun({ text: project.link, size: 18, color: ACCENT })] }))
+      const links = (project.links ?? []).filter((link, index, all) => link.url && all.findIndex((item) => item.url === link.url) === index)
+      for (const link of links) children.push(new Paragraph({ children: [new TextRun({ text: `${link.label}: ${link.url}`, size: 18, color: ACCENT })] }))
+      if (project.link && !links.some((link) => link.url === project.link)) children.push(new Paragraph({ children: [new TextRun({ text: project.link, size: 18, color: ACCENT })] }))
     }
   }
 

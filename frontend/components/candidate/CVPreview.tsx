@@ -5,13 +5,13 @@ export type CVContent = {
   title?: string
   contact?: { email?: string; phone?: string; location?: string }
   summary?: string
-  experience?: { role: string; organization: string; period: string; bullets: string[] }[]
+  experience?: { role: string; organization: string; period: string; bullets: string[]; link?: string }[]
   education?: { degree: string; institute: string; period: string }[]
   skills?: string[]
   certifications?: { name: string; issuer?: string; date?: string; link?: string }[]
   courses?: { name: string; provider?: string; date?: string; link?: string }[]
   awards?: { name: string; issuer?: string; date?: string; link?: string }[]
-  projects?: { name: string; description?: string; link?: string }[]
+  projects?: { name: string; description?: string; date?: string; link?: string; links?: { label: string; url: string }[] }[]
   custom_sections?: { heading: string; items: { title: string; description?: string; link?: string }[] }[]
 }
 
@@ -36,6 +36,20 @@ const LinkedTitle = ({ value, link }: { value: string; link?: string }) => (
     : <span className="font-bold">{value}</span>
 )
 
+// Project names stay plain text when the clickable labels (GitHub / Live Demo)
+// are already rendered beside them, so a heading is never a duplicate link.
+const ProjectTitle = ({ value, link, links, className = 'font-bold' }: { value: string; link?: string; links?: { label: string; url: string }[]; className?: string }) => (
+  links && links.length > 0
+    ? <span className={className}>{value}</span>
+    : <LinkedTitle value={value} link={link} />
+)
+
+const ProjectLinks = ({ links, inline = false }: { links?: { label: string; url: string }[]; inline?: boolean }) => {
+  const unique = (links ?? []).filter((link, index, all) => link.url && all.findIndex((item) => item.url === link.url) === index)
+  if (!unique.length) return null
+  return <div className={`${inline ? '' : 'mt-1'} flex flex-wrap gap-x-3 gap-y-1 text-xs font-semibold`}>{unique.map((link, index) => <span key={link.url} className="inline-flex items-center gap-3"><a href={normalizeUrl(link.url)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{link.label || 'Open link'}</a>{index < unique.length - 1 && <span className="text-outline">|</span>}</span>)}</div>
+}
+
 const credLine = (c: { name: string; issuer?: string; provider?: string; date?: string; link?: string }, i: number) => {
   const sub = [c.issuer || c.provider, c.date].filter(Boolean).join(' • ')
   return (
@@ -49,7 +63,7 @@ const credLine = (c: { name: string; issuer?: string; provider?: string; date?: 
 export default function CVPreview({ cv }: { cv: CVContent | null }) {
   if (!cv) return <p className="text-sm text-on-surface-variant text-center py-8">This CV has no saved content.</p>
   return (
-    <div className="bg-white rounded-2xl border border-surface-container p-6 shadow-sm">
+    <div className="cv-paper bg-white rounded-2xl border border-surface-container p-6 shadow-sm">
       <h2 className="text-2xl font-black text-on-surface tracking-tight">{cv.full_name}</h2>
       {cv.title && <p className="text-base font-semibold text-primary mb-2">{cv.title}</p>}
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-on-surface-variant mb-5">
@@ -66,7 +80,7 @@ export default function CVPreview({ cv }: { cv: CVContent | null }) {
             {cv.experience.map((e, i) => (
               <div key={i}>
                 <div className="flex justify-between items-baseline gap-2">
-                  <p className="text-sm font-bold text-on-surface">{e.role}</p>
+                  <p className="text-sm font-bold text-on-surface"><LinkedTitle value={e.role} link={e.link} /></p>
                   {e.period && <span className="text-xs text-outline font-semibold">{e.period}</span>}
                 </div>
                 {e.organization && <p className="text-xs font-semibold text-primary">{e.organization}</p>}
@@ -109,7 +123,7 @@ export default function CVPreview({ cv }: { cv: CVContent | null }) {
       {cv.projects && cv.projects.length > 0 && (
         <Block title="Projects">
           <div className="space-y-2">
-            {cv.projects.map((project, i) => <div key={`${project.name}-${i}`}><p className="text-sm text-on-surface"><LinkedTitle value={project.name} link={project.link} /></p>{project.description && <p className="text-sm text-on-surface-variant">{project.description}</p>}</div>)}
+            {cv.projects.map((project, i) => <div key={`${project.name}-${i}`}><div className="flex justify-between items-baseline gap-2"><p className="text-sm text-on-surface"><ProjectTitle value={project.name} link={project.link} links={project.links} /></p><div className="flex flex-wrap items-baseline justify-end gap-x-3 gap-y-1">{project.date && <span className="text-xs text-outline font-semibold">{project.date}</span>}<ProjectLinks links={project.links} inline /></div></div>{project.description && <p className="text-sm text-on-surface-variant">{project.description}</p>}</div>)}
           </div>
         </Block>
       )}

@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { pickGeminiKey } from '@/lib/gemini'
+import { geminiGenerate, hasGeminiKeys } from '@/lib/gemini'
 import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
 
 // Free Google Gemini model. Change here if you want a different one.
-// Options (all have a free tier): gemini-2.5-flash, gemini-2.0-flash, gemini-flash-latest
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 
 // The structured CV shape we ask Gemini to return (OpenAPI subset).
 const RESPONSE_SCHEMA = {
@@ -17,16 +15,40 @@ const RESPONSE_SCHEMA = {
     full_name: { type: 'STRING' },
     title: { type: 'STRING' },
     summary: { type: 'STRING' },
+    // Every field here is described and required on purpose. With a bare
+    // { type: 'STRING' } schema and no `required`, the model treats the split
+    // as optional and narrates the whole entry into `role` - measured 3x on a
+    // projects-only profile, it produced 80+ char roles like "Full Stack
+    // Developer (Project Lead) - ShopEase E-commerce Platform Personal
+    // Project" with organization empty and bullets missing entirely, plus
+    // duplicate entries for the same project. The CV template renders `role`
+    // bold, so that lands in the UI as one unreadable bold paragraph.
+    // Descriptions + required took it to 3/3 clean runs.
     experience: {
       type: 'ARRAY',
       items: {
         type: 'OBJECT',
         properties: {
-          role: { type: 'STRING' },
-          organization: { type: 'STRING' },
-          period: { type: 'STRING' },
-          bullets: { type: 'ARRAY', items: { type: 'STRING' } },
+          role: {
+            type: 'STRING',
+            description: 'Job title ONLY, at most 8 words, e.g. "Frontend Developer" or "Project Lead". Never include the company, the dates, bullet text, or any explanation of your own reasoning.',
+          },
+          organization: {
+            type: 'STRING',
+            description: 'Company name, or the project name for a project-based entry. At most 8 words. No commentary.',
+          },
+          period: {
+            type: 'STRING',
+            description: 'Dates only, e.g. "2023 - Present". Empty string when the profile gives no dates.',
+          },
+          bullets: {
+            type: 'ARRAY',
+            items: { type: 'STRING' },
+            description: '3 to 5 achievement bullets, each one sentence. ALL descriptive content belongs here, never in role or organization.',
+          },
         },
+        required: ['role', 'organization', 'period', 'bullets'],
+        propertyOrdering: ['role', 'organization', 'period', 'bullets'],
       },
     },
     education: {
@@ -125,7 +147,8 @@ You will be given a candidate's profile data, a target role, a tone, and optiona
 
 CONTENT RULES:
 - Be truthful. Use ONLY the information in the profile. Never invent employers, dates, degrees, or achievements.
-- If the candidate has no formal work experience, build the "experience" section from their PROJECTS - turn each project into an entry with strong, quantified, action-verb bullet points (role can be "Project", organization can be the project name or "Personal Project").
+- If the candidate has no formal work experience, build the "experience" section from their PROJECTS: exactly ONE entry per project, never the same project twice. Set "role" to a plain job title that fits the work (e.g. "Full Stack Developer"), "organization" to the project name, and put all the detail in "bullets" as strong, quantified, action-verb points.
+- NEVER explain your own reasoning inside a field value. Do not write meta text such as "as no formal company provided" or "projects are elevated to experience entries". Fields hold CV content only; "role" is a job title and nothing else.
 - Rewrite the professional summary to be confident and tailored to the target role using relevant keywords.
 - Use strong action verbs and measurable impact where the profile supports it (do NOT fabricate numbers).
 - "skills" should be the most relevant skills for the target role, ordered by relevance.
@@ -200,6 +223,51 @@ function buildProfileText(p: Record<string, unknown>, sections: Record<string, u
   return lines.join('\n')
 }
 
+type ExperienceEntry = { role: string; organization: string; period: string; bullets: string[] }
+
+/**
+ * Last line of defence for the experience section. The schema now forces the
+ * role/organization/period/bullets split, but a model that ignores it used to
+ * put the entire entry - company, dates, even "Bullets: ..." - into `role`,
+ * and the CV template renders `role` bold, so the whole section came out as
+ * one bold paragraph. Rather than hand that to the UI, salvage what we can:
+ * keep the leading job title and push the remainder into bullets.
+ */
+function normalizeExperience(raw: unknown): ExperienceEntry[] {
+  if (!Array.isArray(raw)) return []
+  return raw.map((entry) => {
+    const e = (entry ?? {}) as Partial<ExperienceEntry>
+    let role = typeof e.role === 'string' ? e.role.trim() : ''
+    const bullets = Array.isArray(e.bullets)
+      ? e.bullets.filter((b): b is string => typeof b === 'string' && b.trim() !== '').map((b) => b.trim())
+      : []
+
+    // "Lead Engineer - Project: Foo. Bullets: Built ..." -> title + the rest.
+    const spill = role.split(/\s*(?:\bBullets\s*:|\s-\s(?=Project\s*:|Role\s*:))/i)
+    if (spill.length > 1) {
+      role = spill[0].trim()
+      const rest = spill.slice(1).join(' ').trim()
+      if (rest) bullets.unshift(rest)
+    }
+    // A real job title is short. Anything longer is prose, so keep the whole of
+    // it as a bullet (losing what the model wrote would be worse) and cut the
+    // title back to the part before the first bracket, dash or comma - for
+    // "Frontend Developer (Project Work Focus ...)" that leaves the real title.
+    if (role.length > 80) {
+      bullets.unshift(role)
+      const head = role.split(/\s*[(,]|\s-\s/)[0].trim()
+      role = head && head.length <= 80 ? head : `${role.slice(0, 80).replace(/\s+\S*$/, '')}...`
+    }
+
+    return {
+      role,
+      organization: typeof e.organization === 'string' ? e.organization.trim() : '',
+      period: typeof e.period === 'string' ? e.period.trim() : '',
+      bullets,
+    }
+  })
+}
+
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}))
   const targetRole: string = (body.targetRole || '').trim()
@@ -214,8 +282,7 @@ export async function POST(request: Request) {
   const limited = await rateLimit(supabase, 'generate-cv')
   if (!limited.ok) return limited.response
 
-  const apiKey = pickGeminiKey()
-  if (!apiKey) {
+  if (!hasGeminiKeys()) {
     return NextResponse.json(
       { error: 'AI is not configured yet. Add GEMINI_API_KEY or GEMINI_API_KEYS to .env.local.' },
       { status: 500 }
@@ -258,34 +325,18 @@ ${customText ? `\nAdditional custom sections provided by the candidate (include 
 
   // Call Gemini (REST)
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-          generationConfig: {
-            temperature: 0.7,
-            responseMimeType: 'application/json',
-            responseSchema: RESPONSE_SCHEMA,
-          },
-        }),
-      }
-    )
-
-    if (!res.ok) {
-      const errText = await res.text()
-      console.error('Gemini API error (generate-cv):', errText.slice(0, 500))
-      return NextResponse.json({ error: 'Something went wrong generating your CV. Please try again.' }, { status: 502 })
-    }
-
-    const data = await res.json()
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!text) return NextResponse.json({ error: 'AI returned an empty response. Please try again.' }, { status: 502 })
+    const text = await geminiGenerate({
+      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+      generationConfig: {
+        temperature: 0.7,
+        responseMimeType: 'application/json',
+        responseSchema: RESPONSE_SCHEMA,
+      },
+    })
 
     const cv = JSON.parse(text)
+    cv.experience = normalizeExperience(cv.experience)
 
     // Fill contact from the VERIFIED profile (never from the AI) so usernames + links are accurate
     cv.contact = {

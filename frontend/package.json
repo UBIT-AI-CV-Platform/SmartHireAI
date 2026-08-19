@@ -54,7 +54,7 @@
     "input-otp": "1.4.2",
     "lucide-react": "^0.564.0",
     "mammoth": "^1.12.0",
-    "next": "16.2.0",
+    "next": "16.3.1",
     "next-themes": "^0.4.6",
     "nodemailer": "^9.0.1",
     "react": "19.2.4",
@@ -70,6 +70,7 @@
     "rtf-to-text": "^0.1.1",
     "sonner": "^1.7.1",
     "tailwind-merge": "^3.3.1",
+    "unpdf": "^1.8.1",
     "vaul": "^1.1.2",
     "word-extractor": "^1.0.4",
     "zod": "^3.24.1"

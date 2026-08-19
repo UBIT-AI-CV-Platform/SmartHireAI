@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useReactToPrint } from 'react-to-print'
 import { createClient } from '@/lib/supabase/client'
+import { cleanCvProjects } from '@/lib/cleanCv'
 import { Icon } from '@/components/ui/icon'
 import { toast } from '@/hooks/use-toast'
 
@@ -13,19 +14,20 @@ type Contact = {
   github?: string; github_url?: string
   discord?: string; discord_url?: string
 }
+type ProjectLink = { label: string; url: string }
 type CV = {
   full_name: string
   title: string
   photo_url?: string
   contact?: Contact
   summary: string
-  experience: { role: string; organization: string; period: string; bullets: string[] }[]
+  experience: { role: string; organization: string; period: string; bullets: string[]; link?: string }[]
   education: { degree: string; institute: string; period: string }[]
   skills: string[]
   certifications?: { name: string; issuer?: string; date?: string; link?: string }[]
   courses?: { name: string; provider?: string; date?: string; link?: string }[]
   awards?: { name: string; issuer?: string; date?: string; link?: string }[]
-  projects?: { name: string; description?: string; link?: string }[]
+  projects?: { name: string; description?: string; date?: string; link?: string; links?: ProjectLink[] }[]
   custom_sections?: { heading: string; items: { title: string; description?: string; link?: string }[] }[]
   ats_score: number
   ats_summary?: string
@@ -66,6 +68,13 @@ const hasPeriod = (p?: string) => {
   return x !== '' && x !== 'date not specified' && x !== 'n/a' && x !== 'not specified'
 }
 
+// Strip portfolio / personal-brand projects (e.g. "Sufiyan Cloud", a project
+// named "Portfolio") out of Projects so the preview only shows real projects.
+const applyProjectClean = (value: CV): CV => {
+  if (value) cleanCvProjects(value)
+  return value
+}
+
 export default function CVGeneratorPage() {
   const [targetRole, setTargetRole] = useState('')
   const [tone, setTone] = useState('Professional')
@@ -96,7 +105,7 @@ export default function CVGeneratorPage() {
       })
       const data = await res.json()
       if (!res.ok) { setUploadError(data.error || 'Upload failed. Please try again.'); return }
-      setCv(data.cv)
+      setCv(applyProjectClean(data.cv))
       setCvId(data.id ?? null)
       setEditing(false)
     } catch {
@@ -238,7 +247,7 @@ export default function CVGeneratorPage() {
   const removeAward = (i: number) => edit((d) => { if (d.awards) d.awards.splice(i, 1) })
   const addAward = () => edit((d) => { d.awards = d.awards ?? []; d.awards.push({ name: '', issuer: '', date: '', link: '' }) })
   const removeProject = (i: number) => edit((d) => { if (d.projects) d.projects.splice(i, 1) })
-  const addProject = () => edit((d) => { d.projects = d.projects ?? []; d.projects.push({ name: '', description: '', link: '' }) })
+  const addProject = () => edit((d) => { d.projects = d.projects ?? []; d.projects.push({ name: '', description: '', date: '', link: '', links: [] }) })
 
   const removeCustomSection = (si: number) => edit((d) => { d.custom_sections?.splice(si, 1) })
   const addCustomSection = () => {
@@ -270,7 +279,7 @@ export default function CVGeneratorPage() {
       ])
       if (prof.data?.desired_role) setTargetRole(prof.data.desired_role)
       if (latest.data?.content) {
-        setCv(latest.data.content as CV)
+        setCv(applyProjectClean(latest.data.content as CV))
         setCvId(latest.data.id as string)
         if (latest.data.target_role) setTargetRole(latest.data.target_role)
         if (latest.data.tone) setTone(latest.data.tone)
@@ -290,7 +299,7 @@ export default function CVGeneratorPage() {
       })
       const data = await res.json()
       if (!res.ok) setError(data.error || 'Something went wrong.')
-      else { setCv(data.cv); setCvId(data.id ?? null); setEditing(false) }
+      else { setCv(applyProjectClean(data.cv)); setCvId(data.id ?? null); setEditing(false) }
     } catch {
       setError('Network error. Please try again.')
     }
@@ -323,7 +332,7 @@ export default function CVGeneratorPage() {
   }
 
   const loadFromHistory = (row: CVHistoryRow) => {
-    if (row.content) setCv(row.content)
+    if (row.content) setCv(applyProjectClean(row.content))
     setCvId(row.id)
     setEditing(false)
     setShowHistory(false)
@@ -396,7 +405,7 @@ export default function CVGeneratorPage() {
           <div key={`exp-${i}-${exp.role}-${exp.organization}`} className="cv-keep relative">
             {editing && <RemoveBtn onClick={() => removeExperience(i)} />}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-0.5 mb-1 pr-5">
-              <Editable as="div" editing={editing} value={exp.role} placeholder="Job title" onSave={(v) => edit((d) => { d.experience[i].role = v })} className="text-base sm:text-lg font-bold text-on-surface" />
+              {editing ? <Editable as="div" editing value={exp.role} placeholder="Job title" onSave={(v) => edit((d) => { d.experience[i].role = v })} className="text-base sm:text-lg font-bold text-on-surface" /> : <LinkedTitle value={exp.role} link={exp.link} className="text-base sm:text-lg font-bold text-on-surface" />}
               {(hasPeriod(exp.period) || editing) && (
                 <Editable editing={editing} value={exp.period || ''} placeholder="Dates" onSave={(v) => edit((d) => { d.experience[i].period = v })} className="text-xs sm:text-sm font-semibold text-outline" />
               )}
@@ -426,6 +435,7 @@ export default function CVGeneratorPage() {
                 <Icon name="add" className="text-sm" /> Add bullet
               </button>
             )}
+            {editing && <LinkLine value={exp.link} editing onSave={(v) => edit((d) => { d.experience[i].link = v })} />}
           </div>
         ))}
       </div>
@@ -544,7 +554,10 @@ export default function CVGeneratorPage() {
         {cv.projects?.map((project, i) => (
           <div key={`proj-${i}-${project.name}`} className="cv-keep relative">
             {editing && <RemoveBtn onClick={() => removeProject(i)} />}
-            {editing ? <Editable as="div" editing value={project.name} placeholder="Project name" onSave={(v) => edit((d) => { if (d.projects) d.projects[i].name = v })} className="text-sm font-bold text-on-surface pr-5" /> : <LinkedTitle value={project.name} link={project.link} className="text-sm font-bold text-on-surface pr-5" />}
+            <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5 pr-5">
+              {editing ? <Editable as="div" editing value={project.name} placeholder="Project name" onSave={(v) => edit((d) => { if (d.projects) d.projects[i].name = v })} className="text-sm font-bold text-on-surface" /> : <ProjectTitle value={project.name} link={project.link} links={project.links} className="text-sm font-bold text-on-surface" />}
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">{(hasPeriod(project.date) || editing) && <Editable editing={editing} value={project.date || ''} placeholder="Project dates" onSave={(v) => edit((d) => { if (d.projects) d.projects[i].date = v })} className="text-xs font-semibold text-outline" />}{!editing && <ProjectLinks links={project.links} inline />}</div>
+            </div>
             {(project.description || editing) && <Editable as="div" editing={editing} value={project.description || ''} placeholder="Project description" onSave={(v) => edit((d) => { if (d.projects) d.projects[i].description = v })} className="text-sm text-on-surface-variant mt-0.5" />}
             {editing && <LinkLine value={project.link} editing onSave={(v) => edit((d) => { if (d.projects) d.projects[i].link = v })} />}
           </div>
@@ -774,7 +787,7 @@ export default function CVGeneratorPage() {
       <div className="grid grid-cols-12 gap-4 md:gap-8 items-start">
         {/* CV preview */}
         <div className="col-span-12 lg:col-span-8 order-1">
-          <div ref={previewRef} style={{ fontFamily: FONTS[font] }} className="bg-white rounded-[2rem] cv-preview-shadow overflow-hidden lg:min-h-[800px] flex flex-col border border-surface-container">
+          <div ref={previewRef} style={{ fontFamily: FONTS[font] }} className="cv-paper bg-white rounded-[2rem] cv-preview-shadow overflow-hidden lg:min-h-[800px] flex flex-col border border-surface-container">
             {loading || uploading || restoring ? (
               <div className="flex-1 flex flex-col items-center justify-center gap-4 p-16 min-h-[600px]">
                 <div className="flex gap-2">
@@ -1240,7 +1253,7 @@ function CVQuickView({ cv }: { cv: CV }) {
     )
   }
   return (
-    <div className="bg-white rounded-2xl border border-surface-container p-6 shadow-sm">
+    <div className="cv-paper bg-white rounded-2xl border border-surface-container p-6 shadow-sm">
       <h2 className="text-2xl font-black text-on-surface tracking-tight">{cv.full_name}</h2>
       {cv.title && <p className="text-base font-semibold text-primary mb-2">{cv.title}</p>}
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-on-surface-variant mb-5">
@@ -1257,7 +1270,7 @@ function CVQuickView({ cv }: { cv: CV }) {
             {cv.experience.map((e, i) => (
               <div key={i}>
                 <div className="flex justify-between items-baseline gap-2">
-                  <p className="text-sm font-bold text-on-surface">{e.role}</p>
+                  <p className="text-sm font-bold text-on-surface"><LinkedTitle value={e.role} link={e.link} /></p>
                   {hasPeriod(e.period) && <span className="text-xs text-outline font-semibold">{e.period}</span>}
                 </div>
                 {e.organization && <p className="text-xs font-semibold text-primary">{e.organization}</p>}
@@ -1302,7 +1315,7 @@ function CVQuickView({ cv }: { cv: CV }) {
           <div className="space-y-2">
             {cv.projects.map((project, i) => (
               <div key={i}>
-                <LinkedTitle value={project.name} link={project.link} className="text-sm font-bold text-on-surface" />
+                <div className="flex justify-between items-baseline gap-2"><ProjectTitle value={project.name} link={project.link} links={project.links} className="text-sm font-bold text-on-surface" /><div className="flex flex-wrap items-baseline justify-end gap-x-3 gap-y-1">{hasPeriod(project.date) && <span className="text-xs text-outline font-semibold">{project.date}</span>}<ProjectLinks links={project.links} inline /></div></div>
                 {project.description && <p className="text-sm text-on-surface-variant">{project.description}</p>}
               </div>
             ))}
@@ -1410,6 +1423,22 @@ function LinkedTitle({ value, link, className = '' }: { value: string; link?: st
   if (!link) return <span className={className}>{value}</span>
   const url = /^[a-z][a-z0-9+.-]*:\/\//i.test(link) ? link : `https://${link}`
   return <a href={url} target="_blank" rel="noopener noreferrer" title={`Open ${value}`} className={`${className} text-primary hover:underline underline-offset-2`}>{value}</a>
+}
+
+// Project names stay plain text when the clickable labels (GitHub / Live Demo)
+// are already rendered beside them, so a heading is never a duplicate link.
+function ProjectTitle({ value, link, links, className = '' }: { value: string; link?: string; links?: ProjectLink[]; className?: string }) {
+  if (links?.length) return <span className={className}>{value}</span>
+  return <LinkedTitle value={value} link={link} className={className} />
+}
+
+function ProjectLinks({ links, inline = false }: { links?: ProjectLink[]; inline?: boolean }) {
+  const unique = (links ?? []).filter((link, index, all) => link.url && all.findIndex((item) => item.url === link.url) === index)
+  if (!unique.length) return null
+  return <div className={`${inline ? '' : 'mt-1.5'} flex flex-wrap gap-x-3 gap-y-1 text-xs font-semibold`}>{unique.map((link, index) => {
+    const url = /^[a-z][a-z0-9+.-]*:\/\//i.test(link.url) ? link.url : `https://${link.url}`
+    return <span key={link.url} className="inline-flex items-center gap-3"><a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline underline-offset-2">{link.label || 'Open link'}</a>{index < unique.length - 1 && <span className="text-outline">|</span>}</span>
+  })}</div>
 }
 
 function ContactItem({ icon, text, href, accent }: { icon: string; text?: string; href?: string; accent?: Accent }) {
