@@ -98,7 +98,7 @@ export default function CVPreview({ cv }: { cv: CVContent | null }) {
       {cv.skills && cv.skills.length > 0 && (
         <Block title="Skills">
           <div className="flex flex-wrap gap-1.5">
-            {cv.skills.map((s, i) => <span key={i} className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-bold">{s}</span>)}
+            {cv.skills.map((s, i) => <span key={`${s}-${i}`} className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-bold">{s}</span>)}
           </div>
         </Block>
       )}
@@ -109,7 +109,7 @@ export default function CVPreview({ cv }: { cv: CVContent | null }) {
       {cv.projects && cv.projects.length > 0 && (
         <Block title="Projects">
           <div className="space-y-2">
-            {cv.projects.map((project, i) => <div key={i}><p className="text-sm text-on-surface"><LinkedTitle value={project.name} link={project.link} /></p>{project.description && <p className="text-sm text-on-surface-variant">{project.description}</p>}</div>)}
+            {cv.projects.map((project, i) => <div key={`${project.name}-${i}`}><p className="text-sm text-on-surface"><LinkedTitle value={project.name} link={project.link} /></p>{project.description && <p className="text-sm text-on-surface-variant">{project.description}</p>}</div>)}
           </div>
         </Block>
       )}

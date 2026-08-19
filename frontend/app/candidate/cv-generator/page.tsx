@@ -393,7 +393,7 @@ export default function CVGeneratorPage() {
     <Section title="Experience" accent={a} variant={template}>
       <div className="space-y-6">
         {cv.experience?.map((exp, i) => (
-          <div key={i} className="cv-keep relative">
+          <div key={`exp-${i}-${exp.role}-${exp.organization}`} className="cv-keep relative">
             {editing && <RemoveBtn onClick={() => removeExperience(i)} />}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-0.5 mb-1 pr-5">
               <Editable as="div" editing={editing} value={exp.role} placeholder="Job title" onSave={(v) => edit((d) => { d.experience[i].role = v })} className="text-base sm:text-lg font-bold text-on-surface" />
@@ -406,7 +406,7 @@ export default function CVGeneratorPage() {
             )}
             <ul className="text-sm text-on-surface-variant space-y-1.5 list-disc list-inside marker:text-current">
               {exp.bullets?.map((b, j) => (
-                <li key={j}>
+                <li key={`bullet-${j}-${b}`}>
                   {editing && (
                     <button
                       type="button"
@@ -437,7 +437,7 @@ export default function CVGeneratorPage() {
     <Section title="Education" accent={a} variant={template}>
       <div className="space-y-3">
         {cv.education?.map((e, i) => (
-          <div key={i} className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline cv-keep relative">
+          <div key={`edu-${i}-${e.degree}-${e.institute}`} className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline cv-keep relative">
             {editing && <RemoveBtn onClick={() => removeEducation(i)} />}
             <div className="pr-5">
               <Editable as="div" editing={editing} value={e.degree} placeholder="Degree" onSave={(v) => edit((d) => { d.education[i].degree = v })} className="text-base font-bold text-on-surface" />
@@ -457,7 +457,7 @@ export default function CVGeneratorPage() {
     <Section title="Skills" accent={a} variant={template}>
       <div className="flex flex-wrap gap-2 cv-keep">
         {cv.skills?.map((s, i) => (
-          <span key={i} className={`inline-flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs sm:text-sm rounded-lg ${a.chip}`}>
+          <span key={`skill-${i}-${s}`} className={`inline-flex items-center gap-1.5 px-3 py-1.5 font-bold text-xs sm:text-sm rounded-lg ${a.chip}`}>
             <Editable editing={editing} value={s} placeholder="Add a skill" onSave={(v) => edit((d) => { d.skills[i] = v })} />
             {editing && (
               <button type="button" onClick={() => removeSkill(i)} title="Remove skill" className="text-red-600/80 hover:text-red-600 hover:bg-red-500/10 rounded-full p-0.5 transition-colors flex-shrink-0">
@@ -479,11 +479,11 @@ export default function CVGeneratorPage() {
     <Section title="Certifications" accent={a} variant={template}>
       <div className="space-y-3">
         {cv.certifications?.map((c, i) => (
-          <div key={i} className="flex items-start gap-2.5 cv-keep relative">
+          <div key={`cert-${i}-${c.name}`} className="flex items-start gap-2.5 cv-keep relative">
             {editing && <RemoveBtn onClick={() => removeCert(i)} />}
             <Icon name="verified" className={`text-lg mt-0.5 ${a.text}`} solid />
             <div className="pr-5">
-            {editing ? <Editable as="div" editing value={c.name} placeholder="Certificate name" onSave={(v) => edit((d) => { if (d.certifications) d.certifications[i].name = v })} className="text-sm font-bold text-on-surface leading-tight" /> : <LinkedTitle value={c.name} link={c.link} className="text-sm font-bold text-on-surface leading-tight" />}
+              {editing ? <Editable as="div" editing value={c.name} placeholder="Certificate name" onSave={(v) => edit((d) => { if (d.certifications) d.certifications[i].name = v })} className="text-sm font-bold text-on-surface leading-tight" /> : <LinkedTitle value={c.name} link={c.link} className="text-sm font-bold text-on-surface leading-tight" />}
               {(c.issuer || c.date || editing) && (
                 <Editable as="div" editing={editing} value={[c.issuer, c.date].filter(Boolean).join(' • ')} placeholder="Issuer • Date" onSave={(v) => edit((d) => { if (!d.certifications) return; const [issuer, ...rest] = v.split(' • '); d.certifications[i].issuer = issuer; d.certifications[i].date = rest.join(' • ') })} className="text-xs text-on-surface-variant mt-0.5" />
               )}
@@ -500,7 +500,7 @@ export default function CVGeneratorPage() {
     <Section title="Courses" accent={a} variant={template}>
       <div className="space-y-3">
         {cv.courses?.map((c, i) => (
-          <div key={i} className="flex items-start gap-2.5 cv-keep relative">
+          <div key={`course-${i}-${c.name}`} className="flex items-start gap-2.5 cv-keep relative">
             {editing && <RemoveBtn onClick={() => removeCourse(i)} />}
             <Icon name="school" className={`text-lg mt-0.5 ${a.text}`} solid />
             <div className="pr-5">
@@ -521,7 +521,7 @@ export default function CVGeneratorPage() {
     <Section title="Awards" accent={a} variant={template}>
       <div className="space-y-3">
         {cv.awards?.map((c, i) => (
-          <div key={i} className="flex items-start gap-2.5 cv-keep relative">
+          <div key={`award-${i}-${c.name}`} className="flex items-start gap-2.5 cv-keep relative">
             {editing && <RemoveBtn onClick={() => removeAward(i)} />}
             <Icon name="military_tech" className={`text-lg mt-0.5 ${a.text}`} solid />
             <div className="pr-5">
@@ -542,7 +542,7 @@ export default function CVGeneratorPage() {
     <Section title="Projects" accent={a} variant={template}>
       <div className="space-y-3">
         {cv.projects?.map((project, i) => (
-          <div key={i} className="cv-keep relative">
+          <div key={`proj-${i}-${project.name}`} className="cv-keep relative">
             {editing && <RemoveBtn onClick={() => removeProject(i)} />}
             {editing ? <Editable as="div" editing value={project.name} placeholder="Project name" onSave={(v) => edit((d) => { if (d.projects) d.projects[i].name = v })} className="text-sm font-bold text-on-surface pr-5" /> : <LinkedTitle value={project.name} link={project.link} className="text-sm font-bold text-on-surface pr-5" />}
             {(project.description || editing) && <Editable as="div" editing={editing} value={project.description || ''} placeholder="Project description" onSave={(v) => edit((d) => { if (d.projects) d.projects[i].description = v })} className="text-sm text-on-surface-variant mt-0.5" />}
@@ -564,7 +564,7 @@ export default function CVGeneratorPage() {
       ) : undefined}>
         <div className="space-y-3">
           {s.items?.map((it, ii) => (
-            <div key={ii} className="cv-keep relative">
+            <div key={`item-${si}-${ii}-${it.title}`} className="cv-keep relative">
               {editing && <RemoveBtn onClick={() => removeCustomItem(si, ii)} />}
               {editing ? <Editable as="div" editing value={it.title} placeholder="Title" onSave={(v) => edit((d) => { if (d.custom_sections) d.custom_sections[si].items[ii].title = v })} className="text-sm font-bold text-on-surface pr-5" /> : <LinkedTitle value={it.title} link={it.link} className="text-sm font-bold text-on-surface pr-5" />}
               {(it.description || editing) && <Editable as="div" editing={editing} value={it.description || ''} placeholder="Description" onSave={(v) => edit((d) => { if (d.custom_sections) d.custom_sections[si].items[ii].description = v })} className="text-sm text-on-surface-variant mt-0.5" />}
@@ -894,7 +894,7 @@ export default function CVGeneratorPage() {
               <p className="text-xs text-amber-800/80 dark:text-amber-300/80 mb-4">From the job description - add these to your profile if you have them.</p>
               <div className="flex flex-wrap gap-2 cv-keep">
                 {cv.missing_keywords.map((k, i) => (
-                  <span key={i} className="px-3 py-1.5 bg-white dark:bg-white/10 text-amber-800 dark:text-amber-300 font-bold text-xs rounded-lg border border-amber-200 dark:border-white/10">{k}</span>
+                  <span key={`kw-${i}-${k}`} className="px-3 py-1.5 bg-white dark:bg-white/10 text-amber-800 dark:text-amber-300 font-bold text-xs rounded-lg border border-amber-200 dark:border-white/10">{k}</span>
                 ))}
               </div>
             </div>
@@ -1039,97 +1039,97 @@ export default function CVGeneratorPage() {
         const cvList = favOnly ? history.filter((r) => r.is_favorite) : history
         const coverList = favOnly ? coverHistory.filter((r) => r.is_favorite) : coverHistory
         return (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowHistory(false)} />
-          <div className="relative z-10 w-full max-w-xl bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[85vh] flex flex-col">
-            <div className="p-5 border-b border-surface-container flex items-center justify-between">
-              <h3 className="text-lg font-bold text-on-surface flex items-center gap-2">
-                <Icon name="folder_open" className="text-primary" />
-                My CVs
-              </h3>
-              <button onClick={() => setShowHistory(false)} className="text-on-surface-variant hover:text-on-surface p-1">
-                <Icon name="close" />
-              </button>
-            </div>
-
-            {/* Tabs + favorites filter */}
-            <div className="px-5 pt-4 pb-3 flex items-center gap-3 border-b border-surface-container">
-              <div className="flex bg-surface-container-low rounded-xl p-1">
-                <button onClick={() => setDocTab('cvs')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${docTab === 'cvs' ? 'bg-white dark:bg-white/10 shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
-                  CVs ({history.length})
-                </button>
-                <button onClick={() => setDocTab('covers')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${docTab === 'covers' ? 'bg-white dark:bg-white/10 shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
-                  Cover Letters ({coverHistory.length})
+          <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowHistory(false)} />
+            <div className="relative z-10 w-full max-w-xl bg-white dark:bg-[#2c2c2e] rounded-3xl shadow-2xl overflow-hidden auth-pop max-h-[85vh] flex flex-col">
+              <div className="p-5 border-b border-surface-container flex items-center justify-between">
+                <h3 className="text-lg font-bold text-on-surface flex items-center gap-2">
+                  <Icon name="folder_open" className="text-primary" />
+                  My CVs
+                </h3>
+                <button onClick={() => setShowHistory(false)} className="text-on-surface-variant hover:text-on-surface p-1">
+                  <Icon name="close" />
                 </button>
               </div>
-              <button
-                onClick={() => setFavOnly((v) => !v)}
-                title="Show favorites only"
-                className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${favOnly ? 'bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-300' : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'}`}
-              >
-                <Icon name="star" className="text-base" solid={favOnly} />
-                Favorites
-              </button>
-            </div>
 
-            <div className="overflow-y-auto p-3 flex-1">
-              {historyLoading ? (
-                <div className="flex items-center justify-center gap-1.5 py-12">
-                  <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce"></div>
-                  <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></div>
-                  <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></div>
+              {/* Tabs + favorites filter */}
+              <div className="px-5 pt-4 pb-3 flex items-center gap-3 border-b border-surface-container">
+                <div className="flex bg-surface-container-low rounded-xl p-1">
+                  <button onClick={() => setDocTab('cvs')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${docTab === 'cvs' ? 'bg-white dark:bg-white/10 shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
+                    CVs ({history.length})
+                  </button>
+                  <button onClick={() => setDocTab('covers')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${docTab === 'covers' ? 'bg-white dark:bg-white/10 shadow text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
+                    Cover Letters ({coverHistory.length})
+                  </button>
                 </div>
-              ) : docTab === 'cvs' ? (
-                cvList.length === 0 ? (
-                  <p className="text-sm text-on-surface-variant text-center py-12">{favOnly ? 'No favorite CVs yet. Tap the star on a CV to save it here.' : 'No saved CVs yet. Generate one first.'}</p>
+                <button
+                  onClick={() => setFavOnly((v) => !v)}
+                  title="Show favorites only"
+                  className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${favOnly ? 'bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-300' : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface'}`}
+                >
+                  <Icon name="star" className="text-base" solid={favOnly} />
+                  Favorites
+                </button>
+              </div>
+
+              <div className="overflow-y-auto p-3 flex-1">
+                {historyLoading ? (
+                  <div className="flex items-center justify-center gap-1.5 py-12">
+                    <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce"></div>
+                    <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></div>
+                    <div className="h-2.5 w-2.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></div>
+                  </div>
+                ) : docTab === 'cvs' ? (
+                  cvList.length === 0 ? (
+                    <p className="text-sm text-on-surface-variant text-center py-12">{favOnly ? 'No favorite CVs yet. Tap the star on a CV to save it here.' : 'No saved CVs yet. Generate one first.'}</p>
+                  ) : (
+                    cvList.map((row) => (
+                      <div key={row.id} className="group flex items-center gap-1.5 p-4 rounded-2xl hover:bg-surface-container-low transition-colors">
+                        <button onClick={() => toggleFavCV(row)} title={row.is_favorite ? 'Unfavorite' : 'Favorite'} className={`p-1.5 rounded-lg transition flex-shrink-0 ${row.is_favorite ? 'text-amber-500' : 'text-outline-variant hover:text-amber-500'}`}>
+                          <Icon name="star" className="text-lg" solid={row.is_favorite} />
+                        </button>
+                        <button onClick={() => setPreview({ type: 'cv', id: row.id })} className="flex-1 text-left min-w-0">
+                          <p className="text-sm font-bold text-on-surface truncate">{row.target_role || 'Untitled role'}</p>
+                          <p className="text-xs text-on-surface-variant mt-0.5">{new Date(row.created_at).toLocaleString()}</p>
+                        </button>
+                        <span className="flex items-baseline gap-0.5 text-sm font-black text-primary flex-shrink-0">
+                          {row.ats_score ?? '--'}<span className="text-[10px] text-on-surface-variant font-medium">/100</span>
+                        </span>
+                        <button onClick={() => renameCV(row)} title="Rename" className="text-on-surface-variant hover:text-primary p-1.5 rounded-lg hover:bg-primary/5 opacity-60 group-hover:opacity-100 transition">
+                          <Icon name="edit" className="text-base" />
+                        </button>
+                        <button onClick={() => deleteCV(row)} title="Delete" className="text-on-surface-variant hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15 opacity-60 group-hover:opacity-100 transition">
+                          <Icon name="delete" className="text-base" />
+                        </button>
+                      </div>
+                    ))
+                  )
                 ) : (
-                  cvList.map((row) => (
-                    <div key={row.id} className="group flex items-center gap-1.5 p-4 rounded-2xl hover:bg-surface-container-low transition-colors">
-                      <button onClick={() => toggleFavCV(row)} title={row.is_favorite ? 'Unfavorite' : 'Favorite'} className={`p-1.5 rounded-lg transition flex-shrink-0 ${row.is_favorite ? 'text-amber-500' : 'text-outline-variant hover:text-amber-500'}`}>
-                        <Icon name="star" className="text-lg" solid={row.is_favorite} />
-                      </button>
-                      <button onClick={() => setPreview({ type: 'cv', id: row.id })} className="flex-1 text-left min-w-0">
-                        <p className="text-sm font-bold text-on-surface truncate">{row.target_role || 'Untitled role'}</p>
-                        <p className="text-xs text-on-surface-variant mt-0.5">{new Date(row.created_at).toLocaleString()}</p>
-                      </button>
-                      <span className="flex items-baseline gap-0.5 text-sm font-black text-primary flex-shrink-0">
-                        {row.ats_score ?? '--'}<span className="text-[10px] text-on-surface-variant font-medium">/100</span>
-                      </span>
-                      <button onClick={() => renameCV(row)} title="Rename" className="text-on-surface-variant hover:text-primary p-1.5 rounded-lg hover:bg-primary/5 opacity-60 group-hover:opacity-100 transition">
-                        <Icon name="edit" className="text-base" />
-                      </button>
-                      <button onClick={() => deleteCV(row)} title="Delete" className="text-on-surface-variant hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15 opacity-60 group-hover:opacity-100 transition">
-                        <Icon name="delete" className="text-base" />
-                      </button>
-                    </div>
-                  ))
-                )
-              ) : (
-                coverList.length === 0 ? (
-                  <p className="text-sm text-on-surface-variant text-center py-12">{favOnly ? 'No favorite cover letters yet. Tap the star on a letter to save it here.' : 'No saved cover letters yet. Generate one from the Cover Letter button.'}</p>
-                ) : (
-                  coverList.map((row) => (
-                    <div key={row.id} className="group flex items-center gap-1.5 p-4 rounded-2xl hover:bg-surface-container-low transition-colors">
-                      <button onClick={() => toggleFavCoverRow(row)} title={row.is_favorite ? 'Unfavorite' : 'Favorite'} className={`p-1.5 rounded-lg transition flex-shrink-0 ${row.is_favorite ? 'text-amber-500' : 'text-outline-variant hover:text-amber-500'}`}>
-                        <Icon name="star" className="text-lg" solid={row.is_favorite} />
-                      </button>
-                      <button onClick={() => setPreview({ type: 'cover', id: row.id })} className="flex-1 text-left min-w-0">
-                        <p className="text-sm font-bold text-on-surface truncate">
-                          {row.target_role || 'Cover letter'}{row.company ? ` · ${row.company}` : ''}
-                        </p>
-                        <p className="text-xs text-on-surface-variant mt-0.5 truncate">{row.content.replace(/\s+/g, ' ').slice(0, 70)}…</p>
-                        <p className="text-[11px] text-outline mt-0.5">{new Date(row.created_at).toLocaleString()}</p>
-                      </button>
-                      <button onClick={() => deleteCover(row)} title="Delete" className="text-on-surface-variant hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15 opacity-60 group-hover:opacity-100 transition">
-                        <Icon name="delete" className="text-base" />
-                      </button>
-                    </div>
-                  ))
-                )
-              )}
+                  coverList.length === 0 ? (
+                    <p className="text-sm text-on-surface-variant text-center py-12">{favOnly ? 'No favorite cover letters yet. Tap the star on a letter to save it here.' : 'No saved cover letters yet. Generate one from the Cover Letter button.'}</p>
+                  ) : (
+                    coverList.map((row) => (
+                      <div key={row.id} className="group flex items-center gap-1.5 p-4 rounded-2xl hover:bg-surface-container-low transition-colors">
+                        <button onClick={() => toggleFavCoverRow(row)} title={row.is_favorite ? 'Unfavorite' : 'Favorite'} className={`p-1.5 rounded-lg transition flex-shrink-0 ${row.is_favorite ? 'text-amber-500' : 'text-outline-variant hover:text-amber-500'}`}>
+                          <Icon name="star" className="text-lg" solid={row.is_favorite} />
+                        </button>
+                        <button onClick={() => setPreview({ type: 'cover', id: row.id })} className="flex-1 text-left min-w-0">
+                          <p className="text-sm font-bold text-on-surface truncate">
+                            {row.target_role || 'Cover letter'}{row.company ? ` · ${row.company}` : ''}
+                          </p>
+                          <p className="text-xs text-on-surface-variant mt-0.5 truncate">{row.content.replace(/\s+/g, ' ').slice(0, 70)}…</p>
+                          <p className="text-[11px] text-outline mt-0.5">{new Date(row.created_at).toLocaleString()}</p>
+                        </button>
+                        <button onClick={() => deleteCover(row)} title="Delete" className="text-on-surface-variant hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15 opacity-60 group-hover:opacity-100 transition">
+                          <Icon name="delete" className="text-base" />
+                        </button>
+                      </div>
+                    ))
+                  )
+                )}
+              </div>
             </div>
           </div>
-        </div>
         )
       })()}
 
@@ -1289,7 +1289,7 @@ function CVQuickView({ cv }: { cv: CV }) {
       {cv.skills?.length > 0 && (
         <Block title="Skills">
           <div className="flex flex-wrap gap-1.5">
-            {cv.skills.map((s, i) => <span key={i} className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-bold">{s}</span>)}
+            {cv.skills.map((s, i) => <span key={`${s}-${i}`} className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-bold">{s}</span>)}
           </div>
         </Block>
       )}
